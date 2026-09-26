@@ -3,6 +3,7 @@
 #include <cstdio>
 
 #include "../../components/icons/listIcons.h"
+#include "StudySync.h"
 
 namespace studyui {
 
@@ -681,10 +682,11 @@ fui::Rect buildPairQr(toybox::Screen& screen, const char* code) {
   screen.target().text(fui::makeRect(body.x, codeY, body.width, 48), code,
                        syncText(toybox::kDisplayFont, fui::TextAlign::Center));
 
+  char signIn[96];
+  std::snprintf(signIn, sizeof(signIn), "Sign in at %s/pair first, then scan this code.", study::kBridgeHost);
   screen.target().text(
       fui::makeRect(body.x + toybox::kMargin, codeY + 48 + toybox::kMargin, body.width - toybox::kMargin * 2, 116),
-      "Sign in at sync.ma-r-s.com/pair first, then scan this code.",
-      syncText(toybox::kUiFont, fui::TextAlign::Center, fui::Color::DarkGray, 3));
+      signIn, syncText(toybox::kUiFont, fui::TextAlign::Center, fui::Color::DarkGray, 3));
   // Overflow is invisible in these cuts: the renderer appends U+2026 and the
   // face has no glyph for it, so a long line simply stops mid-word -- which
   // is how the clause telling a nervous user they may refuse went missing.

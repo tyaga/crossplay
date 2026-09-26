@@ -138,3 +138,23 @@ asserts that, so a change to one that is not made to the other goes red.
 Every SVG attribute in there is quoted. An unquoted one eats the tag's own
 self-closing slash and the figure renders as an empty box with a caption under
 it, with every suite still green; the same test file refuses that too.
+
+## Words from the reader's dictionary
+
+A sync POST may carry, after the decks' blobs, the words the reader saved
+from its dictionary (header `"words": [{"file": "nl/huis.txt", "len": N}]`,
+each blob the file as the reader keeps it). The bridge keeps them in the
+user's `words.jsonl` from the acknowledgement on (the reply names them in
+`wordsAccepted`, and the reader deletes its copies), adds them as notes with
+`tools_local/study/words_to_anki.py` after the reviews, drops them once the
+push is confirmed, and chooses `Dictionary::<Language>` for the reader the
+first time a language arrives. `tests/test_words.py` covers it end to end.
+
+## A self-hosted copy
+
+`deploy/atyaga/` deploys to a single VPS behind a shared Caddy instead of the
+Orange Pi and its tunnel: `deploy/atyaga/deploy.sh` runs the attack and words
+suites, stages the build context, builds on the server under
+`/opt/ankibridge`, and creates `.env` with a fresh Fernet key on first
+deploy. A reader talks to it when its firmware is built with
+`PLATFORMIO_BUILD_FLAGS='-DSTUDY_BRIDGE_HOST=\"<host>\"'`.

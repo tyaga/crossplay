@@ -32,7 +32,12 @@
 
 namespace study {
 
-constexpr char kBridgeHost[] = "sync.ma-r-s.com";
+// The bridge this build talks to. A build for a self-hosted bridge sets it:
+// PLATFORMIO_BUILD_FLAGS='-DSTUDY_BRIDGE_HOST=\"anki.example.org\"'.
+#ifndef STUDY_BRIDGE_HOST
+#define STUDY_BRIDGE_HOST "sync.ma-r-s.com"
+#endif
+constexpr char kBridgeHost[] = STUDY_BRIDGE_HOST;
 // One slot per deck folder the app can open (StudyActivity::kMaxDecks). When
 // this was the smaller number, a deck past it got no slot and every setter
 // no-opped in silence: its whole review log re-uploaded and its whole build
@@ -138,8 +143,15 @@ class StudySync {
   bool listDecks(const BridgeState& state, std::vector<DeckChoice>& out, std::string& message);
   bool chooseDecks(const BridgeState& state, const std::vector<std::string>& names, std::string& message);
 
-  bool syncStart(const BridgeState& state, const std::vector<DeckPayload>& decks, std::string& jobId,
-                 std::vector<std::pair<std::string, uint32_t>>& acks, std::string& message);
+  // A word saved from the dictionary: its inbox path ("nl/huis.txt") and file.
+  struct WordPayload {
+    std::string file;
+    std::string bytes;
+  };
+  // wordsAccepted: the inbox paths the bridge now holds, safe to delete here.
+  bool syncStart(const BridgeState& state, const std::vector<DeckPayload>& decks, const std::vector<WordPayload>& words,
+                 std::string& jobId, std::vector<std::pair<std::string, uint32_t>>& acks,
+                 std::vector<std::string>& wordsAccepted, std::string& message);
   // True after syncStart was refused for the token itself (revoked or
   // unknown): the stored pairing is dead and must be cleared, or every
   // later SYNC repeats the same refusal forever.
