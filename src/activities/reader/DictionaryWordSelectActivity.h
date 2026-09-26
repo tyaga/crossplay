@@ -4,10 +4,12 @@
 #include <I18n.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "activities/Activity.h"
 #include "util/Dictionary.h"
+#include "util/WordCaptureCore.h"
 
 // Word selection over the current reader page: Left/Right step through words
 // in reading order, Up/Down jump rows, Confirm looks the word up and opens
@@ -15,12 +17,15 @@
 // touch-down moves the highlight and a tap on a word looks it up directly.
 class DictionaryWordSelectActivity final : public Activity {
  public:
+  // `bookTitle` is recorded with a word saved for Anki, as where it was read.
   explicit DictionaryWordSelectActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
-                                        std::unique_ptr<Page> page, int marginLeft, int marginTop)
+                                        std::unique_ptr<Page> page, int marginLeft, int marginTop,
+                                        std::string bookTitle = "")
       : Activity("DictionaryWordSelect", renderer, mappedInput),
         page(std::move(page)),
         marginLeft(marginLeft),
-        marginTop(marginTop) {}
+        marginTop(marginTop),
+        bookTitle(std::move(bookTitle)) {}
 
   void onEnter() override;
   void loop() override;
@@ -45,12 +50,14 @@ class DictionaryWordSelectActivity final : public Activity {
   int wordAt(int x, int y) const;
   void moveVertical(int direction);
   void performLookup();
+  word_capture::Meta captureMeta() const;
   bool drawHighlightWithSnapshot();
   void drawHints() const;
 
   std::unique_ptr<Page> page;
   const int marginLeft;
   const int marginTop;
+  const std::string bookTitle;
   int fontId = 0;
   int lineHeight = 0;
 

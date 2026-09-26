@@ -52,6 +52,7 @@ When a word is found, the definition screen shows the matched headword at the to
 HTML dictionaries that declare `sametypesequence=h` use the EPUB text-layout engine for semantic formatting such as headings, bold, italics, lists, and line breaks. Images and CSS styling are ignored. Definitions that are too large or cannot be laid out within the available memory fall back to plain text.
 
 - **Left/Right** or side **Up/Down** — previous / next page
+- **Confirm**, or a tap on the headword — save the word for Anki (see [Study](apps/study.md#words-from-the-dictionary)). Available when the dictionary's folder name starts with a language code, as in `nl-en` or `en-ru-bars`.
 - **Back** — return to word selection
 
 

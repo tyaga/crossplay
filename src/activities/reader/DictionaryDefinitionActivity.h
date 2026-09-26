@@ -9,19 +9,25 @@
 
 #include "activities/Activity.h"
 #include "util/ButtonNavigator.h"
+#include "util/WordCapture.h"
 
 // Paged viewer for one dictionary definition. HTML definitions are laid out
 // through the EPUB chapter parser into styled Pages; anything else (plain
 // text, or HTML too damaged to parse) is word-wrapped once on entry and each
 // page renders spans of the original string, so no per-line copies are held.
+//
+// Confirm, or a tap on the headword, saves the word for Anki when `capture`
+// names a dictionary whose language is known (see util/WordCapture.h).
 class DictionaryDefinitionActivity final : public Activity {
  public:
   explicit DictionaryDefinitionActivity(GfxRenderer& renderer, MappedInputManager& mappedInput, std::string headword,
-                                        std::string definition, bool htmlDefinition = false)
+                                        std::string definition, bool htmlDefinition = false,
+                                        word_capture::Meta capture = {})
       : Activity("DictionaryDefinition", renderer, mappedInput),
         headword(std::move(headword)),
         definition(std::move(definition)),
-        htmlDefinition(htmlDefinition) {}
+        htmlDefinition(htmlDefinition),
+        capture(std::move(capture)) {}
 
   void onEnter() override;
   void onExit() override;
@@ -47,6 +53,8 @@ class DictionaryDefinitionActivity final : public Activity {
   void wrapText();
   int measureSpan(int fontId, const char* text, size_t len) const;
   void drawBody(int fontId, int x, int startY) const;
+  int headerBottom() const;
+  void saveWord();
 
   const std::string headword;
   // Not const: onEnter() normalizes embedded NULs (StarDict multi-type
@@ -61,4 +69,11 @@ class DictionaryDefinitionActivity final : public Activity {
   int totalPages = 1;
   int linesPerPage = 1;
   ButtonNavigator buttonNavigator;
+
+  word_capture::Meta capture;
+  // True once the raw entry is on the card for saveWord() to copy: the styled
+  // path frees `definition` as soon as it is laid out.
+  bool canSave = false;
+  char notice[64] = "";
+  unsigned long noticeUntil = 0;
 };

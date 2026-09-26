@@ -870,7 +870,8 @@ if [ -n "$STUDY_PY" ]; then
               "tools_local/study/test_web_glue.py" \
               "tools_local/study/test_web_glue.py --from-zip" \
               "tools_local/study/test_slug_parity.py" \
-              "tools_local/study/test_font_parity.py"; do
+              "tools_local/study/test_font_parity.py" \
+              "tools_local/study/test_words_to_anki.py"; do
     step="$(echo "$args" | sed 's|tools_local/study/||')"
     # One log per step: a failing step's output used to be overwritten by the
     # next step's, so the tail printed on failure showed a suite that passed.
@@ -898,6 +899,17 @@ if (cd "$REPO" && python3 tools_local/study/test_convert_text.py) \
 else
   printf "  %-12s FAILED\n" "converttext"
   tail -10 "$LOGS/study-convert-text.log" | sed 's/^/      /'
+  FAILED=1
+fi
+
+# What a dictionary entry becomes on a flashcard saved from the reader.
+# Standard library only, like the text rules above.
+if (cd "$REPO" && python3 tools_local/study/test_dict_card.py) \
+    > "$LOGS/study-dict-card.log" 2>&1; then
+  printf "  %-12s ok\n" "dictcard"
+else
+  printf "  %-12s FAILED\n" "dictcard"
+  tail -10 "$LOGS/study-dict-card.log" | sed 's/^/      /'
   FAILED=1
 fi
 

@@ -5,6 +5,7 @@
 #include <I18n.h>
 
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <cstdio>
 
@@ -23,6 +24,8 @@ constexpr size_t MAX_LINE_BYTES = 191;
 // Body text left/right inset, matching the reader's default feel.
 constexpr int SIDE_PADDING = 20;
 
+constexpr unsigned long NOTICE_DURATION_MS = 1500;
+
 // Styled-path ceiling: the laid-out Pages keep the whole definition resident
 // (TextBlock arenas ≈ text + ~7 bytes/word plus per-line objects), roughly
 // doubling the string's footprint while this activity is stacked over the
@@ -37,6 +40,9 @@ void DictionaryDefinitionActivity::onEnter() {
   // Normalize StarDict multi-type separators so the wrap loop and the
   // C-string font APIs below both see the whole definition.
   std::replace(definition.begin(), definition.end(), '\0', '\n');
+  capture.headword = headword;
+  capture.html = htmlDefinition;
+  canSave = !word_capture::languageOf(capture.dictionary).empty() && word_capture::rememberEntry(definition);
   if (!(htmlDefinition && definition.size() <= MAX_STYLED_HTML_BYTES && layoutHtmlPages())) {
     definition = htmlToPlainText(definition);
     wrapText();
@@ -197,17 +203,58 @@ void DictionaryDefinitionActivity::wrapText() {
   currentPage = 0;
 }
 
+int DictionaryDefinitionActivity::headerBottom() const {
+  const auto& metrics = UITheme::getInstance().getMetrics();
+  const bool isInverted = renderer.getOrientation() == GfxRenderer::Orientation::PortraitInverted;
+  return (isInverted ? metrics.buttonHintsHeight : 0) + metrics.topPadding + metrics.headerHeight;
+}
+
+void DictionaryDefinitionActivity::saveWord() {
+  switch (word_capture::save(capture)) {
+    case word_capture::Result::Saved: {
+      std::string lang = word_capture::languageOf(capture.dictionary);
+      for (char& ch : lang) ch = static_cast<char>(std::toupper(static_cast<unsigned char>(ch)));
+      snprintf(notice, sizeof(notice), tr(STR_DICT_WORD_SAVED), lang.c_str());
+      break;
+    }
+    case word_capture::Result::AlreadySaved:
+      snprintf(notice, sizeof(notice), "%s", tr(STR_DICT_WORD_ALREADY_SAVED));
+      break;
+    case word_capture::Result::Failed:
+      snprintf(notice, sizeof(notice), "%s", tr(STR_DICT_WORD_SAVE_FAILED));
+      break;
+  }
+  noticeUntil = millis() + NOTICE_DURATION_MS;
+  requestUpdate();
+}
+
 void DictionaryDefinitionActivity::loop() {
   if (mappedInput.wasReleased(MappedInputManager::Button::Back)) {
     finish();
     return;
   }
 
+  if (noticeUntil != 0 && static_cast<long>(millis() - noticeUntil) >= 0) {
+    noticeUntil = 0;
+    notice[0] = '\0';
+    requestUpdate();
+  }
+
+  if (canSave && mappedInput.wasReleased(MappedInputManager::Button::Confirm)) {
+    saveWord();
+    return;
+  }
+
   // Same tap zones as the reader page turns: left third = previous page,
-  // the rest = next. Back is the usual left-edge swipe.
+  // the rest = next. Back is the usual left-edge swipe. The header band is
+  // the save target, so a mouse or a finger can save without Confirm.
   int tx = 0;
   int ty = 0;
   if (mappedInput.wasScreenTapped(tx, ty)) {
+    if (canSave && ty < headerBottom()) {
+      saveWord();
+      return;
+    }
     if (tx < renderer.getScreenWidth() / 3) {
       if (currentPage > 0) {
         currentPage--;
@@ -291,8 +338,9 @@ void DictionaryDefinitionActivity::render(RenderLock&&) {
   scope.endScanAndPrewarm();
   drawBody(fontId, contentX + SIDE_PADDING, bodyStartY);
 
-  const auto labels =
-      mappedInput.mapLabels(tr(STR_BACK), "", (currentPage > 0 ? "<" : ""), (currentPage + 1 < totalPages ? ">" : ""));
+  const auto labels = mappedInput.mapLabels(tr(STR_BACK), canSave ? tr(STR_DICT_SAVE_WORD) : "",
+                                            (currentPage > 0 ? "<" : ""), (currentPage + 1 < totalPages ? ">" : ""));
   GUI.drawButtonHints(renderer, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
+  if (notice[0] != '\0') GUI.drawPopup(renderer, notice);
   renderer.displayBuffer();
 }
