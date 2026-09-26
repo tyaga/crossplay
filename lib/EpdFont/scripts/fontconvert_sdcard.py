@@ -39,9 +39,14 @@ from cpfont_version import CPFONT_VERSION
 INTERVAL_PRESETS = {
     "ascii":       [(0x0020, 0x007E)],
     "latin1":      [(0x0080, 0x00FF)],
+    # Combining Diacritical Marks are here rather than in a script preset
+    # because they are script-neutral: U+0301 marks stress over Cyrillic in a
+    # bilingual dictionary as readily as it marks a Latin vowel. The built-in
+    # fonts carry the block, so a font missing it draws U+FFFD where the
+    # built-in face draws the accent.
     "latin-ext":   [(0x0020, 0x007E), (0x0080, 0x00FF), (0x0100, 0x024F),
-                    (0x02B0, 0x02FF), (0x1E00, 0x1EFF), (0x2000, 0x206F),
-                    (0xFB00, 0xFB06)],
+                    (0x02B0, 0x02FF), (0x0300, 0x036F), (0x1E00, 0x1EFF),
+                    (0x2000, 0x206F), (0xFB00, 0xFB06)],
     "greek":       [(0x0370, 0x03FF), (0x1F00, 0x1FFF)],
     "cyrillic":    [(0x0400, 0x04FF), (0x0500, 0x052F)],
     "hebrew":      [(0x0590, 0x05FF), (0xFB1D, 0xFB4F)],
