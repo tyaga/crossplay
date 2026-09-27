@@ -14,6 +14,7 @@
 #include "../../activities/network/WifiSelectionActivity.h"
 #include "../../components/UITheme.h"
 #include "../../util/QrUtils.h"
+#include "../../util/WordCapture.h"
 #include "../Shelf.h"
 #include "../ui/Toybox.h"
 #include "../ui/ToyboxFonts.h"
@@ -2332,11 +2333,22 @@ void StudyActivity::runSyncFlow() {
     }
   }
 
+  // Words saved from the dictionary ride along, a batch at a time: the POST
+  // is built whole in RAM beside the reviews, so it is capped, and what does
+  // not fit goes with the next sync.
+  std::vector<study::StudySync::WordPayload> words;
+  if (!secondPass_) {
+    for (auto& w : word_capture::collectForSync(16, 3 * 1024, 32 * 1024)) {
+      words.push_back({std::move(w.file), std::move(w.bytes)});
+    }
+  }
+
   std::string job;
   std::string message;
   std::vector<std::pair<std::string, uint32_t>> acks;
+  std::vector<std::string> wordsAccepted;
   flowStage(studyui::SyncStage::Send, "Sending your reviews.");
-  if (!sync_.syncStart(bridge_, payloads, job, acks, message)) {
+  if (!sync_.syncStart(bridge_, payloads, words, job, acks, wordsAccepted, message)) {
     if (sync_.unpaired) {
       // The token was revoked on the bridge. Clear it, or this refusal
       // repeats forever; the next SYNC walks through pairing again.
@@ -2351,6 +2363,11 @@ void StudyActivity::runSyncFlow() {
   }
   payloads.clear();
   payloads.shrink_to_fit();
+  words.clear();
+  words.shrink_to_fit();
+  // Held by the bridge from here, as the reviews are: its answer is the ack.
+  word_capture::removeSent(wordsAccepted);
+  if (!secondPass_) wordsSent_ = static_cast<int>(wordsAccepted.size());
   // The ack is valid the moment the POST answered: the reviews are durable in
   // the bridge's journal even if everything after this fails.
   for (const auto& ack : acks) {
@@ -2525,7 +2542,14 @@ void StudyActivity::runSyncFlow() {
   secondPass_ = false;
 
   flow_.factCount = 0;
-  if (reviewCount > 0) {
+  if (reviewCount > 0 && wordsSent_ > 0 && sync_.reviewsMissing == 0) {
+    // One line for both: there are three, and the decks and the time need two.
+    std::snprintf(flow_.factLines[flow_.factCount++], sizeof(flow_.factLines[0]), "%d REVIEW%s, %d WORD%s SENT",
+                  reviewCount, reviewCount == 1 ? "" : "S", wordsSent_, wordsSent_ == 1 ? "" : "S");
+  } else if (reviewCount == 0 && wordsSent_ > 0) {
+    std::snprintf(flow_.factLines[flow_.factCount++], sizeof(flow_.factLines[0]), "%d WORD%s SENT TO ANKI", wordsSent_,
+                  wordsSent_ == 1 ? "" : "S");
+  } else if (reviewCount > 0) {
     // Corrected in place rather than added as a fourth line: there is room for
     // three, and the line that needs fixing is this one. "40 SENT" beside a
     // silent drop of 3 is the claim that misleads.

@@ -3,6 +3,7 @@
 #include <cstdio>
 
 #include "../../components/icons/listIcons.h"
+#include "StudySync.h"
 
 namespace studyui {
 
@@ -13,7 +14,7 @@ void chrome(toybox::Screen& screen, const char* title) {
   header.title = title;
   // header() takes these styles as given rather than resolving them against the
   // band, so an unset style renders black on black and simply is not there.
-  // Screen substitutes smallText, which is black. Same trap Connections hit.
+  // Screen substitutes smallText, which is black.
   header.subtitleText = fui::TextStyle{};
   header.subtitleText.font = toybox::kUiFont;
   header.subtitleText.color = fui::Color::White;
@@ -23,8 +24,8 @@ void chrome(toybox::Screen& screen, const char* title) {
   toybox::headerBand(screen, header);
 }
 
-// The same corner brackets the chess board and the Connections grid wear. Two
-// screens that share a bracket read as one device.
+// The same corner brackets the battleship grid and the player screen wear.
+// Screens that share a bracket read as one device.
 void brackets(toybox::Screen& screen, const fui::Rect& box, const int arm) {
   const fui::Paint ink = fui::Paint::solid(fui::Color::Black);
   const int w = toybox::kFrame;
@@ -681,10 +682,11 @@ fui::Rect buildPairQr(toybox::Screen& screen, const char* code) {
   screen.target().text(fui::makeRect(body.x, codeY, body.width, 48), code,
                        syncText(toybox::kDisplayFont, fui::TextAlign::Center));
 
+  char signIn[96];
+  std::snprintf(signIn, sizeof(signIn), "Sign in at %s/pair first, then scan this code.", study::kBridgeHost);
   screen.target().text(
       fui::makeRect(body.x + toybox::kMargin, codeY + 48 + toybox::kMargin, body.width - toybox::kMargin * 2, 116),
-      "Sign in at sync.ma-r-s.com/pair first, then scan this code.",
-      syncText(toybox::kUiFont, fui::TextAlign::Center, fui::Color::DarkGray, 3));
+      signIn, syncText(toybox::kUiFont, fui::TextAlign::Center, fui::Color::DarkGray, 3));
   // Overflow is invisible in these cuts: the renderer appends U+2026 and the
   // face has no glyph for it, so a long line simply stops mid-word -- which
   // is how the clause telling a nervous user they may refuse went missing.

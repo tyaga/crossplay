@@ -177,7 +177,14 @@ jobs:
       # CI when the ref is missing.
       - name: Fetch upstream's tip, for the docs ownership checks
         run: |
-          git fetch --no-tags --depth=1 \
+          # NOT --depth=1. Ownership checks ask for the MERGE BASE, and a
+          # depth-1 fetch has no ancestry to compute one from -- settingsorder
+          # then SKIPPED here, which is the only environment it runs in, so
+          # the suite silently tested nothing. --shallow-since reaches past
+          # any realistic sync cadence and still fetches a fraction of the
+          # history. If a sync ever predates this window the suites say so
+          # rather than skipping.
+          git fetch --no-tags --shallow-since='6 months ago' \
             https://github.com/crosspoint-reader/crosspoint-reader.git \
             develop:refs/remotes/crosspoint/develop
           git rev-parse --verify crosspoint/develop
@@ -202,8 +209,8 @@ jobs:
   # relwatch runs a real postgres in docker, and it gets its OWN runner.
   #
   # It shared the build job until 2026-09-04, where it failed four pull
-  # requests whose diffs could not touch a database -- a Forehead word list, a
-  # worktree script, a trivia pack and a docs change. Two timeout bumps (60 ->
+  # requests whose diffs could not touch a database -- a word list, a
+  # worktree script, a content pack and a docs change. Two timeout bumps (60 ->
   # 180 -> 420) and a pre-pull of the image all failed, because none of them
   # was the problem: the container's own log showed it had not begun
   # INITIALISING seven minutes after `docker run` returned, with the image

@@ -36,8 +36,8 @@ build.**
 ### Why the exception is not a formality
 
 A per-branch device build mostly re-measures something that is superseded on the
-next merge. Flash size is a property of the SUM, not of any branch: Instapaper
-measured 79.5% alone and 78.8% once merged. The only run that ever measures what
+next merge. Flash size is a property of the SUM, not of any branch: one app
+branch measured 79.5% alone and 78.8% once merged. The only run that ever measures what
 ships is the release gate.
 
 But that argument collapses for device-only code. **The simulator target does

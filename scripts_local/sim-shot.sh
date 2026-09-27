@@ -51,8 +51,8 @@ echo "full log: $LOG"
 # not. A glyph the face lacks draws as nothing at all, so at every cut above 10
 # an overflowing line does not arrive as a clipped word or a box character --
 # the sentence just stops, at a plausible-looking place, and the screenshot
-# looks fine. FOREHEAD shipped two of these: a settings row reading "RE" and a
-# first run whose only sentence ran off the side.
+# looks fine: a settings row reads "RE", or a first run's only sentence runs
+# off the side.
 #
 # The corollary is this gate's coverage: an overflow at the 10px cut draws a
 # real "..." and logs nothing, so the gate cannot see it -- and does not need
@@ -70,18 +70,17 @@ if grep -q "No glyph for codepoint" "$LOG"; then
   # overflow case. Anything else is a character reaching drawText that the face
   # cannot draw at all, which is usually unsanitised text from outside: a
   # newline (10) out of a network feed, or an accented letter out of a filename.
-  # Pointing the second case at measure.py sends the reader hunting a width
+  # Treating the second case as an overflow sends the reader hunting a width
   # problem that does not exist.
   if grep -q "No glyph for codepoint 8230" "$LOG"; then
     echo "FAILED: text OVERFLOWED and was truncated with U+2026, which this face"
     echo "        does not carry, so the sentence just stops and looks deliberate."
     grep -n "No glyph for codepoint 8230" "$LOG" | sed "s/^/  /" | head -6
-    echo "  Measure it with tools_local/forehead/measure.py <cut> <text>"
-    echo "  then shorten the string, drop a cut, or widen the box."
+    echo "  Shorten the string, drop a cut, or widen the box."
   fi
   if grep "No glyph for codepoint" "$LOG" | grep -qv "codepoint 8230"; then
     echo "FAILED: a character reached drawText that this face cannot draw at all."
-    echo "        NOT an overflow. measure.py will not explain this one."
+    echo "        NOT an overflow: the string needs sanitising, not shortening."
     grep -n "No glyph for codepoint" "$LOG" | grep -v "codepoint 8230" | sed "s/^/  /" | head -6
     echo "  Codepoint 10 is a newline; anything above 126 is outside Jersey ASCII."
     echo "  Both usually mean text from OUTSIDE the firmware -- a network feed, a"

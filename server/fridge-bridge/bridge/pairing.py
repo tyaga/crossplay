@@ -1,10 +1,10 @@
 """Pairing: the reader shows a code, a browser claims it, the reader collects
 its token.
 
-Shaped after server/read-bridge/bridge/pairing.py, with two deliberate
+Shaped after server/study-bridge/bridge/pairing.py, with two deliberate
 departures.
 
-SIX DIGITS, NOT EIGHT LETTERS. The read and study bridges show an 8-character
+SIX DIGITS, NOT EIGHT LETTERS. The study bridge shows an 8-character
 code because it is scanned off a QR or typed by the person holding the device.
 This one is read down a TELEPHONE to somebody in another country -- that is the
 entire reason Live uses a code rather than a QR, because a QR can only be

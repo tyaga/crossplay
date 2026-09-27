@@ -1,7 +1,7 @@
 # Building an app for this device
 
-What we learned building Chess. Read this before writing a second app; most of it
-was paid for with a mistake.
+What we learned building the apps on the shelf. Read this before writing a new
+one; most of it was paid for with a mistake.
 
 Three companion docs: [LOCAL_SCOPE.md](../LOCAL_SCOPE.md) for why the fork is
 shaped the way it is, [shelf.md](shelf.md) for the mechanical
@@ -56,9 +56,9 @@ simulator's `HalGPIO.cpp`, which answers it in four lines.
 
 ### Seed the card to render a state honestly
 
-A screenshot of an empty save file is not a screenshot of the design. The
-Connections menu draws sixteen days of your record; on a fresh agent card all
-sixteen cells are empty and the layout looks like it has a hole in it. Write a
+A screenshot of an empty save file is not a screenshot of the design. A menu
+that draws your record draws empty cells on a fresh agent card, and the layout
+looks like it has a hole in it. Write a
 plausible save to `fs_agent/.crosspoint/` before rendering, so what you judge is
 what the user will actually see. This is not the same as faking a result: the
 data is real input to real code, and the code is the thing under test.
@@ -158,14 +158,14 @@ Activity.** That is the SDK's own shape, and it buys two things that are not
 optional:
 
 ```cpp
-// ChessScreens.cpp -- freestanding: no renderer, no Activity, no storage.
-void buildSettings(toybox::Screen& screen, const SettingsModel& model);
+// SolitaireScreens.cpp -- freestanding: no renderer, no Activity, no storage.
+void buildMenu(toybox::Screen& screen, const MenuModel& model);
 
-// ChessActivity.cpp -- fills the model, supplies the target, draws the board.
+// SolitaireActivity.cpp -- fills the model, supplies the target, draws the board.
 toybox::Frame frame(target, target.deviceContext(), noInput, interactions);
 toybox::Screen screen(frame, toybox::themeTokens());
-chessui::buildSettings(screen, settingsModel());
-toybox::reportOverflow(interactions, "Chess settings");
+buildMenu(screen, menuModel());
+toybox::reportOverflow(interactions, "Solitaire");
 ```
 
 **Always go through `freeink::ui::Screen`, never the components directly.**
@@ -189,8 +189,8 @@ already carries the page margin, or the rows indent twice.
 and silently drops controls past the limit: a control that draws normally and
 cannot be tapped, with no log line. `toybox::reportOverflow()` is one call.
 
-What stays hand-drawn is the app's own surface: the chess board, its pieces, the
-capture strips. The SDK is explicit that app-specific rendering keeps its own
+What stays hand-drawn is the app's own surface: the card tableau, the
+Battleship grid. The SDK is explicit that app-specific rendering keeps its own
 slot rect, and that boundary is the right one. Do not try to express a game
 board as components.
 
@@ -209,8 +209,8 @@ freestanding and therefore host-testable. Do not "upgrade" a screen to
 
 ### One activation path
 
-Touch and buttons must converge on a single function. In Chess both the tap
-handler and Confirm call `handleSquareActivated()`. Two paths drift, and on a
+Touch and buttons must converge on a single function: the tap handler and
+Confirm call the same activation method. Two paths drift, and on a
 device with both inputs the drift is invisible until someone uses the one you
 did not test.
 
@@ -252,15 +252,15 @@ overlapping decoration.
 
 ### Guard on the condition, not on a proxy for it
 
-Chess handed off to the engine on `if (!gameOver)`, which was a correct proxy
-right up until two-player mode existed, at which point the engine happily
-answered a human opponent. The guard had to be `engineToMove()`, the thing
+A game that hands off to its engine on `if (!gameOver)` has a correct proxy
+right up until two-player mode exists, at which point the engine happily
+answers a human opponent. The guard has to be `engineToMove()`, the thing
 actually being asked. Proxies are how a feature breaks a neighbour that was
 written before it.
 
 ### Slow work goes off the render path, one pass later
 
-The engine search is deferred by one loop pass after the human's move, so the
+Defer an engine search by one loop pass after the human's move, so the
 repaint showing the move and "THINKING" lands _before_ the search starts. Do the
 same for anything slow. And bound it: the search takes a **node budget**, not a
 time limit, because node counts are deterministic and a test can assert on them.
@@ -274,8 +274,8 @@ before assuming a hang.
 ### e-ink timing, and what it costs
 
 A partial refresh is ~0.3s; a full one 1-2s. **Every state change you show costs
-a refresh.** Chess spends exactly two per move: one to acknowledge yours, one to
-show the reply. That is the floor if you want your own move drawn immediately.
+a refresh.** A turn-based game spends exactly two per move: one to acknowledge
+yours, one to show the reply. That is the floor if you want your own move drawn immediately.
 
 Battery is not the constraint people expect. A 60-move game is ~120 partial
 refreshes plus about a minute of extra CPU against a 1100mAh cell: a fraction of
@@ -290,13 +290,9 @@ app**, H is the capacitive Home key, mouse is touch.
 **Games in this fork are touch-only, and that is deliberate.** Upstream's rule
 that every screen must also work with buttons exists because the X3 and X4 have
 no touch panel; this fork targets the X4 Pro, which does. Building button
-navigation anyway means a cursor, a focus model, and their bugs -- Connections
-carried a cursor index that survived a month change and drew a black square
-meaning nothing, which is the entire value that support delivered. Back leaves a
+navigation anyway means a cursor, a focus model, and their bugs: a cursor index
+that survives a state change draws a black square meaning nothing. Back leaves a
 screen; everything else is a tap.
-
-Chess still has a board cursor from before this was settled. Left alone rather
-than ripped out mid-session, but it is the same call whenever it next comes up.
 
 ---
 
@@ -376,11 +372,9 @@ the 64px cut in BODY and `cardFaces()` puts 64 in TITLE and 44 in SMALL, so on
 those screens a hand-rolled "step down" steps up. `fittedTitle` orders its rungs
 by what `lineHeight()` answers, so it cannot.
 
-`host-tests/fittedtitle/` walks the real strings of EIGHT screens -- the
-dungeon's guide and its 65 names, Forehead's categories, the linkplay games, Toy
-Battle's maps and how-to, every date the Connections header can format, the
-Hacker News reader's headlines and every comic title in the pack -- through the
-real builders, with a target that measures in the real cuts. It fails on any
+`host-tests/fittedtitle/` walks the real strings of the shelf's screens -- the
+linkplay games, the Hacker News reader's headlines and every comic title in the
+pack -- through the real builders, with a target that measures in the real cuts. It fails on any
 string cut short while a cut that screen bound would have shown it whole.
 
 Eight screens, not all of them: about twenty files call `headerBand` and this
@@ -485,10 +479,10 @@ the cheapest big win available to every app's appearance.
 **Arduino.h turns some ordinary method names into something else.** It defines
 `word(...)` as a function-like macro expanding to `makeWord(...)`, so a perfectly
 reasonable `Round::word()` becomes `Round::makeWord()` in every translation unit
-that reaches Arduino -- and _only_ there. Insider's rules compiled, its screens
-compiled, every host test passed and the simulator ran the whole game; the
-device build failed at link with `undefined reference to
-insider::Round::makeWord()`, naming a method that appears in no source file.
+that reaches Arduino -- and _only_ there. The rules compile, the screens
+compile, every host test passes and the simulator runs the whole game; the
+device build fails at link with `undefined reference to Round::makeWord()`,
+naming a method that appears in no source file.
 
 The shape is what to remember: the freestanding layers this fork is built around
 never see `Arduino.h`, so a collision like this is invisible to everything green
@@ -564,11 +558,11 @@ invisible header title -- are both pinned there now.
 
 ### Pure logic goes in a freestanding module
 
-`ChessCore` and `ChessEngine` have no Arduino, no renderer, no heap. That is the
-whole reason 2940 assertions can run on a laptop in a second:
+`SolitaireCore` has no Arduino, no renderer, no heap. That is the whole reason
+its assertions run on a laptop in a second:
 
 ```bash
-./host-tests/chess/run.sh
+./host-tests/solitaire/run.sh
 ```
 
 Structure every app this way. Rules, state machines, generators, scoring: all of
@@ -611,9 +605,8 @@ whole integration.
 Record the result there and go to whatever screen shows the finished game. Do
 **not** record it in `gameLoop()`: the moment the match ends, the link layer
 stops giving your game the pass, so anything at the end of `gameLoop()` is
-unreachable in multiplayer. Five games were written that way and none of them
-ever counted a single link match -- no crash, no log, just a tally that stayed
-at zero -- which is why the hook is pure virtual rather than defaulted.
+unreachable in multiplayer: no crash, no log, just a tally that stays at zero --
+which is why the hook is pure virtual rather than defaulted.
 
 The layer then keeps your final screen on the panel for a couple of seconds
 before it offers another game, so the player who just lost sees the move that
@@ -624,13 +617,13 @@ The row is called **PLAY NEARBY** in every game, and it carries the mark below.
 Do not invent another wording: "click where it says multiplayer" only works if
 something says it, and NEARBY is what it is -- somebody in the room, not a
 server and not a friends list. `loop()` and `render()` are `final` on purpose: the tick has
-to run before every one of your early returns, and chess's first early return is
-a settings overlay, so a tick written anywhere else died whenever somebody
-opened one for ten seconds.
+to run before every one of your early returns, and a first early return that is
+a settings overlay would kill a tick written anywhere else whenever somebody
+opened it for ten seconds.
 
 Battleship is the proof this is a layer rather than a pattern to copy. It writes
-those methods and **zero screens**; the two hundred lines chess used to hold now
-live in `LinkActivity` and neither game can drift from the other.
+those methods and **zero screens**; the pairing and match chrome live in
+`LinkActivity`, so no game can drift from another.
 
 #### The mark
 
@@ -663,8 +656,8 @@ moves, re-check its background.
 
 Rules that are worth knowing:
 
-- **Send the whole shared state, never the move.** Board games are tiny (chess
-  ~90 bytes as FEN, battleship 50, connect four 11), and whole states make
+- **Send the whole shared state, never the move.** Board games are tiny
+  (battleship is 50 bytes), and whole states make
   desync structurally impossible: a lost packet is a stale frame the next one
   corrects.
 - **A secret inside a shared state is a drawing discipline, not a guarantee.**
@@ -703,7 +696,7 @@ Rules that are worth knowing:
   name.
 - **Show the opponent's face during the match, not only while pairing.**
   `linkui::withOpponentFace()` takes the left of a status band, draws them, and
-  returns what is left for the capsule. Both link games call it, so neither can
+  returns what is left for the capsule. Every link game calls it, so none can
   place it differently. The first version showed faces only on the shared
   pairing screen, which meant the person you were playing disappeared the moment
   you started playing them.
@@ -715,15 +708,15 @@ Rules that are worth knowing:
   mistake: a fixture more convenient than the real caller stops testing the real
   caller.
 - **Put a name in a sentence with `player::shortName()`, never whole.** A name is
-  three words and up to twenty characters. "SHAGGY SLEEPY GOATEE'S MOVE" ran past
-  chess's status capsule and the component dropped _"MOVE"_ -- the word carrying
-  the meaning -- with no ellipsis and no log line. Battleship's "%s SANK YOUR %s"
-  had the same shape. Their first word always fits and reads better anyway.
+  three words and up to twenty characters. "SHAGGY SLEEPY GOATEE'S MOVE" runs past
+  a status capsule and the component drops _"MOVE"_ -- the word carrying the
+  meaning -- with no ellipsis and no log line. Battleship's "%s SANK YOUR %s"
+  has the same shape. Their first word always fits and reads better anyway.
 
 Tests live in `host-tests/link/`, and `test_play.cpp` drives the layer through
 the loop ordering a game author would plausibly get _wrong_, on a link that
-drops, duplicates and reorders. `test_chesslink.cpp` and
-`test_battleshiplink.cpp` play whole games of the real thing through it, on a
+drops, duplicates and reorders. `test_battleshiplink.cpp` plays whole games of
+the real thing through it, on a
 link that drops, duplicates and reorders. Add your game's state type to that
 soak rather than trusting the device -- battleship's version pins the bug that
 no divergence check can see, where your own fleet is wiped by their first packet
@@ -752,17 +745,14 @@ looks -- the Home gesture and deep sleep both replace the activity, and
 `replaceActivity()` runs the outgoing `onExit()` first -- but writing only there
 still loses everything to a panic, a watchdog reset or a flat battery, and it
 makes what survives depend on which fields that one function happens to
-serialise. WAVELENGTH shipped an `onExit()` that dutifully wrote the all-time
-record and nothing about the round in progress, so a cold agent pressed Home
-one key from Back and lost the round, the hidden number and the session score.
-Fixing `onExit()` would not have helped; the round had never been written down.
+serialise. An `onExit()` that dutifully writes the all-time record and nothing
+about the round in progress loses the round to a Home press one key from Back,
+and fixing `onExit()` does not help: the round was never written down.
 
 The shape that works, and it is worth copying:
 
 - **A freestanding `pack()` / `unpack()` module beside the rules**, taking no
-  renderer and no storage, so the round-trip is host-testable. See
-  `src/apps_local/wavelength/WavelengthSave.{h,cpp}` and its tests in
-  `host-tests/wavelength/`. Version the file and make `unpack` accept the older
+  renderer and no storage, so the round-trip is host-testable. Version the file and make `unpack` accept the older
   version rather than rejecting it, or an upgrade throws away a year of record.
 - **Write on every state change**, not on the way out: the screen change and the
   cursor move both. It is around a hundred bytes beside a panel repaint that
@@ -772,8 +762,7 @@ The shape that works, and it is worth copying:
   place empties the file at open: power lost in that window leaves nothing at
   all, and going from one write a game to fifteen a round multiplies that
   window by fifteen. Write to `<name>.tmp`, `flush()`, release the handle,
-  check the byte count, then `remove` + `rename`. `ConnectionsActivity::
-  saveResult()` is the reference. Without this the frequent-write rule above
+  check the byte count, then `remove` + `rename`. Without this the frequent-write rule above
   trades a small loss mode for a total one, which is worse than what it fixed.
 - **Refuse to resume what the file cannot support.** A screen number is only
   meaningful with the state behind it, so validate before restoring and fall
@@ -785,10 +774,6 @@ The shape that works, and it is worth copying:
   outlives the thing it belonged to is its own bug, and it is the one this
   mechanism introduces.
 
-Chess reached the first half of this on its own and says so at the call site: it
-saves on the completed move rather than the completed game. TOY BATTLE and
-JAIPUR still write only in `onExit()` and on the way out to their own menus.
-
 **A match is not your saved game.** This is the one that bit hardest: three
 separate defects, all the same shape. Two rules, and each wants a different
 mechanism:
@@ -796,13 +781,12 @@ mechanism:
 - _Never write your save during a match._ The position on screen is the shared
   game, and your save file is what you restore from when the match ends. No
   caller ever wants the other behaviour, so put the check inside your save
-  function, not at each call site. Chess had this wrong in `Back` and again in
-  `onExit` -- and `onExit` is the one that matters, because it runs on sleep,
-  which the player triggers by doing nothing.
+  function, not at each call site. `onExit` is the call site that matters,
+  because it runs on sleep, which the player triggers by doing nothing.
 - _Never restart a shared board alone._ This one is NOT a guard in your reset
   function, because an agreed rematch legitimately resets during a match. The
   distinction is authorised versus unilateral, and only the caller's intent
-  knows which. So give the intent one home -- chess funnels every "new game"
+  knows which. So give the intent one home -- Battleship funnels every "new game"
   door through `requestNewGame()`, which asks in a match and resets when solo.
   A new door cannot choose wrong because there is no choice left at the call
   site.
@@ -813,10 +797,10 @@ belongs in one funnel. Guards at call sites are what let it recur.
 
 One trap the layer cannot save you from: **gate your board input on the turn.**
 It refuses an out-of-turn `play()`, but nothing stops your app from mutating its
-own state first and only then discovering it cannot send it. Chess had exactly
-that bug in `handleSquareActivated`, and two simulators are what found it.
+own state first and only then discovering it cannot send it; two simulators are
+what find it.
 
-Battleship then found the subtler version of the same thing, which is worth
+Battleship found the subtler version of the same thing, which is worth
 stating because it looks like a correct guard: it asked whether the rules and
 the link **agreed** about the turn. They agree perfectly when it is the
 opponent's turn, so the tap went through, the board mutated, and the link
@@ -945,7 +929,7 @@ can fail".
 | Avatar artwork + generator    | `assets_local/avatar/`, `tools_local/avatar/gen_avatar.sh` |
 | Local multiplayer             | `src/apps_local/link/`, freestanding                |
 | Multiplayer, the game's half  | inherit `link/LinkActivity.h` (not freestanding)    |
-| Host tests: rules             | `host-tests/chess/run.sh`                           |
+| Host tests: rules             | `host-tests/solitaire/run.sh`                       |
 | Host tests: multiplayer       | `host-tests/link/run.sh`                            |
 | Host tests: battleship        | `host-tests/battleship/run.sh`                      |
 | Host tests: screens           | `host-tests/ui/run.sh`                              |

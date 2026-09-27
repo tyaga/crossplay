@@ -14,8 +14,8 @@
 #      `contributing/` among them, while three files in that directory were
 #      almost entirely this fork's and a fourth did not exist upstream at all.
 #      That file's whole job is saying who wrote what.
-#   3. `LOCAL_SCOPE.md` said "twenty-one apps, seventeen games" long after the
-#      shelf passed both.
+#   3. `LOCAL_SCOPE.md` counted apps and games long after the shelf had moved
+#      past both numbers.
 #
 # Every check here DISCOVERS its expected value -- from `Shelf.cpp`, from the
 # includes, from `crosspoint/develop` -- rather than holding a second copy of
@@ -52,21 +52,6 @@ def read(rel):
         return f.read()
 
 
-WORDS = {
-    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
-    "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12,
-    "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
-    "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
-}
-
-
-def number(token):
-    token = token.strip().lower()
-    if token.isdigit():
-        return int(token)
-    return WORDS.get(token)
-
-
 def key(title):
     """Shelf titles shout, README titles do not, and dirs run words together."""
     return re.sub(r"[^A-Z0-9&]", "", title.upper())
@@ -90,31 +75,22 @@ def shelf_table(name):
     return re.findall(r'\{\s*"([^"]+)"', m.group(1))
 
 
-games = shelf_table("kGames")
-apps = shelf_table("kApps")
-check(bool(games), "Shelf.cpp kGames table not found -- every count below is unmeasured")
-check(bool(apps), "Shelf.cpp kApps table not found -- every count below is unmeasured")
-if not games or not apps:
+folder = shelf_table("kAppsAndGames")
+home = shelf_table("kHomeItems")
+check(bool(folder), "Shelf.cpp kAppsAndGames table not found -- every count below is unmeasured")
+check(bool(home), "Shelf.cpp kHomeItems table not found -- every count below is unmeasured")
+if not folder or not home:
     print(f"{checks} checks, {failed} failed")
     sys.exit(1)
 
 # ---------------------------------------------------------------------------
-# README.md: the headline count, and the two tables under it.
+# README.md: the two tables under "What is on it", one per shelf table.
 # ---------------------------------------------------------------------------
 readme = read("README.md")
 
-m = re.search(r"\*\*(\S+) games and (\S+) apps\*\*", readme)
-check(bool(m), "README.md has no '**N games and M apps**' claim to check")
-if m:
-    said_games, said_apps = number(m.group(1)), number(m.group(2))
-    check(said_games == len(games), "README.md games count",
-          f"says {m.group(1)}, Shelf.cpp kGames has {len(games)}")
-    check(said_apps == len(apps), "README.md apps count",
-          f"says {m.group(2)}, Shelf.cpp kApps has {len(apps)}")
-
 
 def readme_section(heading):
-    m = re.search(r"^### " + heading + r"\s*$(.*?)(?=^#{2,3} |\Z)",
+    m = re.search(r"^### " + re.escape(heading) + r"\s*$(.*?)(?=^#{2,3} |\Z)",
                   readme, re.S | re.M)
     return m.group(1) if m else ""
 
@@ -123,7 +99,8 @@ def bold_rows(text):
     return [key(t) for t in re.findall(r"^\|\s*\*\*([^*]+)\*\*", text, re.M)]
 
 
-for heading, table, label in (("Games", games, "kGames"), ("Apps", apps, "kApps")):
+for heading, table, label in (("On Home", home, "kHomeItems"),
+                              ("Apps & Games", folder, "kAppsAndGames")):
     listed = bold_rows(readme_section(heading))
     want = [key(t) for t in table]
     check(bool(listed), f"README.md '### {heading}' table has no rows")
@@ -134,8 +111,7 @@ for heading, table, label in (("Games", games, "kGames"), ("Apps", apps, "kApps"
     check(not extra, f"README.md '### {heading}' table lists rows {label} does not",
           ", ".join(extra))
     # Length as well as membership. Set comparison alone passes a table that
-    # lists one game twice, which is a table with the wrong number of rows
-    # sitting under a headline count this same suite checks.
+    # lists one app twice.
     check(len(listed) == len(want),
           f"README.md '### {heading}' table has the wrong number of rows",
           f"{len(listed)} rows, {label} has {len(want)}")
@@ -158,14 +134,10 @@ for entry in sorted(os.listdir(apps_local)):
                 nearby_dirs.add(key(entry))
                 break
 
-m = re.search(r"(\w+) of the games play over \*\*PLAY NEARBY\*\*:\s*(.+?)\.",
-              readme, re.S)
-check(bool(m), "README.md has no PLAY NEARBY sentence to check")
+m = re.search(r"^([A-Z][^.\n]*?) plays? over \*\*PLAY NEARBY\*\*", readme, re.M)
+check(bool(m), "README.md has no '<games> play over **PLAY NEARBY**' sentence to check")
 if m:
-    said = number(m.group(1))
-    named = [key(n) for n in re.split(r",\s*|\s+and\s+", m.group(2).strip()) if n.strip()]
-    check(said == len(named), "README.md PLAY NEARBY count disagrees with its own list",
-          f"says {m.group(1)}, names {len(named)}")
+    named = [key(n) for n in re.split(r",\s*|\s+and\s+", m.group(1).strip()) if n.strip()]
     check(set(named) == nearby_dirs,
           "README.md PLAY NEARBY list disagrees with which apps include link/LinkActivity.h",
           f"named-not-linked={sorted(set(named) - nearby_dirs)} "
@@ -257,20 +229,70 @@ for rel in ["README.md", "AGENTS.md"] + [
 # The branch is DISCOVERED, from the remote HEAD git already records, so this
 # check does not become the literal it is guarding.
 # ---------------------------------------------------------------------------
-# origin/HEAD first, but a --single-branch clone and actions/checkout both
-# leave that ref unset, so it cannot be the only source: keying on it alone
-# turned a fresh checkout red. crossplay-ci.yml's own `branches:` filter is the
-# fallback, in the repository, needing no network and no remote.
+# TWO SOURCES, and which one answered decides what can be cross-checked.
+#
+# origin/HEAD is the truthful one, but a --single-branch clone and
+# actions/checkout both leave that ref unset, so it cannot be the only source:
+# keying on it alone turned every clean checkout red. The offline fallback is a
+# `push:` branch filter out of the fork's OWN workflows.
+#
+# It used to name crossplay-ci.yml alone, which went schedule-only when the
+# per-merge builds were dropped -- taking its `branches:` line and this check's
+# only offline source with it. Nobody saw it for a day, because every local run
+# has origin/HEAD set and never reaches the fallback: green on the Mac, red on
+# every clean checkout, which is the one environment resembling a contributor's
+# clone. Plural now, so one workflow losing its trigger cannot repeat it.
+#
+# ONLY crossplay-*.yml. The inherited ci.yml says `branches: [master]`, a
+# branch this fork does not have, and a scan over every workflow would have
+# sent contributors there while staying green.
 _r = subprocess.run(["git", "-C", root, "symbolic-ref", "--short",
                      "refs/remotes/origin/HEAD"], capture_output=True, text=True)
-default_branch = _r.stdout.strip().split("/")[-1] if _r.returncode == 0 else ""
-if not default_branch:
-    _w = re.search(r"^\s*branches:\s*\[([A-Za-z0-9._/-]+)\]",
-                   read(".github/workflows/crossplay-ci.yml"), re.M)
-    default_branch = _w.group(1) if _w else ""
+origin_head = _r.stdout.strip().split("/")[-1] if _r.returncode == 0 else ""
+workflow_branches = {}
+for _fn in sorted(os.listdir(os.path.join(root, ".github/workflows"))):
+    if not _fn.startswith("crossplay-") or not _fn.endswith(".yml"):
+        continue
+    _on = re.search(r"^on:\n(.*?)^\S", read(f".github/workflows/{_fn}"),
+                    re.M | re.S)
+    _push = re.search(r"^  push:\n(.*?)(?=^  \S|\Z)", _on.group(1) if _on else "",
+                      re.M | re.S)
+    _b = re.search(r"^\s*branches:\s*\[([A-Za-z0-9._/-]+)\]",
+                   _push.group(1) if _push else "", re.M)
+    if _b:
+        workflow_branches[_fn] = _b.group(1)
+default_branch = origin_head or next(iter(workflow_branches.values()), "")
 check(bool(default_branch),
-      "neither origin/HEAD nor crossplay-ci.yml names a default branch, "
-      "so the branch a contributor is sent at is unchecked")
+      "no source names this repository's default branch: origin/HEAD is unset "
+      "and no crossplay-*.yml has a push branch filter, so the branch a "
+      "contributor is sent at is unchecked")
+
+# The fork's workflows must name one branch between them. Inert while only one
+# of them has a push filter, and said so rather than counted as a pass: a check
+# with nothing to compare is not evidence that things agree.
+if len(workflow_branches) >= 2:
+    check(len(set(workflow_branches.values())) <= 1,
+          "the fork's workflows disagree about the default branch",
+          ", ".join(f"{k} says {v}" for k, v in sorted(workflow_branches.items())))
+else:
+    print("SKIP docsclaims  only one crossplay-*.yml has a push branch filter, "
+          "so they were NOT cross-checked against each other")
+
+# And the two SOURCES must agree -- but only where both exist. Comparing the
+# fallback against a default it supplied itself is a tautology, and on a clean
+# checkout, where origin/HEAD is unset, that is exactly what it would be. This
+# is the same defect one level up from the one above, so it is reported as not
+# run rather than allowed to pass.
+if origin_head and workflow_branches:
+    for _fn, _b in sorted(workflow_branches.items()):
+        check(_b == default_branch,
+              f".github/workflows/{_fn} fires on a branch that is not the default",
+              f"says `{_b}`, origin/HEAD says `{default_branch}`")
+elif not origin_head:
+    print("SKIP docsclaims  origin/HEAD is unset, so the workflows' branch "
+          "filters were the only source and were NOT checked against the "
+          "remote's own default")
+
 if default_branch:
     BRANCH_INSTRUCTION = re.compile(
         r"^[-*\d.)\s]*(?:Branch from|Target)\s+`([A-Za-z0-9._/-]+)`", re.M | re.I)

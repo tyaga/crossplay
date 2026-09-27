@@ -274,9 +274,8 @@ answer.
 **`api/firmware.js` is the one server-side thing the PAGE cannot do without,
 and it is not optional.** (It is not the only function here: `site/api/` also
 holds `report.js` and `inbox.js` for the report form and the inbox,
-`board-config.js` for the board, and `trivia.js`, which is called by the
-FIRMWARE rather than by any page. This one is the Install button working at
-all.) GitHub serves release assets from
+and `board-config.js` for the board. This one is the Install button working
+at all.) GitHub serves release assets from
 `release-assets.githubusercontent.com`, which sends **no**
 `Access-Control-Allow-Origin` header at all -- so a page cannot `fetch()` a
 release asset, on this site or any other. (The site-wide COEP `require-corp`
@@ -382,9 +381,7 @@ panel:
 - **The network.** `src/http_canned.cpp` replaces `HttpDownloader` and answers
   from `/canned` on the preloaded card. The bodies are real, curled from the
   real endpoints on the day the card was built: the Algolia front page, one
-  story and one article's text, plus a 40-puzzle slice of the published
-  Connections archive cut by `tools_local/wasm/connections_subset.py`, so the
-  archive import lands a real pack here rather than failing outright. A URL
+  story and one article's text. A URL
   with no canned answer fails like an unreachable host and logs itself.
 - **Study's font.** `StudyFonts` wants KaiTi at 50pt and 17pt; the 50pt cut is
   5.5MB and the 17pt one is 714KB, so the card ships the small file under both
@@ -441,11 +438,10 @@ that this is what the device shows.
 **The downsample is the step that gets skipped**, because skipping it looks like
 nothing. `index.html` declares the 1x width and height, so a 2x file has the
 right aspect and the card renders perfectly at four times the bytes -- on a page
-that lazy-loads two dozen of them. The `shoot-*.sh` scripts copied the
-simulator's output straight across, and on 2026-09-01 all four shots they
-produce (trivia, wavelength, toybattle, forehead) were 2x. Two defences now:
+that lazy-loads two dozen of them. A script that copies the
+simulator's output straight across produces 2x files. Two defences:
 `host-tests/site/page_structure.py` compares every shot against the size the
-page declares, and every `shoot-*.sh` ends in `write_site_shot` from
+page declares, and every shot script ends in `write_site_shot` from
 `scripts_local/lib-sim.sh`, which downsamples rather than copying. A shot
 captured by hand still has to go through that function.
 
@@ -554,74 +550,6 @@ knowing before editing:
   declarations and a reviewer restored the identical breakage through three
   others with nothing reported. Reachability itself is measured with
   `elementFromPoint` and a real click, the way the bug was found.
-
-## The Wikipedia page writes the card from the browser
-
-`/wikipedia/` is the install page docs/apps/wikipedia-plan.md describes under
-"The page": two route cards, choose the reader or the card, one bar, and the
-one thing left to do. Static, no framework, no CDN (the COOP/COEP headers
-above forbid one anyway). Three files carry it and a fourth is vendored:
-
-- `wikipedia/plan.js` is the pure half: the manifest check, the two routes and
-  their wording (the plan's, verbatim), which files a tier needs and in what
-  order, which to copy, verify or skip given what the card holds, the
-  ten-second rate window, the twenty-minute rule and the number formats. No
-  DOM, so `host-tests/wikisite/run.sh` pins it under node; the same files run
-  under `bun test site/wikipedia/tests/`.
-- `wikipedia/wikipedia.js` is the browser half: `showDirectoryPicker({mode:
-  "readwrite"})` as the study page does it, the `.crosspoint` check, fetch
-  streamed into `createWritable()` in 2 MB writes with the hash computed as
-  the bytes pass, the markers, the pause, the stops, the screens.
-- `wikipedia/sha256.js` is a streaming SHA-256 (MIT, written here), because
-  `crypto.subtle.digest` is one-shot and a shard is a gigabyte.
-
-**`PACK_BASE_URL` at the top of `wikipedia.js` is where the pack lives:**
-`https://packs.ma-r-s.com/wikipedia/en/`, the Orange Pi behind its own
-Cloudflare Tunnel (`server/packs/`), a stable name pointing at the current
-snapshot. The host answers CORS for any origin (GET, HEAD and OPTIONS,
-exposing Content-Length and Content-Range, Range accepted); without that
-every fetch fails as the browser's opaque "Failed to fetch", which the page
-can only report as a dropped connection. Verified with curl against the
-live host on 2026-09-11; the page's own copy onto a card is the one thing
-that needs a hand on a folder picker.
-
-**What it writes, and in what order.** `wikipedia/` in the chosen folder;
-`dict.zst`, `titles.idx`, `blocks.dir`, then the shards in order up to the
-tier's cut, then `manifest.json` last, as the format doc requires: the device
-treats a pack as present the moment the manifest is there. Beside them the
-page keeps `wikipedia/copied.json`, the files it has written and verified by
-sha256, so a second visit skips them without reading a gigabyte back. A file
-of the right size with no marker (a hand copy, a lost marker) is read back and
-hashed rather than trusted or re-downloaded. Nothing else on the card is
-touched, and a copy that fails leaves no file behind.
-
-**The twenty-minute rule is enforced at every file boundary.** The page
-measures what it has transferred this session, projects the rest of the
-chosen tier at that average rate, and if the projection crosses twenty
-minutes it stops BEFORE the next part and offers the other route (stop at
-the essentials; or eject, take the card out and use the card in the
-computer). "Keep going anyway" silences it for the session. No projection is
-printed or acted on under 4 MB or 2 seconds of transfer; a first small file
-is not a rate. The MB/s on the meter is the rolling ten-second one; the time
-left uses it, or the session average while the window fills.
-
-**Looking at it.** `?mock=1` reads `wikipedia/mock/` instead of the pack
-host. Build the mock once per checkout with `python3 site/wikipedia/mock/
-make_mock.py` (12 MB of seeded noise, gitignored; the manifest it writes is
-committed). Two knobs exist only in mock mode: `&rate=<MB/s>` throttles the
-copy so the meter shows measured numbers, and `&minutes=<n>` shortens the
-budget so the pause is reachable on 12 MB. Both are dead outside `?mock=1`,
-and `.vercelignore` keeps `mock/` off the deploy.
-
-`site/wikipedia/tests/flow.py` drives every state in Chrome (playwright,
-`channel="chrome"`, against a running `serve.py`): the picker is replaced with
-one that hands back the browser's own private filesystem, which is a real
-`FileSystemDirectoryHandle`, so everything after the dialog runs unchanged.
-It asserts the copy, the skip on a second visit, the verify pass, both pauses,
-a dropped connection with Resume, a part that arrives damaged twice, the
-by-hand page for a browser without a picker, and it photographs each one.
-What it cannot see is a real card in a real slot, or the reader on its cable
-in USB drive mode; that is a desk check.
 
 ## The rules this page follows
 

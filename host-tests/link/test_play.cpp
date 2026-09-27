@@ -247,9 +247,9 @@ void testThePhaseIsCorrectWithinTheSameLoopPass() {
 }
 
 void testANoteDoesNotTouchTheTurn() {
-  // The primitive the rematch is built on. Chess needed it the moment one player
-  // hit NEW GAME: their board reset, the other sat waiting, and there was no
-  // turn to carry the news because the game had just ended.
+  // The primitive the rematch is built on: when one player hits NEW GAME their
+  // board resets, the other sits waiting, and there is no turn to carry the
+  // news because the game has just ended.
   Medium medium;
   medium.lossPercent = 30;
   medium.duplicatePercent = 20;
@@ -452,16 +452,16 @@ void testGamesDoNotCrossOver() {
   // must never pair. GameId carries a layout version for the same reason: a
   // half-flashed pair should fail to find each other, not misread each other.
   Medium medium;
-  Seat chess(medium, 0x81, "A", 'A');
-  Seat four(medium, 0x82, "B", 'B');
-  CHECK(chess.play.start(GameId::Chess, "A"));
-  CHECK(four.play.start(GameId::ConnectFour, "B"));
-  std::vector<Seat*> seats = {&chess, &four};
+  Seat ships(medium, 0x81, "A", 'A');
+  Seat other(medium, 0x82, "B", 'B');
+  CHECK(ships.play.start(GameId::Battleship, "A"));
+  CHECK(other.play.start(GameId::Test, "B"));
+  std::vector<Seat*> seats = {&ships, &other};
   run(medium, seats, 5000);
 
-  CHECK(chess.play.phase() == Phase::Searching);
-  CHECK(four.play.phase() == Phase::Searching);
-  CHECK(static_cast<uint16_t>(GameId::Chess) != static_cast<uint16_t>(GameId::ConnectFour));
+  CHECK(ships.play.phase() == Phase::Searching);
+  CHECK(other.play.phase() == Phase::Searching);
+  CHECK(static_cast<uint16_t>(GameId::Battleship) != static_cast<uint16_t>(GameId::Test));
 }
 
 void testRestartingLooksForSomebodyNew() {

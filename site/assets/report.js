@@ -194,7 +194,7 @@
     }
 
     // The device's own web UI can open the page with everything it knows
-    // filled in: /report/?device=x4pro&v=1.12.9&app=trivia&kind=bug. Two
+    // filled in: /report/?device=x4pro&v=1.12.9&app=xkcd&kind=bug. Two
     // devices are a comma: device=x4pro,sticky. Values go into a selector, so
     // only plain words are looked up at all.
     var q = new URLSearchParams(location.search);

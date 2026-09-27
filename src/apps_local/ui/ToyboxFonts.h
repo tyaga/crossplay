@@ -12,18 +12,9 @@ namespace toybox {
 // the generated font names.
 constexpr int kDisplayFontId = 0x70B0'0001;
 constexpr int kUiFontId = 0x70B0'0002;
-// A third, much smaller cut, for the one place a label cannot be resized to
-// fit its box: a Connections tile, where the word is the content. 96% of the
-// published archive's 18255 words fit one line at this size in a 105px tile,
-// and the 1.4% that do not are broken across lines rather than shrunk again.
+// A third, much smaller cut, for labels that cannot be resized to fit their
+// box, such as battleship's fleet labels.
 constexpr int kTileFontId = 0x70B0'0003;
-// Instrument Serif: elegant and curvy, and condensed enough that a long word
-// still fits a 111px tile at a 20px cap -- where the wide curvy faces (Lora,
-// Fraunces, Young Serif) never fit at any size the tile can take.
-constexpr int kSerifTileFontId = 0x70B0'0004;
-constexpr int kSerifTitleFontId = 0x70B0'0005;
-// The step down a tile takes when a word will not fit at the full size.
-constexpr int kSerifSmallFontId = 0x70B0'0006;
 
 // A reading cut, for an app whose own surface is a page of prose rather than a
 // board. The UI cut is 20px, which is right for a row you glance at and wrong

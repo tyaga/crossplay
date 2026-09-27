@@ -43,7 +43,7 @@ constexpr int literalChars(const char* text) {
 
 // "%d OF %d" -- the how-to page counter in the black band.
 constexpr int kOfCounterChars = 2 * kIntChars + literalChars(" OF ") + 1;
-// "%d/%d" -- the same counter, the shelf's and the dungeon's spelling.
+// "%d/%d" -- the same counter, the shelf's spelling.
 constexpr int kSlashCounterChars = 2 * kIntChars + literalChars("/") + 1;
 // "%d" -- a bare number: a page pip, a tray count, a clue's index.
 constexpr int kIntTextChars = kIntChars + 1;

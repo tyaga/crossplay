@@ -106,22 +106,17 @@ def path_containment_off(appmod):
     directory is built from URL segments, and containment is then checked
     against that same moved directory.
 
-    On READ-BRIDGE this weakening claims nothing, and the reason is the
-    finding. Its route is /api/article/{bookmark_id:int}/{bookmark_hash}: the
-    id is coerced to an integer and a path segment cannot hold a slash, so no
-    dot segment survives ROUTING and the handler is never reached. There is no
-    way to express the attack against it, which is why the twin was safe while
-    this one was not. The traversal check is therefore demonstrated red on
-    study-bridge and passes on read-bridge by construction; that difference is
-    stated rather than hidden, because a weakening that quietly reddens
-    nothing is indistinguishable from a check that does not work.
+    A service whose route cannot carry a dot segment -- an integer id, a
+    single path segment -- has nothing to weaken, and says so rather than
+    reddening nothing quietly, which would be indistinguishable from a check
+    that does not work.
     """
     import pathlib as _pathlib
     import re as _re
 
     if not hasattr(appmod, "_SLUG_RE"):
-        print("  (this service has no URL-built path to weaken: its route")
-        print("   coerces the id to an integer, so a traversal cannot be spelled)")
+        print("  (this service has no URL-built path to weaken, so a traversal")
+        print("   cannot be spelled against it)")
         return []
     anything = _re.compile(r"^.*$", _re.S)
     appmod._SLUG_RE = anything

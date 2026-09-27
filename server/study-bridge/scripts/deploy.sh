@@ -76,15 +76,11 @@ ssh orange 'cd /srv/ankibridge && docker compose up -d --build'
 # ---------------------------------------------------------------------------
 # ISOLATION IS PART OF DEPLOYING, NOT A STEP AFTERWARDS.
 #
-# read-bridge's deploy has done this since 2026-09-01, when its FIRST deploy
-# came up healthy, serving its pages, and reaching the host's SSH, Immich, the
-# router and a tailnet peer. Nothing about that deploy looked wrong. THIS
-# script never gained the same block: ankibridge-firewall.service exists in
-# scripts/ and has to be installed by somebody remembering to, which is the
-# state read-bridge was in on the day it bit.
-#
-# So this now installs the isolation and REFUSES TO REPORT SUCCESS until the
-# test passes. A deploy that cannot prove it is confined is a failed deploy,
+# A bridge's first deploy can come up healthy, serving its pages, and reaching
+# the host's SSH, Immich, the router and a tailnet peer, with nothing about it
+# looking wrong. ankibridge-firewall.service in scripts/ only helps if it is
+# installed, so this installs the isolation and REFUSES TO REPORT SUCCESS until
+# the test passes. A deploy that cannot prove it is confined is a failed deploy,
 # whatever the containers say.
 # ---------------------------------------------------------------------------
 

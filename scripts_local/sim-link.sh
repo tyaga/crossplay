@@ -23,10 +23,10 @@
 # fs_mario or the single-device runs in fs_agent. SIM_LINK_FRESH=1 wipes both
 # first, which you want whenever a stale save would change where the taps land.
 #
-# Example -- both devices open Chess and look for each other:
-#   ./scripts/sim-link.sh \
-#     '1800:TAP:120,635;3600:TAP:120,411;5400:TAP:120,144;20000:QUIT' \
-#     '12000:./qa-artifacts/chess.bmp'
+# Example -- both devices boot into Battleship (the environment reaches both):
+#   CROSSPLAY_AUTOSTART=battleship ./scripts_local/sim-link.sh \
+#     '20000:QUIT' \
+#     '12000:./qa-artifacts/battleship.bmp'
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib-sim.sh"
 require_same_tree
@@ -89,7 +89,7 @@ if [ -z "$INPUT_A" ]; then
   # Interactive. Closing one window ends the session rather than leaving an
   # orphan looking for a partner that is never coming back.
   echo "two simulators up. Close either window or press Ctrl-C to stop both."
-  echo "  chess multiplayer: gear -> OPPONENT until it says NEARBY -> back to board"
+  echo "  battleship multiplayer: open Battleship on both and choose PLAY NEARBY"
   trap 'kill "$PID_A" "$PID_B" 2>/dev/null' EXIT INT TERM
   # Not `wait -n`: macOS ships bash 3.2, where that does not exist.
   while kill -0 "$PID_A" 2>/dev/null && kill -0 "$PID_B" 2>/dev/null; do sleep 1; done

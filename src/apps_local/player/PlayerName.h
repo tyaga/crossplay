@@ -96,10 +96,10 @@ constexpr size_t kMaxShortNameLength = 6;
 //
 // A full name is three words and up to twenty characters, which is right on a
 // seat card and far too long anywhere it has to sit inside a line of prose.
-// "SHAGGY SLEEPY GOATEE'S MOVE" is four characters past the width of chess's
-// status capsule, and what got dropped was "MOVE" -- so the one word carrying
-// the meaning of the label was the word that went, silently, with no ellipsis.
-// Battleship has the same shape in "%s SANK YOUR %s".
+// "SHAGGY SLEEPY GOATEE'S MOVE" is past the width of a status capsule, and
+// what gets dropped is "MOVE" -- so the one word carrying the meaning of the
+// label is the word that goes, silently, with no ellipsis. Battleship has the
+// same shape in "%s SANK YOUR %s".
 //
 // Calling them SHAGGY is also just better. It is what a person would do, it can
 // never overflow, and the full name is still on the screen where you met them.
@@ -121,8 +121,7 @@ constexpr size_t kMaxShortNameLength = 6;
 // beside the name in the capsule. Two Spikys have different eyes and mouths, so
 // they are already told apart by the thing next to the word.
 //
-// **At three players this stops being true**, and Insider is the app that gets
-// there first. When several opponents are on one screen, the distinguishing
+// **At three players this stops being true**. When several opponents are on one screen, the distinguishing
 // word is no longer always the first, and the answer then is not a longer name
 // but a narrower one: given the set of names in the room, take the shortest run
 // of slots that separates them -- SPIKY, else SPIKY WINK, else all three. It is

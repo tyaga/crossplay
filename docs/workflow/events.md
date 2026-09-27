@@ -26,7 +26,7 @@ variables. The public key can only insert; it cannot read anything back.
 
 | Field     | What goes in it                                                                                                                                      |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `service` | `firmware`, `getbooks`, `anki`, `instapaper`, `live`, `trivia`, `site`, `release`, `pulse`, `upstream-sync`, `workflow`. One word, lowercase, the same word every time. The inbox page holds the same list (`site/assets/fleet.js`, `KNOWN_SERVICES`) so a service that has never posted is shown as silent rather than absent; add a word here and there together. `trivia` was found on the real board in neither list on 2026-09-21; a service posting a word this table does not carry is still counted, but it can never be reported as silent.                                    |
+| `service` | `firmware`, `getbooks`, `anki`, `live`, `site`, `release`, `pulse`, `upstream-sync`, `workflow`. One word, lowercase, the same word every time. The inbox page holds the same list (`site/assets/fleet.js`, `KNOWN_SERVICES`) so a service that has never posted is shown as silent rather than absent; add a word here and there together. A service posting a word this table does not carry is still counted, but it can never be reported as silent.                                    |
 | `event`   | What happened: `download`, `search`, `sync`, `install`, `report`, `crash`, `update`, `probe`, `run`. Same rule.                                          |
 | `level`   | `info` (default) or `error`.                                                                                                                         |
 | `device`  | The id from the device's `X-CrossPlay-Device` header (below): pseudonymous, the same on every request from one device, and not matchable to a MAC without that device's secret. Never the MAC, never a name. A service whose request carried no id may use its own salted hash of an account or token instead, or leave it out. |
@@ -65,7 +65,7 @@ timeout).
 A device never makes a request just to report: it never brings the radio up
 for the board, and it never spends a request on it. Instead every request
 the firmware makes to one of CrossPlay's own services (Get Books, the Anki
-bridge, the Instapaper bridge, and since the release that carried card
+bridge, and since the release that carried card
 449 the update check, which asks the site's `/api/latest` before it asks
 GitHub) carries three headers,
 and the service posts what they say alongside the event it was going to
@@ -124,9 +124,8 @@ first, then has its message cut, and never disappears for being long.
 
 ## What each service posts
 
-The three services share one reader for the headers (`bridge/events.py` in
-`server/study-bridge` and `server/read-bridge`, byte-identical twins that a
-test keeps identical; `getbooks/events.py` in the Get Books repository) and
+The services share one reader for the headers (`bridge/events.py` in
+`server/study-bridge`; `getbooks/events.py` in the Get Books repository) and
 trust none of it: an id that is not 64 hex is no id, a board that is not a
 short word is no board, a report over 1000 bytes or not a JSON object is
 ignored with one debug line and the request served all the same, and only
@@ -137,7 +136,7 @@ retry posts nothing, so a crash is not counted twice), whatever the
 endpoint:
 
 - **The usage event it already posted** (`getbooks`/`search`,
-  `getbooks`/`download`, `anki`/`sync`, `instapaper`/`sync`, and their
+  `getbooks`/`download`, `anki`/`sync`, and their
   `error` twins) gets `device` from the header (over the service's own hash
   when both exist), `board` from the header, `version` from the User-Agent,
   and `battery_pct`, `heap_min_kb`, `uptime_h` copied into `props` when the
@@ -148,7 +147,7 @@ endpoint:
 - **A report with `crash`** posts one more event, `{"service":"firmware",
   "event":"crash","level":"error","device":..,"version":<crash.version>,
   "board":..,"props":{"message":<crash.message>,"backtrace":<crash.backtrace>,
-  "app":"firmware","via":"getbooks"|"anki"|"instapaper"}}`, so a crash in the
+  "app":"firmware","via":"getbooks"|"anki"}}`, so a crash in the
   field opens a card on the firmware's owner by itself, once per distinct
   reason, whichever service happened to hear it.
 - **A report with `ota`** posts `{"service":"firmware","event":"update",
@@ -261,7 +260,7 @@ The views are in `20260903000200_events.sql` as written and
 
 Each service has a card on the board naming the events it should post and
 where in its code. The firmware puts its headers on every request it makes
-(`src/network`); Get Books, the Anki bridge and the Instapaper bridge post
+(`src/network`); Get Books and the Anki bridge post
 from the pi, their own events and the firmware's; the site posts `install`
 and `report`. The pipe is built; the sending is the owner's.
 

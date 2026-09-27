@@ -400,3 +400,34 @@ TEST_F(LibraryBuilderTest, SortAllocationFailureProducesValidDegradedIndex) {
   ASSERT_TRUE(index.open(INDEX));
   EXPECT_EQ(index.bookCount(), 513);
 }
+
+TEST_F(LibraryBuilderTest, Fb2BooksAreIndexedWithTheirOwnMetadata) {
+  fake::add("/ru/Kniga.fb2");
+  fake::add("/ru/Packed.fb2.zip");
+  fake::add("/ru/notes.zip");
+  bookMetadata["/ru/Kniga.fb2"] = {"Книга", "Автор", true};
+  bookMetadata["/ru/Packed.fb2.zip"] = {"Сжатая", "", true};
+  ASSERT_TRUE(buildLibraryIndex("/", stats, true));
+  EXPECT_EQ(stats.parsed, 4);
+
+  LibraryIndexFile index;
+  ASSERT_TRUE(index.open(INDEX));
+  ASSERT_EQ(index.bookCount(), 4u);
+  std::vector<std::string> titles;
+  for (uint16_t row = 0; row < index.bookCount(); row++) {
+    ClixRecord record{};
+    ASSERT_TRUE(index.readRecord(index.ordinalForRow(SortOrder::TitleAsc, row), record));
+    std::string title;
+    index.readTitle(record, title);
+    titles.push_back(title);
+  }
+  EXPECT_NE(std::find(titles.begin(), titles.end(), "Книга"), titles.end());
+  EXPECT_NE(std::find(titles.begin(), titles.end(), "Сжатая"), titles.end());
+}
+
+TEST_F(LibraryBuilderTest, Fb2MetadataFollowsTheSetting) {
+  fake::add("/Kniga.fb2");
+  bookMetadata["/Kniga.fb2"] = {"Книга", "Автор", true};
+  ASSERT_TRUE(buildLibraryIndex("/", stats, false));
+  EXPECT_EQ(fake::parses, 0u);
+}

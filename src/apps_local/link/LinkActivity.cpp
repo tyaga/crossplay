@@ -180,9 +180,9 @@ bool LinkActivity::driveLink() {
 
 void LinkActivity::proposeRematch() {
   // Only an answer actually given counts. Reading the other seat outside a live
-  // conversation is what made chess's first NEW GAME start a game without
-  // asking: the seats had been left on Ready by the match handshake, so the
-  // proposal saw agreement that had never been given.
+  // conversation would make the first NEW GAME start a game without asking:
+  // the match handshake leaves the seats on Ready, so the proposal would see
+  // agreement that had never been given.
   const bool theyAlreadyAgreed = rematch_ && them_ == linkui::SeatState::Ready;
   // Asked for while the final board was still up: they have seen what the hold
   // exists to show them, so it stops holding rather than swallowing the tap.

@@ -106,7 +106,7 @@ inline fui::StyleSet rowStyles() {
 // bottom.
 //
 // The error therefore grows as the box gets SMALLER, which is why it looks like
-// an intermittent font problem rather than a rule. Measured on a 50px Sudoku
+// an intermittent font problem rather than a rule. Measured on a 50px grid
 // cell: the 20px cut (42px line box, still fits) sits 12 above and 13 below,
 // and the 30px cut (63px line box, does not) sits 13 above and 0 below with the
 // digit crossing the cell border.
@@ -130,13 +130,6 @@ constexpr CutMetrics kUiCut{42, 34, 25};       // toybox_20
 constexpr CutMetrics kDisplayCut{63, 51, 38};  // toybox_30
 constexpr CutMetrics kLargeCut{92, 74, 57};    // toybox_44
 constexpr CutMetrics kHugeCut{133, 108, 82};   // toybox_64
-
-// Connections speaks Instrument Serif, so its three cuts need the same
-// treatment: the serif line boxes are proportionally taller still, and a 26px
-// status band under a 35px line box is the same clamp as everywhere else.
-constexpr CutMetrics kSerifSmallCut{27, 21, 15};  // instrument_10
-constexpr CutMetrics kSerifTileCut{35, 27, 20};   // instrument_13
-constexpr CutMetrics kSerifTitleCut{65, 50, 36};  // instrument_24
 
 // The reading cuts, which the prose apps bind to their body slot. Listed so
 // verifyCutMetrics() guards every cut this fork registers rather than most of
@@ -165,9 +158,8 @@ constexpr fui::Rect inkCentred(const fui::Rect& box, const CutMetrics& cut) {
 // of air above the capitals, so anything centring by eye needs the real
 // numbers.
 constexpr const CutMetrics* cutForLineHeight(const int16_t lineHeight) {
-  const CutMetrics* all[] = {&kTileCut,    &kButtonCut,           &kUiCut,         &kDisplayCut,    &kLargeCut,
-                             &kHugeCut,    &kSerifSmallCut,       &kSerifTileCut,  &kSerifTitleCut, &kReadingSmallCut,
-                             &kReadingCut, &kReadingBoldSmallCut, &kReadingBoldCut};
+  const CutMetrics* all[] = {&kTileCut, &kButtonCut,       &kUiCut,      &kDisplayCut,          &kLargeCut,
+                             &kHugeCut, &kReadingSmallCut, &kReadingCut, &kReadingBoldSmallCut, &kReadingBoldCut};
   for (const CutMetrics* cut : all) {
     if (cut->lineHeight == lineHeight) return cut;
   }
@@ -302,8 +294,8 @@ inline const fui::ThemeTokens& themeTokens() {
     // paints the title black on black and it simply disappears.
     tokens.titleText.color = fui::Color::White;
     tokens.bodyText.font = fui::FONT_SLOT_BODY;
-    // UI cut, not the small slot: that slot holds the Connections tile face, and
-    // list values would shrink to 13px if this followed it.
+    // UI cut, not the small slot: that slot holds the tile face, and list
+    // values would shrink if this followed it.
     tokens.smallText.font = kUiFont;
 
     tokens.listRow = rowStyles();

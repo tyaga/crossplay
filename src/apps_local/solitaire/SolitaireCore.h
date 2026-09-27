@@ -2,8 +2,7 @@
 
 // Klondike solitaire, as pure rules.
 //
-// Freestanding by the same rule as ChessCore and ConnectionsCore: no renderer,
-// no storage, no Arduino. Everything here is decided by looking at the state
+// Freestanding: no renderer, no storage, no Arduino. Everything here is decided by looking at the state
 // and nothing here can draw, which is what lets host-tests/solitaire/ deal
 // thousands of games and check every move without a device.
 //
@@ -22,15 +21,13 @@
 
 namespace solitaire {
 
-// THE DECK IS cards/Cards.h, and these names are what it used to be called.
+// THE DECK IS cards/Cards.h, and these are its names in this game.
 //
-// The encoding was written here and moved out verbatim when Hearts became the
-// second game to deal from a standard 52. Aliases rather than a rename because
-// this game is shipped and soaked by 536,697 assertions: every one of them, and
-// every line of its rules, goes on saying `solitaire::Suit` and meaning exactly
-// what it always did. What changes is that there is now ONE Suit in the fork,
-// so a card drawn by the shared card face is the same type as a card compared
-// by these rules.
+// Aliases rather than a rename because this game is soaked by 536,697
+// assertions: every one of them, and every line of its rules, says
+// `solitaire::Suit` and means exactly the shared type. There is ONE Suit in
+// the fork, so a card drawn by the shared card face is the same type as a card
+// compared by these rules.
 using cards::faceDown;
 using cards::faceUp;
 using cards::isFaceUp;

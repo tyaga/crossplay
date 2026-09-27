@@ -35,7 +35,7 @@ constexpr int kFooterHeight = toybox::kPillHeight;
 // component only consults for its trailing BUTTON, never for rightLabel; the
 // label stayed invisible through two renders and the suite carried a failing
 // pin (paperOnTheBand) against exactly this until the fix landed. The games'
-// toyboxChrome copies had the right slot all along; jaipur paid for it first.
+// toyboxChrome copies have the right slot.
 // What the band's save chip says, in ONE place. The reader has to know it too,
 // because the chip's width comes out of the room its headline is fitted to, and
 // a second copy of "SAVED" is a second copy that can be edited alone.

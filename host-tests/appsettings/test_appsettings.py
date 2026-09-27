@@ -4,10 +4,9 @@
 Mario's rule, 2026-09-05: CrossPoint owns the reader, the keyboard and the
 system; a CrossPlay app's options belong inside that app.
 
-It was broken and looked deliberate. `triviaShowUsCentric` shipped in v1.12.29
-as a row under Settings > System, one line below Developer Mode, and read by
-exactly one file in the repo, TriviaActivity.cpp. Nothing could see that,
-because nothing here had ever asked WHO READS a setting.
+A row under Settings > System read by exactly one app's Activity looks
+deliberate and breaks that rule. Nothing sees it unless something asks WHO
+READS a setting.
 
 So this carries no list of app names, which would pass the day somebody adds an
 app it has not heard of. It asks the code: for every row that renders in the

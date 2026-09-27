@@ -227,34 +227,6 @@ else
   bad "site/inbox/index.html is missing"
 fi
 
-# -- the Wikipedia page's ids, spelled in two files that never see each other --
-#
-# Same failure as study.js above: wikipedia.js finds every control with a
-# $("id") helper, and a renamed id renders fine and does nothing. The route
-# radios are reached through radio()/meta() helpers whose literals are $("...")
-# calls too, so they are covered by the same sed.
-WP="$ROOT/site/wikipedia/index.html"
-WJ="$ROOT/site/wikipedia/wikipedia.js"
-for f in "$WP" "$WJ"; do
-  [ -f "$f" ] || { bad "site/wikipedia is missing $(basename "$f")"; }
-done
-wiki_ids="$(sed -nE 's/.*\$\(["'"'"']([A-Za-z][A-Za-z0-9_-]*)["'"'"']\).*/\1/p' "$WJ" | sort -u)"
-if [ -z "$wiki_ids" ]; then
-  bad "wikipedia.js looks up no element ids at all"
-else
-  ok
-  for id in $wiki_ids; do
-    grep -q "id=\"$id\"" "$WP" && ok || bad "wikipedia.js asks for #$id and wikipedia/index.html has no such element"
-  done
-fi
-# The page must reach the pack through one constant, and the manifest must be
-# written LAST: the device treats a pack as present the moment it sees it.
-grep -q '^const PACK_BASE_URL = "https://' "$WJ" && ok || bad "wikipedia.js has no PACK_BASE_URL constant at the top"
-last_write="$(grep -nE 'writeText\(wiki, "manifest.json"|copyOne\(wiki, step' "$WJ" | tail -1)"
-printf '%s' "$last_write" | grep -q 'manifest.json' && ok || bad "wikipedia.js does not write manifest.json after the last copy"
-# ?mock=1 must be the ONLY thing that points the page away from the pack host.
-[ "$(grep -c 'params.get("mock")' "$WJ")" -eq 1 ] && ok || bad "wikipedia.js reads the mock switch more or less than once"
-
 # -- the report form, one script drawn into two pages --------------------------
 #
 # assets/report.js draws the form into whichever page carries a mount point and
@@ -448,20 +420,6 @@ grep -q 'assets/fleet.js' "$ROOT/site/inbox/index.html" \
 grep -q 'FLEET.foldVersions' "$ROOT/site/inbox/index.html" \
   && ok || bad "the inbox page does not fold the versions table, so a version can be listed twice"
 
-# api/trivia.js takes question reports off a device. Two of its properties are
-# invisible in the code and only a test can hold them: the device id is used to
-# build the row key and is then DROPPED, so it appears in no column; and the key
-# is per-question, so two reports from one reader cannot be joined into a
-# reading history. Both are asserted against what the stub was actually asked to
-# store, never against what the source appears to do.
-if trivia_out="$(node "$HERE/trivia_fn.js" "$ROOT" 2>&1)"; then
-  ok
-  n_fail="$(printf '%s\n' "$trivia_out" | grep -c '^  FAIL' || true)"
-  [ "$n_fail" -eq 0 ] && ok || { while IFS= read -r line; do bad "trivia_fn: $line"; done < <(printf '%s\n' "$trivia_out" | grep '^  FAIL'); }
-else
-  bad "trivia_fn.js could not run, so api/trivia.js went unchecked:"
-  while IFS= read -r line; do echo "      $line"; done <<< "$trivia_out"
-fi
 grep -q 'supabase.co\|/rest/v1/\|/auth/v1/' "$ROOT/site/inbox/index.html" && bad "the inbox page still talks to the board directly" || ok
 
 # -- the inbox fixture, spelled in three files that never see each other -------

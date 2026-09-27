@@ -12,7 +12,7 @@ Welcome to the **CrossPlay** firmware, a fork of CrossPoint for the Xteink X4 Pr
     - [First Launch](#first-launch)
   - [3. Screens](#3-screens)
     - [3.1 Home Screen](#31-home-screen)
-      - [3.1.1 Games and Apps (CrossPlay)](#311-games-and-apps-crossplay)
+      - [3.1.1 Study and Apps & Games (CrossPlay)](#311-study-and-apps--games-crossplay)
     - [3.2 Reading Mode](#32-reading-mode)
     - [3.3 Browse Files Screen](#33-browse-files-screen)
     - [3.4 Library Screen](#34-library-screen)
@@ -121,18 +121,22 @@ Upon turning the device on for the first time, you will be placed on the **[Home
 
 ### 3.1 Home Screen
 
-The Home screen is the main entry point to the firmware. From here you can navigate to **[Reading Mode](#4-reading-mode)** with the most recently read book, **[Browse Files](#33-browse-files-screen)**, the **[Library](#34-library-screen)**, **[File Transfer](#35-file-transfer-screen)**, **[Settings](#36-settings)**, or the two CrossPlay adds: **Games** and **Apps**.
+The Home screen is the main entry point to the firmware. It shows the covers of the most recently read books (one, or two with the **Lyra Extended** theme); tap one to open it in **[Reading Mode](#4-reading-mode)**. Below them are the **[Library](#34-library-screen)**, **[File Transfer](#35-file-transfer-screen)**, and the two rows CrossPlay adds: **Study** and **Apps & Games**. **[Browse Files](#33-browse-files-screen)** and **[Settings](#36-settings)** are the first two rows of Apps & Games.
 
-### 3.1.1 Games and Apps (CrossPlay)
+### 3.1.1 Study and Apps & Games (CrossPlay)
 
-**Games** and **Apps** on the Home screen open the shelf, which pages
-vertically: swipe up for the next page, down for the previous, and the header
-says which page you are on. A row opens that game or app; Back (the
-left-to-right swipe) closes it and returns you here.
+**Study** opens the flashcard app straight from Home; Back returns you here.
 
-Several of the games also play between two devices over **PLAY NEARBY**, with
-no pairing screen and nothing to type. Put two devices next to each other and
-they find one another. The [README](README.md) says which ones.
+**Apps & Games** opens the shelf: Browse Files, Settings, Hacker News, xkcd,
+Get Books, Wallpapers, Solitaire and Battleship. A folder that does not fit
+pages vertically: swipe up for the next page, down for the previous, and the
+header says which page you are on. A row opens that app; Back (the
+left-to-right swipe) closes it and returns you to the folder, and Back from the
+folder returns you here.
+
+Battleship also plays between two devices over **PLAY NEARBY**, with no pairing
+screen and nothing to type. Put two devices next to each other and they find
+one another.
 
 What is on the shelf and how each thing works is per-app: the list is in the
 [README](README.md), and the rules, state machines and design decisions behind
@@ -154,22 +158,21 @@ The Browse Files screen acts as a file and folder browser. The full path to the 
 
 ### 3.4 Library Screen
 
-The Library indexes up to 4,096 supported books on the SD card and shows their titles and authors without requiring you to remember their folders. Its four tabs provide different views. An arrow beside an indexed tab shows the sort direction:
+The Library indexes up to 4,096 supported books on the SD card and shows their titles and authors. It has three tabs:
 
-- **Recent** lists the ten books you opened most recently. Hold a book to remove it from this list.
-- **Added** keeps books in the order in which the Library first discovered them. Down shows newest additions first; up shows oldest first.
-- **Title** groups books by the first letter of the title. Up sorts A-Z and down sorts Z-A. Titles beginning with numbers or punctuation appear under `#`; letters from non-English scripts, including Hebrew, have their own groups.
+- **Recent** lists the books you opened most recently, then every other book newest arrival first. Hold a recently opened book to remove it from the list. Tap the active tab again to reverse the order.
+- **Genres** follows the folders on the card: each folder is a genre, shown with how many books it holds. Open a folder to see its subfolders and the books directly inside it, sorted by title; **Back** returns to the folder above. The header shows the folder you are in. Folders without books are not shown, and neither is `/study`.
 - **Author** groups books by author. Up sorts A-Z and down sorts Z-A.
 
 On a button-only device:
 
 - Use **Up/Down** or **Left/Right** to move one row at a time. Hold a direction to move a page at a time.
-- Press **Confirm** to open the selected book.
-- Press **Back** from the book list to focus the tabs. Use **Left/Right** to select another tab, press **Confirm** to reverse its sort direction, or press **Down** to return to the list.
-- While the tabs are focused, hold **Confirm** to open Search.
-- In the Title or Author views, hold **Confirm** on a book to collapse the list to its letter or author groups. The matching group remains selected. Press **Confirm** to enter a group, or **Back** to restore the exact book and position you came from.
+- Press **Confirm** to open the selected book or folder.
+- Press **Back** from the book list to focus the tabs; in a Genres folder, **Back** goes up one folder first. Use **Left/Right** to select another tab, press **Confirm** to reverse its sort direction, or press **Down** to return to the list.
+- While the tabs are focused, press **Up** to open Search. A search looks through every book on the card by title and author.
+- In the Author view, hold **Confirm** on a book to collapse the list to its author groups. Press **Confirm** to enter a group, or **Back** to restore the exact book and position you came from.
 
-On a touch device, tap tabs, books, and the Search icon directly. Tap an active indexed tab again to reverse its sort direction. Swipe to scroll. Long-press a book in the Recent view to remove it from the list. Long-press a book in a Title or Author view to collapse to the group list, then tap a group to expand it. The **Added** view is not grouped; tapping or long-pressing a book opens it.
+On a touch device, tap tabs, folders, books, and the Search icon directly. Swipe to scroll. Long-press a recently opened book in the Recent view to remove it from the list, or any other book outside the Author view to delete it. Long-press a book in the Author view to collapse to the group list, then tap a group to expand it.
 
 The index is created automatically the first time the Library is opened. To pick up later file changes or updated metadata, use **Settings → System → Rebuild library index**. The **Use book metadata** setting controls whether the index reads titles and authors stored inside books.
 
@@ -282,7 +285,7 @@ The Settings screen allows you to configure the device's behavior. There are a f
   
   - "Classic" - The original Crosspoint theme
   - "Lyra" - The new theme for Crosspoint featuring rounded elements and menu icons
-  - "Lyra Extended" - Lyra, but displays 3 books instead of 1 on the **[Home Screen](#31-home-screen)**
+  - "Lyra Extended" - Lyra, but displays 2 larger book covers instead of 1 on the **[Home Screen](#31-home-screen)**
   - "RoundedRaff" - A rounded theme with additional visual styling
 
 - **Sunlight Fading Fix**: Configure whether to enable a software-fix for the issue where white X4 models may fade when used in direct sunlight:
@@ -381,7 +384,7 @@ The Settings screen allows you to configure the device's behavior. There are a f
 
 #### 3.6.5 Get Books (OPDS Catalogs)
 
-**Get Books** lives in **Apps** on the Home screen, and downloads books
+**Get Books** lives in **Apps & Games** on the Home screen, and downloads books
 straight to the device from an OPDS catalog. Two catalogs are set up on first run, so it works
 without any configuration:
 
@@ -736,6 +739,16 @@ See [docs/dictionary.md](docs/dictionary.md) for supported formats, setup, and w
 * **Return to Browse Files:** Press and hold the **Back** button to close the book and return to the **[Browse Files](#33-browse-files-screen)** screen.
 * **Reader Menu:** Press **Confirm** to open the **[Reader Menu](#5-reader-menu)**, which includes chapter navigation, reading options, and more.
 * **Long-press Confirm (configurable):** Holding **Confirm** runs the function chosen by the **Long-press Menu** setting in **[Controls Settings](#363-controls)** — "Bookmark" (default) drops a bookmark, "KOSync" launches KOReader Sync, "Dictionary" starts a word lookup, "Disabled" does nothing. A short press always opens the Reader Menu.
+
+### FB2 Books
+
+Books in FictionBook 2 format open like EPUBs: `.fb2` files, and `.fb2.zip` archives holding one. The first time you open one, the reader shows **Preparing book** with a progress bar while it turns the book into an EPUB, which takes a few seconds for a typical novel and longer for a heavily illustrated one. Every later open is immediate.
+
+Everything the EPUB reader does works in an FB2 book: chapters and contents, footnotes, dictionary lookup and saving words, bookmarks, the cover on the Home screen and the sleep screen, and the Library's titles and authors. Chapters follow the book's sections; the notes at the end of the book are their own chapter, and footnote links lead there.
+
+Text in UTF-8, Windows-1251 and KOI8-R is read correctly, whether or not the file names its encoding. JPEG and PNG images are shown; other image types are left out.
+
+The prepared EPUB is kept in `/.crosspoint`, next to the other book caches; your `.fb2` file is never changed. It is made again when the book file changes, and removed when you delete the book or use **Clear Reading Cache** in Settings.
 
 ### Supported Languages
 

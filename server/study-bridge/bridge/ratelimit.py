@@ -4,13 +4,9 @@ Its own module so it can be tested without importing the web application: the
 limiter has no business needing FastAPI (or, on the study side, the deck
 converter) to prove it counts correctly.
 
-BYTE-IDENTICAL TWIN of server/read-bridge/bridge/ratelimit.py. Until
-2026-09-05 this file held only Window, and this service's sign-in was guarded
-by a flat per-username cap while its twin had exponential backoff and a global
-ceiling; server/attacks.py found the difference by spraying 80 fresh
-address/account pairs at both and being refused by one of them. Neither
-Dockerfile can COPY a file from outside its own directory, so the module is
-duplicated rather than shared -- a change to either belongs in both.
+Sign-in is guarded by exponential backoff per account and a global ceiling,
+not a flat per-username cap: server/attacks.py sprays fresh address/account
+pairs at the service to prove it.
 """
 
 import time

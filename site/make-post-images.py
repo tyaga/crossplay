@@ -92,9 +92,9 @@ SHELF = (
     + """<span>CrossPlay</span></div>
   <span class="note">Xteink X4 Pro</span></div>
 <div class="grid">
-  <img src="../shots/chess.png"><img src="../shots/jaipur.png">
-  <img src="../shots/dd.png"><img src="../shots/murdle.png">
-  <img src="../shots/study.png"><img src="../shots/xkcd.png">
+  <img src="../shots/battleship.png"><img src="../shots/study.png">
+  <img src="../shots/xkcd.png"><img src="../shots/getbooks.png">
+  <img src="../shots/wallpapers.png"><img src="../shots/hackernews.png">
 </div>
 <div class="foot"><span>Open firmware &middot; no app store &middot; no account</span>
   <span>crossplay.ma-r-s.com</span></div>
@@ -124,9 +124,8 @@ SHELF_TWO = (
     + """<span>CrossPlay</span></div>
   <span class="note">Xteink X4 Pro</span></div>
 <div class="grid">
-  <img src="../shots/battleship.png"><img src="../shots/connections.png">
-  <img src="../shots/solitaire.png"><img src="../shots/insider.png">
-  <img src="../shots/hackernews.png"><img src="../shots/home.png">
+  <img src="../shots/solitaire.png"><img src="../shots/live.png">
+  <img src="../shots/home.png">
 </div>
 <div class="foot"><span>Open firmware &middot; no app store &middot; no account</span>
   <span>crossplay.ma-r-s.com</span></div>

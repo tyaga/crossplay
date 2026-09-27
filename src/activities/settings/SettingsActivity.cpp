@@ -94,9 +94,7 @@ void SettingsActivity::rebuildSettingsLists() {
       // after this loop and would otherwise sit underneath them.
       //
       // Both of these are DEVICE-wide: what the device reports, and whether it
-      // accepts firmware over Wi-Fi. An app's own option never belongs here --
-      // triviaShowUsCentric was in this list until card #311 and is now
-      // category-less, so it never reaches this switch at all.
+      // accepts firmware over Wi-Fi. An app's own option never belongs here.
       if (setting.valuePtr == &CrossPointSettings::deviceReport || setting.valuePtr == &CrossPointSettings::devMode) {
         forkSystemSettings.push_back(setting);
         continue;

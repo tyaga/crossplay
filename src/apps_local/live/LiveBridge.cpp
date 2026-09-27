@@ -13,7 +13,7 @@ namespace live {
 
 namespace {
 
-// The endpoint, in the shape Instapaper's and Study's take.
+// The endpoint, in the shape Study's takes.
 //
 // CROSSPLAY_LIVE_URL is the simulator's override and exists for one reason:
 // the public hostname does not resolve yet, and a laptop has to be able to

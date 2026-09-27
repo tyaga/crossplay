@@ -266,9 +266,14 @@ def deck_entry(config, deck_dir):
 
 
 def anki_is_running():
+    # Anki 25's launcher runs the app as `python -c "import aqt ... aqt.run()"`
+    # with no process named Anki, so the name check alone let a sync write a
+    # collection Anki had open.
     try:
-        out = subprocess.run(["pgrep", "-x", "Anki"], capture_output=True, text=True)
-        return out.returncode == 0
+        for probe in (["pgrep", "-x", "Anki"], ["pgrep", "-f", "import aqt"]):
+            if subprocess.run(probe, capture_output=True, text=True).returncode == 0:
+                return True
+        return False
     except FileNotFoundError:
         return False
 
@@ -673,6 +678,46 @@ def cmd_sync(args):
     return 0
 
 
+def cmd_words(args):
+    config = load_config()
+    collection = pathlib.Path(args.collection or config.get("collection", ""))
+    if not collection.is_file():
+        found = find_collections()
+        if not found:
+            die("No Anki collection found. Pass --collection.")
+        collection = found[0]
+    source = []
+    if args.device:
+        source = ["--device", args.device]
+    else:
+        card = pathlib.Path(args.card or config.get("card", ""))
+        if not card.is_dir():
+            cards = find_sd_cards()
+            if not cards:
+                die("No card found. Mount it, or pass --card, or --device for Wi-Fi.")
+            card = cards[0]
+        source = ["--card", str(card)]
+
+    if anki_is_running() and not args.force and not args.dry_run:
+        die(
+            "Anki is running. Quit it first -- two writers is how a collection gets corrupted.\n"
+            "(or pass --force if you are sure)"
+        )
+    ensure_venv("anki")
+    extra = ["--deck-prefix", args.deck_prefix]
+    if args.dry_run:
+        extra.append("--dry-run")
+    if args.keep:
+        extra.append("--keep")
+    if not run("words_to_anki.py", collection, *source, *extra, venv=True):
+        die("Import failed. The saved words are still on the reader; nothing was lost.")
+
+    if args.ankiweb and not args.dry_run:
+        push = ["--force"] if args.force else []
+        if not run("deck_to_anki.py", "--push-only", collection, *push, venv=True):
+            die("AnkiWeb push failed. The words are in Anki; open Anki and it will sync them.")
+
+
 def cmd_status(args):
     config = load_config()
     if not config:
@@ -759,6 +804,17 @@ def main():
         "--force", action="store_true", help="sync even if Anki appears to be running"
     )
     s.set_defaults(func=cmd_sync)
+
+    s = sub.add_parser("words", help="add the words saved from the dictionary to Anki")
+    s.add_argument("--collection")
+    s.add_argument("--card", help="the reader's card (else found automatically)")
+    s.add_argument("--device", help="fetch over Wi-Fi instead, e.g. http://192.168.1.11")
+    s.add_argument("--deck-prefix", default="Dictionary", help="parent deck (default: Dictionary)")
+    s.add_argument("--dry-run", action="store_true", help="show the notes, write nothing")
+    s.add_argument("--keep", action="store_true", help="leave the words on the reader after importing")
+    s.add_argument("--ankiweb", action="store_true", help="also push to AnkiWeb")
+    s.add_argument("--force", action="store_true", help="import even if Anki appears to be running")
+    s.set_defaults(func=cmd_words)
 
     s = sub.add_parser("status", help="what is set up, and what is waiting to sync")
     s.set_defaults(func=cmd_status)

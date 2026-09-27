@@ -16,12 +16,22 @@
 // A pure header, so host-tests/devreport can pin the two facts that matter:
 // the first source is one the device reports to, the second is not.
 
+// A build for a fork of this fork names its own GitHub repository, and asks
+// that one alone: CROSSPLAY_RELEASE_REPO="owner/repo". Its releases are the
+// only ones such a reader should ever install -- this fork's would replace it
+// with a build that lacks what the fork added.
 namespace release_sources {
 
+#ifdef CROSSPLAY_RELEASE_REPO
+constexpr const char* const kUrls[] = {
+    "https://api.github.com/repos/" CROSSPLAY_RELEASE_REPO "/releases/latest",
+};
+#else
 constexpr const char* const kUrls[] = {
     "https://crossplay.ma-r-s.com/api/latest",
     "https://api.github.com/repos/ma-r-s/crossplay/releases/latest",
 };
+#endif
 constexpr int kCount = static_cast<int>(sizeof(kUrls) / sizeof(kUrls[0]));
 
 }  // namespace release_sources

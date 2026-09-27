@@ -20,8 +20,8 @@ COPY bridge /app/bridge
 COPY BUILD /app/BUILD
 
 # Public on the internet and holding pictures people meant for one other
-# person. uid 10004: 10001 getbooks, 10002 ankibridge, 10003 readbridge on the
-# same box, and a shared uid would let one compromised container read
+# person. uid 10004: 10001 getbooks and 10002 ankibridge on the same box, and
+# a shared uid would let one compromised container read
 # another's bind mount.
 RUN useradd --uid 10004 --no-create-home --shell /usr/sbin/nologin fridgebridge \
  && mkdir -p /data && chown -R 10004:10004 /data /app

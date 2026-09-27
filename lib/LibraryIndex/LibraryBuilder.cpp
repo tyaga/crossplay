@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <BufferedFile.h>
 #include <Epub.h>
+#include <Fb2Metadata.h>
 #include <FsHelpers.h>
 #include <HalStorage.h>
 #include <Logging.h>
@@ -175,6 +176,8 @@ bool installNewIndex() {
 }
 
 bool isBookName(const std::string& name) {
+  // fork-local seam: FB2, which the reader opens through an EPUB made from it.
+  if (FsHelpers::checkFileExtension(name, ".fb2") || FsHelpers::checkFileExtension(name, ".fb2.zip")) return true;
   return FsHelpers::checkFileExtension(name, ".epub") || FsHelpers::checkFileExtension(name, ".txt") ||
          FsHelpers::checkFileExtension(name, ".md") || FsHelpers::checkFileExtension(name, ".xtc");
 }
@@ -294,7 +297,8 @@ int findPrior(WalkState& st, const uint64_t pathHash) {
   entry.pathHash = clixPathHash(fullPath.data(), fullPath.size());
   const int priorIndex = findPrior(st, entry.pathHash);
 
-  const bool extractionExpected = st.readMetadata && FsHelpers::hasEpubExtension(name);
+  const bool isFb2 = FsHelpers::checkFileExtension(name, ".fb2") || FsHelpers::checkFileExtension(name, ".fb2.zip");
+  const bool extractionExpected = st.readMetadata && (FsHelpers::hasEpubExtension(name) || isFb2);
   const uint8_t expectedStatus = extractionExpected ? CLIX_METADATA_EXTRACTED : CLIX_METADATA_NOT_ATTEMPTED;
   bool reuseMetadata = false;
   ClixRecord priorRecord{};
@@ -334,9 +338,18 @@ int findPrior(WalkState& st, const uint64_t pathHash) {
   // builds spine, TOC, CSS, cover, or section caches during the library walk.
   if (!reuseMetadata && extractionExpected) {
     st.stats->parsed++;
-    Epub epub(fullPath, CACHE_DIR);
     std::string bookTitle;
-    if (epub.loadMetadata(bookTitle, author)) {
+    bool extracted = false;
+    if (isFb2) {
+      fb2::Metadata meta;
+      extracted = fb2::readMetadata(fullPath, meta);
+      bookTitle = std::move(meta.title);
+      author = std::move(meta.author);
+    } else {
+      Epub epub(fullPath, CACHE_DIR);
+      extracted = epub.loadMetadata(bookTitle, author);
+    }
+    if (extracted) {
       entry.record.metadataStatus = CLIX_METADATA_EXTRACTED;
       if (!bookTitle.empty()) {
         title = std::move(bookTitle);
@@ -461,6 +474,9 @@ void walk(WalkState& st, const std::string& path, const int depth) {
     if (st.nameBuf[0] == '\0' || isHiddenOrSidecar(st.nameBuf)) continue;
     const std::string name(st.nameBuf);
 
+    // fork-local seam: /study holds Study's decks and glyph tables, whose .txt
+    // files would otherwise list as unreadable books.
+    if (isDir && depth == 0 && name == "study") continue;
     if (isDir) {
       const size_t resumePosition = dir.position();
       dir.close();

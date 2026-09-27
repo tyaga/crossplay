@@ -11,9 +11,9 @@
 # the same time, nothing could be committed atomically, agent screenshot runs
 # shared one SD card and one qa-artifacts/ directory, every save restarted
 # Mario's simulator, and check.sh reported green for the *union* of everyone's
-# code. That last one is not theoretical: Dungeon, Insider and Hacker News all
-# shipped against Toybox symbols that were never committed, and xteink HEAD did
-# not compile for three commits, because every check ran against a dirty tree.
+# code. That last one is not theoretical: apps shipped against Toybox symbols
+# that were never committed, and xteink HEAD did not compile for three commits,
+# because every check ran against a dirty tree.
 #
 # A worktree per effort fixes all of it at once: own branch, own build output,
 # own SD card, own screenshots, own build lock.

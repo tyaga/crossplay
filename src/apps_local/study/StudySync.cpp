@@ -510,11 +510,13 @@ bool StudySync::chooseDecks(const BridgeState& state, const std::vector<std::str
   return true;
 }
 
-bool StudySync::syncStart(const BridgeState& state, const std::vector<DeckPayload>& decks, std::string& jobId,
-                          std::vector<std::pair<std::string, uint32_t>>& acks, std::string& message) {
+bool StudySync::syncStart(const BridgeState& state, const std::vector<DeckPayload>& decks,
+                          const std::vector<WordPayload>& words, std::string& jobId,
+                          std::vector<std::pair<std::string, uint32_t>>& acks, std::vector<std::string>& wordsAccepted,
+                          std::string& message) {
   unpaired = false;
   // Wire shape: [u32 LE header_len][JSON header][per-deck revlog tail then
-  // cards.dat, in header order].
+  // cards.dat, in header order][each saved word's file, in header order].
   JsonDocument doc;
   JsonArray arr = doc["decks"].to<JsonArray>();
   for (const auto& d : decks) {
@@ -524,11 +526,20 @@ bool StudySync::syncStart(const BridgeState& state, const std::vector<DeckPayloa
     o["revlogLen"] = d.revlogTail.size();
     o["cardsLen"] = d.cards.size();
   }
+  if (!words.empty()) {
+    JsonArray wordArr = doc["words"].to<JsonArray>();
+    for (const auto& w : words) {
+      JsonObject o = wordArr.add<JsonObject>();
+      o["file"] = w.file;
+      o["len"] = w.bytes.size();
+    }
+  }
   std::string header;
   serializeJson(doc, header);
   std::string body;
   size_t total = 4 + header.size();
   for (const auto& d : decks) total += d.revlogTail.size() + d.cards.size();
+  for (const auto& w : words) total += w.bytes.size();
   body.reserve(total);
   const uint32_t hlen = header.size();
   body.append(reinterpret_cast<const char*>(&hlen), 4);
@@ -537,6 +548,7 @@ bool StudySync::syncStart(const BridgeState& state, const std::vector<DeckPayloa
     body += d.revlogTail;
     body += d.cards;
   }
+  for (const auto& w : words) body += w.bytes;
 
   std::string response;
   const int status = request("POST", "/api/sync", state.token, reinterpret_cast<const uint8_t*>(body.data()),
@@ -559,6 +571,11 @@ bool StudySync::syncStart(const BridgeState& state, const std::vector<DeckPayloa
   jobId = reply["job"].as<const char*>();
   for (JsonPair kv : reply["ackOffsets"].as<JsonObject>()) {
     acks.emplace_back(kv.key().c_str(), kv.value().as<uint32_t>());
+  }
+  wordsAccepted.clear();
+  for (JsonVariant file : reply["wordsAccepted"].as<JsonArray>()) {
+    const char* text = file.as<const char*>();
+    if (text && *text) wordsAccepted.emplace_back(text);
   }
   return true;
 }

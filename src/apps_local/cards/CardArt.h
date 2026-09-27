@@ -2,9 +2,8 @@
 
 // Drawing a playing card. Shared by every game that deals from a standard deck.
 //
-// Lifted out of SolitaireScreens.cpp when Hearts became the second game to
-// need a card face. The geometry is unchanged, because it was arrived at by
-// looking at a panel rather than by reasoning -- see the note on the index in
+// Kept out of SolitaireScreens.cpp so a second card game gets the same face.
+// The geometry was arrived at by looking at a panel rather than by reasoning -- see the note on the index in
 // CardArt.cpp, which cost a shipped bug to learn.
 //
 // Freestanding in the same sense as the screen builders: it takes a
@@ -60,8 +59,7 @@ void drawCardFace(toybox::Screen& screen, const fui::Rect& rect, uint8_t card, i
 // A face-down card. `visible` works as above: a card peeking out of a fan gets
 // the frame and the lattice, and only a whole one gets the mark, because a mark
 // sliced in half is worse than no mark.
-// `mark` is the suit stamped on the back. It defaulted to spades and was
-// hardcoded, so a game called Hearts drew a fan of spades on its own menu.
+// `mark` is the suit stamped on the back, so each game can stamp its own.
 void drawCardBack(toybox::Screen& screen, const fui::Rect& rect, int visible, cards::Suit mark = cards::Suit::Spades);
 
 // An empty place. A dashed outline rather than a hairline rectangle, which is

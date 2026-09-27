@@ -5,9 +5,9 @@
 namespace playerui {
 namespace {
 
-// The doubled rule under a solid header. Local rather than shared because
-// ChessScreens, ConnectionsScreens and LinkScreens each keep their own; a fifth
-// copy is cheaper than a header dependency between apps.
+// The doubled rule under a solid header. Local rather than shared, as
+// LinkScreens keeps its own: a copy is cheaper than a header dependency
+// between apps.
 void toyboxChrome(toybox::Screen& screen, const char* title) {
   fui::HeaderProps header;
   header.title = title;
@@ -17,8 +17,8 @@ void toyboxChrome(toybox::Screen& screen, const char* title) {
   screen.insetContent(fui::Insets{toybox::kGutter * 3, toybox::kMargin, toybox::kMargin, toybox::kMargin});
 }
 
-// Corner brackets, the same shape the chess board and the Connections ornament
-// wear, so three unrelated screens read as one device. Drawn through the
+// Corner brackets, the same shape the battleship grid and the Study card
+// wear, so unrelated screens read as one device. Drawn through the
 // DrawTarget rather than through the Toybox helper because that one takes a
 // GfxRenderer and screens stay freestanding.
 void drawBrackets(toybox::Screen& screen, const fui::Rect& box, const int arm) {
@@ -61,9 +61,9 @@ void buildPlayer(toybox::Screen& screen, const PlayerModel& model) {
   const fui::Rect body = screen.body();
 
   // The face, anchored under the rule rather than floating in the middle of the
-  // page. What is left below the words is one deliberate zone above the footer,
-  // which is how chess leaves room for its capture strips -- slack gathered in
-  // one place reads as a page, slack scattered reads as a mistake.
+  // page. What is left below the words is one deliberate zone above the footer
+  // -- slack gathered in one place reads as a page, slack scattered reads as a
+  // mistake.
   const fui::Rect face = fui::makeRect(static_cast<int16_t>(body.x + (body.width - kFaceSize) / 2),
                                        static_cast<int16_t>(body.y + toybox::kGutter), kFaceSize, kFaceSize);
   player::drawAvatar(screen.target(), face, model.name, player::AvatarSize::Portrait);

@@ -36,12 +36,10 @@
 
 namespace toybox {
 
-// One size for every screen in this fork, sized for the largest: the
-// Connections board's sixteen tiles plus its three action buttons, with room to
-// grow. This was 16 and it was not enough -- the board silently dropped all
-// three buttons, and the only reason that took minutes rather than an afternoon
-// is that the buffer records overflow and toybox::reportOverflow logs it. Raise
-// this, do not trim a screen to fit it.
+// One size for every screen in this fork, sized for the largest with room to
+// grow. Too small, and a screen silently drops its last controls; the buffer
+// records overflow and toybox::reportOverflow logs it. Raise this, do not trim
+// a screen to fit it.
 constexpr size_t kMaxInteractions = 24;
 
 // The hit table, plus the one thing the SDK buffer cannot know: whether the
@@ -230,13 +228,10 @@ inline int16_t headerTitleWidth(Screen& screen, const freeink::ui::Rect& band, c
 // twenty-fifth copy will not have.
 inline void headerBand(Screen& screen, const freeink::ui::HeaderProps& props) {
   namespace fui = freeink::ui;
-  // Absolute chrome, done HERE so no screen can forget it. It was an opt-in
-  // call placed before this one, and screens forgot it exactly the way they
-  // forgot the rule: Yahtzee called it on its menu and not on its card or its
-  // result, so the card's band began at the bezel's safe top instead of row 0
-  // and painted 85 rows where the menu painted 76. Mario saw the two screens
-  // side by side and asked why one header was taller, which is the only way
-  // this was ever going to be found -- every band looks right alone.
+  // Absolute chrome, done HERE so no screen can forget it. A screen that
+  // forgets begins its band at the bezel's safe top instead of row 0 and paints
+  // 85 rows where its sibling paints 76 -- visible only side by side, because
+  // every band looks right alone.
   //
   // Safe to do unconditionally: it is idempotent for the 25 screens that
   // already call it, and no screen in the fork insets its content before its
@@ -249,8 +244,8 @@ inline void headerBand(Screen& screen, const freeink::ui::HeaderProps& props) {
   // half. Every screen decides for itself where its content starts, and while
   // this reserved kHeaderHeight alone, the honest way of asking -- take the
   // body rect the chrome left and add a gutter -- still landed content five
-  // pixels under a line the arithmetic could not see. The Connections calendar
-  // and the Wallpapers grid did exactly that and were exactly that wrong.
+  // pixels under a line the arithmetic could not see. The Wallpapers grid did
+  // exactly that and was exactly that wrong.
   //
   // With the gap and the rule reserved, screen.body().y is the first row a
   // screen owns, and the obvious thing is now also the correct thing. Screens
@@ -269,9 +264,9 @@ inline void headerBand(Screen& screen, const freeink::ui::HeaderProps& props) {
                        styles.resolve(fui::StateNormal).background);
   // The rule, drawn HERE rather than by each screen. It was a separate opt-in
   // call: of the fork's 41 band sites, 26 called headerRule(), Solitaire drew
-  // its own by hand at 3, and the remaining 12 had no rule at all -- including
-  // the Yahtzee card, which is how a decoration nobody ever decided to omit
-  // went missing until Mario opened that screen and asked.
+  // its own by hand at 3, and the remaining 12 had no rule at all -- a
+  // decoration nobody ever decided to omit, missing until Mario opened one of
+  // those screens and asked.
   //
   // It paints below the band and reserves nothing, exactly as the old
   // per-screen call did, so the 27 screens that already drew it see no change

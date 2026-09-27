@@ -47,12 +47,12 @@ const uint8_t* iconForName(UIIcon icon) {
       return RecentIcon;
     case UIIcon::Settings:
       return Settings2Icon;
-    // fork-local seam: the shelf's two folders. Same generator, same format
-    // and the same 32px as every icon above.
-    case UIIcon::Games:
-      return ShelfGamesIcon;
+    // fork-local seam: the shelf's folder and the Study row on Home. Same
+    // generator, same format and the same 32px as every icon above.
     case UIIcon::Apps:
       return ShelfAppsIcon;
+    case UIIcon::Study:
+      return ShelfStudyIcon;
     case UIIcon::Transfer:
       return TransferIcon;
     case UIIcon::Library:

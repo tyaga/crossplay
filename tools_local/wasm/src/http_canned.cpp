@@ -1,9 +1,8 @@
 // The network, canned.
 //
-// The browser build has no sockets, and the two apps that want the internet --
-// Hacker News and the Connections daily -- are the two that look most broken
-// without it: one shows NO LUCK, the other offers a download that cannot
-// happen. Faking them is honest here in a way it would not be on the device,
+// The browser build has no sockets, and the apps that want the internet --
+// Hacker News and xkcd's update check -- look broken without it: Hacker News
+// shows NO LUCK. Faking them is honest here in a way it would not be on the device,
 // because the page's claim is "this is the firmware", not "this is online".
 //
 // So this replaces HttpDownloader for the browser build only. Every request is
@@ -37,14 +36,6 @@ std::string cannedPathFor(const std::string& url) {
   // r.jina.ai fronts an arbitrary article; one piece of prose answers for all
   // of them, which is what a demo needs and all it needs.
   if (startsWith(url, "https://r.jina.ai/")) return "/canned/hn-article.txt";
-  // The published Connections archive. A 40-puzzle slice of the real thing,
-  // cut by tools_local/wasm/connections_subset.py -- without this the app
-  // opened on ARCHIVE 0, sent you through the Wi-Fi picker, and returned you
-  // to the same empty screen with nothing said. It was the only app on the
-  // shelf that could not be played here at all.
-  if (startsWith(url, "https://raw.githubusercontent.com/Eyefyre/NYT-Connections-Answers/")) {
-    return "/canned/connections.json";
-  }
   // xkcd's latest-comic endpoint, answering with the newest comic that is
   // actually on this card, so UPDATE says "up to date" instead of "xkcd.com
   // did not answer". The card's pack IS current as far as this build is

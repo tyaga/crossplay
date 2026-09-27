@@ -123,14 +123,14 @@ by another route, so weight comes from size and from inversion instead.
 Registered from `ToyboxFonts.cpp` rather than `main.cpp`, so it costs no upstream
 surface. 13KB of flash for both cuts.
 
-**A game may have its own voice, but not its own chrome.** Connections adds
-**Instrument Serif** for its tiles and its menu body, and that is enough to tell
-the two games apart from across a room. What it does _not_ touch: the header bar
-and the buttons stay in Jersey in every app, because those are the device
-speaking, not the game. The rule generalises: the app's own surface and its menu
+**A game may have its own voice, but not its own chrome.** An app can bind a
+second face for its own surface and its menu body, the way Hacker News and xkcd
+bind the reading serif. What it does _not_ touch: the header bar and the
+buttons stay in Jersey in every app, because those are the device speaking, not
+the game. The rule generalises: the app's own surface and its menu
 prose can carry a typeface; anything the system draws around it cannot.
 
-Three cuts of a second face cost 424KB of flash, which is affordable exactly
+Three cuts of a display-size second face can cost 400KB of flash, which is affordable exactly
 once or twice, not per game. Check the budget before adding a face rather than
 after.
 
@@ -148,9 +148,8 @@ which fetches Jersey 25 rather than relying on a TTF nobody still has.
 **There are not three fonts. There are three slots.** `FONT_SLOTS = 3` is
 `int fonts[3]` on the render target: a working set, not a limit.
 `GfxRenderer` holds an uncapped `std::map<int, EpdFontFamily>`, and rebinding a
-slot mid-render is one assignment. This is why the Connections board can draw
-its chrome in one face and its tiles in another: two passes, one rebind between
-them. Treat the number 3 as "how many faces on screen at the same instant",
+slot mid-render is one assignment. This is why a board can draw its chrome in
+one face and its tiles in another: two passes, one rebind between them. Treat the number 3 as "how many faces on screen at the same instant",
 which has never once been a real constraint.
 
 **Nothing is ever elided. No exceptions.** Mario's rule, and it sits above the
@@ -161,16 +160,14 @@ as the next rule says; break a word only when even the smallest cut cannot hold
 it, and never shorten one.
 
 The measuring is the part that is easy to skip and fatal to skip. A fit test
-that asks a different question from the layout is not a fit test: Connections
-asked "is this narrow enough" while its splitter cut by CHARACTER COUNT, and the
-two disagreed on 48 boards of the published archive, every one of them a tile
-showing a phrase the player could not know was shortened. Break the text with
-the same function that decides the cut, and check the emitted line, not the
-input string. `host-tests/tilefit` walks all 1143 published puzzles and fails on
-one shortened line. `host-tests/wallcaption` does the same for the wallpaper
-picker, walking every built-in name through the real toybox cut and failing on
-one elided caption; both link `lib/EpdFont` because the ui suite's target
-answers ten pixels a character and cannot see a real overflow.
+that asks a different question from the layout is not a fit test: a check that
+asks "is this narrow enough" while the splitter cuts by CHARACTER COUNT shows a
+phrase the player cannot know was shortened. Break the text with the same
+function that decides the cut, and check the emitted line, not the input string.
+`host-tests/wallcaption` walks every built-in wallpaper name through the real
+toybox cut and fails on one elided caption; it links `lib/EpdFont` because the
+ui suite's target answers ten pixels a character and cannot see a real
+overflow.
 
 **A selection marks the cell, it does not move it.** The wallpaper picker's
 brackets sit in the cell's padding, clear of the image rect and clear of the
@@ -188,28 +185,22 @@ a tile was the first thing Mario rejected on sight, and he was right: a word
 split in half is unreadable in a way that a smaller word never is.
 
 **A grid of equals shrinks together.** The rule above sizes one text against one
-box, and applied per box it breaks a grid: sixteen Connections tiles that mean
-"compare these against each other" were each sized against their own word, so a
-long one came out a quarter smaller than the fifteen beside it and read as the
-odd one out. On a set of interchangeable candidates, size is not available as a
-property of a member. Measure the whole set, pick the largest cut the WIDEST of
-them fits, and set them all in it (`connectionsui::chooseTileCut`). It costs the
-board a size step on 58% of the published archive, and it is still cheaper than
-one tile claiming to matter more. This does not apply where the boxes are not
-peers -- a header and its subtitle are meant to differ.
+box, and applied per box it breaks a grid: tiles that mean "compare these
+against each other", each sized against its own word, make a long one come out
+a size smaller than its neighbours and read as the odd one out. On a set of
+interchangeable candidates, size is not available as a property of a member.
+Measure the whole set, pick the largest cut the WIDEST of them fits, and set
+them all in it. This does not apply where the boxes are not peers -- a header
+and its subtitle are meant to differ.
 
-**Two strings sharing a box are sized together.** A solved Connections row
-carries a category and the four words that were in it, and each was set at a
-fixed cut with no fallback -- so a long word list drew its second line past the
-black fill it sits on, in white, on white paper. Sixteen percent of the
-archive's boards had at least one. Where two blocks share a height, choose their
-cuts as a pair, largest first, and accept the first pair whose stacked height
-the box actually holds (`connectionsui::drawSolvedRow`).
-
-
+**Two strings sharing a box are sized together.** A box that carries a title
+and a second line, each set at a fixed cut with no fallback, draws the second
+line past its fill the day the text is long. Where two blocks share a height,
+choose their cuts as a pair, largest first, and accept the first pair whose
+stacked height the box actually holds.
 
 **A name inside a sentence is a short name.** When the device name grew from two
-words to three, chess's status capsule went from "CALM FINCH'S MOVE" to "SHAGGY
+words to three, a status capsule went from "CALM FINCH'S MOVE" to "SHAGGY
 SLEEPY GOATEE'S MOVE" -- and what the component dropped was "MOVE", the one word
 that said what the capsule was for. Battleship had the same shape in "%s SANK
 YOUR %s". Neither was a truncation bug: both labels were built by concatenating
@@ -240,8 +231,8 @@ with its foot out of the bottom.
 The display cut therefore needs a 63px-tall rect to centre itself, and almost
 nothing inside a game board is 63px tall. The error grows as the box gets
 _smaller_, which is exactly why it reads as an intermittent font problem instead
-of a rule: a 50px Sudoku cell put the 20px cut at 12 above and 13 below (fine)
-and the 30px cut at 13 above and 0 below, crossing the border.
+of a rule: a 50px cell puts the 20px cut at 12 above and 13 below (fine) and
+the 30px cut at 13 above and 0 below, crossing the border.
 
 `toybox::inkCentred(box, cut)` returns a rect one line box tall, positioned so
 the clamp is a no-op and the ink lands centred in `box`. Use it for any
@@ -256,20 +247,16 @@ The same clamp applies to a **left- or right-aligned** run: alignment is
 horizontal, the clamp is vertical, and a left-aligned score in a short box is
 exactly as low as a centred one. Audit by box height, never by alignment.
 
-The rest of the cuts this fork ships, for the apps that do not speak Jersey and
-for the reading face a prose app binds to its body slot:
+The reading face a prose app binds to its body slot:
 
 | cut                | line box | ink  | used by                         |
 | ------------------ | -------- | ---- | ------------------------------- |
-| `instrument_10`    | 27px     | 15px | Connections menu, small slot    |
-| `instrument_13`    | 35px     | 20px | Connections, tile and menu body |
-| `instrument_24`    | 65px     | 36px | Connections, title slot         |
 | `reading_serif_14` | 40px     | 21px | Hacker News, Xkcd, body slot    |
 
 Two places `inkCentred` cannot reach, both worth knowing before hunting one:
 
-- **A slot is not a cut.** An app that rebinds its slots per view -- Connections,
-  and Insider's rules pages -- sets the same `kTileFont` in two different faces,
+- **A slot is not a cut.** An app that rebinds its slots per view sets the same
+  `kTileFont` in two different faces,
   so the right `CutMetrics` depends on which screen is drawing. Read the app's
   `Faces` before picking one.
 - **A component owns its own rect.** `screen.button()` and the list rows lay
@@ -284,19 +271,16 @@ bar and capsule ends up with its text visibly hanging low. `toybox::drawCapsCent
 measures the real ink from the `H` glyph (`top` and `height`) and solves for the
 `y` that puts that band in the middle. Use it for all chrome text.
 
-**Give the content a margin.** Chess originally sized the board as
-`screenWidth - 2 * kFrame`, which ran it to within 4px of the bezel and made the
-whole screen feel cramped. Content insets by `kMargin`, and only full-bleed
+**Give the content a margin.** A board sized as `screenWidth - 2 * kFrame` runs
+to within 4px of the bezel and makes the whole screen feel cramped. Content insets by `kMargin`, and only full-bleed
 chrome (the header bar) touches an edge.
 
-**Artwork is licensed, not invented.** The piece set is "celtic" by Maurizio
-Monge (MIT), chosen by rendering six candidate sets at the real 48px under the
-real threshold and looking at them. An earlier hand-drawn set was legible and not
-good; a set several people have refined beats one drawn from polygon coordinates
-in an afternoon. The lesson generalises: draw our own only where no good licensed
-option exists.
+**Artwork is licensed, not invented.** A set several people have refined beats
+one drawn from polygon coordinates in an afternoon: the Solitaire suits are
+drawn from Noto Sans Symbols 2 for that reason. Draw our own only where no good
+licensed option exists.
 
-The avatar parts in `assets_local/avatar/` are the exception that proves it: no
+The avatar parts in `assets_local/avatar/` are the exception: no
 icon set ships a face that comes apart into layers, so these are ours. What made
 them cheap anyway was refusing to write a pipeline for them -- they are SVGs on
 one shared 120x120 viewBox fed to the SDK's own `gen_icons.py`, so the whole
@@ -329,28 +313,26 @@ Two constraints fell out of drawing fourteen of them:
   Adjacent masses need a gap, or they become one mass.
 
 **A light shape must be knocked out before it is stroked.** Drawing only the
-outline of a white piece leaves it hollow, so the surface underneath shows
-through: harmless on a white square, muddy on a dithered one. Fill the silhouette
-with the page colour first, then stroke the outline over it. That is what a white
-piece physically is, and it is why the pieces looked wrong in every variant. A
-symptom that survives every theme is not a theme problem.
+outline of a white shape leaves it hollow, so the surface underneath shows
+through: harmless on white, muddy on dither. Fill the silhouette with the page
+colour first, then stroke the outline over it. A symptom that survives every
+theme is not a theme problem.
 
-**Silhouettes, not drawings.** Piece artwork is reduced to its outer form: flood
-fill the background inward from the border and keep everything the fill cannot
-reach. Celtic's engraved interior lines read as noise at 48px on a 1-bit panel and
-fight the toy look. What survives is the shape, which is all this size can carry.
+**Silhouettes, not drawings.** Artwork is reduced to its outer form: flood fill
+the background inward from the border and keep everything the fill cannot
+reach. Engraved interior lines read as noise at 48px on a 1-bit panel and fight
+the toy look. What survives is the shape, which is all this size can carry.
 
 **Anything that draws outside its own cell needs its own pass.** The selection
-frame is drawn outside the square (an inset frame eats the piece and makes the
-square look smaller than its neighbours), so it overlaps its neighbours and must
+frame is drawn outside the cell (an inset frame eats the content and makes the
+cell look smaller than its neighbours), so it overlaps its neighbours and must
 be painted after every cell. Drawn inside the per-cell loop it was overdrawn by
 whichever adjacent cell happened to render later, leaving a broken rectangle.
 
 **Layouts are anchored, not centred.** A block floating with equal slack above
-and below reads as unresolved. Chess anchors the board under the header and the
-status to the bottom margin, so the composition reads as a page with a footer and
-the remaining slack becomes one deliberate zone, which the captured-material
-strips grow into.
+and below reads as unresolved. Anchor the board under the header and the status
+to the bottom margin, so the composition reads as a page with a footer and the
+remaining slack becomes one deliberate zone.
 
 **Dither is the only gray.** The renderer offers exactly two: `LightGray` (25%,
 every other pixel on both axes) and `DarkGray` (50% checkerboard). That is thin.
@@ -358,19 +340,12 @@ The source comment on the 50% pattern still reads `TODO: maybe find a better
 pattern?`. Extending this set is the highest-leverage change available to the
 look of every app, and it is cheap.
 
-**Colour reads from the drawing.** Black pieces are solid silhouettes, white
-pieces reduce to an outline, because their fill is white and only their stroke
-survives the threshold. No background chips. Chips were
-the first attempt and they cluttered the board.
-
-**Mark the cell, not the thing standing in it.** A capture hint was a dot in the
-middle of the target square, which is exactly where the piece is: it disappeared
-into a black silhouette and sat on a white one like a blemish. On 1-bit there is
-no colour to escape to and no outline that survives at that size, so the answer
-is not a better dot, it is a mark somewhere the artwork never reaches.
-`cornerMarks()` puts four brackets in the corners, which no piece occupies at any
-size, and it rhymes with the frame around the board. Empty squares keep the dot,
-because there is nothing there to hide.
+**Mark the cell, not the thing standing in it.** A hint dot in the middle of a
+cell sits exactly where the content is: it disappears into a black silhouette
+and sits on a white one like a blemish. On 1-bit there is no colour to escape
+to, so the answer is not a better dot, it is a mark somewhere the artwork never
+reaches. `cornerMarks()` puts four brackets in the corners, and it rhymes with
+the frame around a board.
 
 ## Ornament, and the only kind we allow
 
@@ -383,17 +358,11 @@ cartoon that never moves stops being seen faster than a control does.
 > **Ornament has to be made of the app's own material, and it has to carry the
 > app's own data.**
 
-Connections' menu has a 4x4 grid in the middle. It is the shape of a Connections
-board, which is the material. Each cell is one of your last sixteen days: solid
-for a clean solve, dithered for a solve with mistakes, crossed for a loss, empty
-for a day you never opened, heavier border on the last cell because that one is
-today. That is the data. It is different every morning, it rewards coming back,
-and it is the only thing on the screen that is yours.
-
-The first version of that grid was a fixed decorative pattern and it looked
-fine. Mario's objection was exact: if we are going to put something in the
-middle, it should represent something. The cost of making it real was a struct
-and one pass over a file that was already being read.
+Battleship's menu draws the shots you fired in the game you just played. It is
+the shape of the board, which is the material, and it is your game, which is the
+data: different every time, and identical on nobody else's device. A fixed
+decorative pattern in the same place would look fine and represent nothing;
+if something sits in the middle, it should represent something.
 
 Test for anything decorative: **would a screenshot of it be identical on
 everyone's device?** If yes, it is wallpaper. Give it data or take it out.
@@ -408,20 +377,18 @@ already carried. Nothing can arrive stale, and a build with different word lists
 draws the plain head everyone starts from rather than the wrong person.
 
 Worth generalising: **when ornament has to carry data, look first for data the
-system is already moving.** The Connections grid needed a struct and a pass over
-a file. This needed neither, because the question "what should the ornament
+system is already moving.** The avatar needs no storage and no wire format, because the question "what should the ornament
 show" and the question "what does this device already tell other devices" turned
 out to have the same answer.
 
 ## The front door
 
 Every game gets a menu, and a menu of three equal rows tells you nothing about
-which game you are in or what state you left it in. The Connections menu is the
-pattern for the rest:
+which game you are in or what state you left it in. The pattern:
 
 | Band     | What it holds                            | Weight        |
 | -------- | ---------------------------------------- | ------------- |
-| Headline | today's date, display font, left set     | the loudest   |
+| Headline | the main action, display font, left set  | the loudest   |
 | State    | `NOT STARTED` / `IN PROGRESS` / `SOLVED` | body          |
 | Rule     | `kRule`, full width                      | the divider   |
 | Record   | played, perfect, streak, one line        | small         |
@@ -433,16 +400,14 @@ is on the largest thing on the screen and needs no button at all. The lesser
 doors sit at the bottom because that is where a thumb rests and because it keeps
 them from competing with the headline.
 
-The corner brackets around the ornament are the same shape the chess board
-wears. That is deliberate: two games that share a bracket read as one device.
+The corner brackets around the ornament are the same shape a board wears. That is deliberate: two games that share a bracket read as one device.
 
 ## Controls, not decoration
 
 **Size a control to its widest label, once.** A capsule sized to its own text
 grows and shrinks as the text changes, and reads as the thing vanishing and
 coming back rather than as the same object saying something new. `pill()` takes
-a `minWidth` for this; Chess passes the width of the longest status it can ever
-show.
+a `minWidth` for this; pass the width of the longest status it can ever show.
 
 **Three things cannot share one centre line.** The shelf's player bar carries a
 face, a name and a chevron. Handing the name to the button as its label was the
@@ -457,30 +422,24 @@ metric is narrower than the real one and collides with nothing.
 tap threw away a finished game you were still reading. If something is an action,
 give it a shape and make only that shape respond.
 
-**Weights must differ enough to read as different.** The board border is 9px
-against the selection frame's 4px. At equal weight they compete and neither wins.
+**Weights must differ enough to read as different.** A 9px board border against
+a 4px selection frame reads; equal weights do not. At equal weight they compete and neither wins.
 
-**Reserve space for what will arrive.** The captured-material strips are empty at
-the start of a game and fill as it goes. The layout allocates their space from
-the first frame, because a board that reflows halfway through a game is worse
+**Reserve space for what will arrive.** Anything that is empty at the start of a
+game and fills as it goes gets its space from the first frame, because a board that reflows halfway through a game is worse
 than one with a little air in it.
 
 **Pointing is fingers. Stepping is buttons. There is no cursor.**
 
-Chess grew a board cursor before touch was settled, and Connections inherited a
-menu cursor from the same habit. Both were dead weight: an on-screen cursor that
-only physical buttons move is a second, worse input model running alongside the
-real one, and it comes with its own bugs. A calendar cursor that persisted
-across months produced a black square that meant nothing and could not be
-explained. Removing it removed the bug class, not the bug.
+An on-screen cursor that only physical buttons move is a second, worse input
+model running alongside the real one, and it comes with its own bugs: a cursor
+that persists across a state change draws a black square that means nothing.
+On the shelf it would be worse than dead: the side keys would move a selection
+that only **Confirm** could open, and `frontButtonConfirm` on the X4 Pro
+resolves to `PIN_UNASSIGNED`.
 
-The shelf kept one until 2026-08 and it was worse than dead: the side keys moved
-a selection that only **Confirm** could open, and `frontButtonConfirm` on the X4
-Pro resolves to `PIN_UNASSIGNED`. You could move a cursor you had no way to act
-on.
-
-This rule used to end "keep the physical buttons for Back and system functions",
-and that is not possible on this device. **The X4 Pro has two buttons**: the
+"Keep the physical buttons for Back and system functions" is not possible on
+this device. **The X4 Pro has two buttons**: the
 side page keys, wired to logical Up and Down. Back, Confirm, Left and Right are
 all unassigned in the board profile and are never configured as inputs. Back is
 a left-edge swipe, which `wasReleased(Button::Back)` already folds in.
@@ -516,10 +475,10 @@ text.** `GfxRendererTarget::text()` decides ink with `style.color != Color::Whit
 so every non-white text colour draws solid black. There is no grey type on this
 device. Dim a control by dithering its ground.
 
-**A destructive setting changes in place; leaving is what applies it.** Tapping
-OPPONENT used to throw away the game and jump straight back to the board, so you
-arrived somewhere else without having seen anything change and had to guess
-whether it had worked. Now the row updates with the menu still open, you can see
+**A destructive setting changes in place; leaving is what applies it.** A
+setting that throws away the game and jumps straight back to the board leaves
+you somewhere else without having seen anything change. The row updates with
+the menu still open, you can see
 the new value, and the capsule at the bottom relabels itself to **START NEW
 GAME**: the confirmation is a label you were going to read anyway, not a dialog.
 Flip the setting back and the label goes with it. This costs no extra screen and
@@ -537,15 +496,6 @@ no extra tap.
 - Tone and copy are barely touched. On the evidence, that is where most of
   Playdate's personality actually lives, and it is the cheapest thing we have
   not spent.
-- Chess still has a board cursor, written before touch-only was settled. It
-  contradicts the rule above and should go the way Connections' did.
-- The front door is a pattern rather than a one-off: battleship's was built to
-  it without argument (record line, rule, ornament, bottom-anchored doors), and
-  the ornament rule survived contact with a game whose material is a grid --
-  the menu draws the shots you fired in the game you just played, so it is
-  different every time and identical on nobody else's device. The 2026-08-10
-  art pass settled the remaining question: it does NOT hold for a game with no
-  record, and the honest fix is the record, not the pattern. Checkers, Connect
-  Four and Yahtzee had byte-identical empty menus because they saved nothing;
-  each got a one-line .sav (knucklebones' shape) and the pattern then carried
-  all five games of that pass, Minesweeper included, without adjustment.
+- The front door does NOT hold for a game with no record, and the honest fix is
+  the record, not the pattern: a game that saves nothing draws a byte-identical
+  empty menu, and a one-line .sav is what gives the pattern something to show.

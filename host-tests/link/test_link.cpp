@@ -210,10 +210,9 @@ void testMatchingIsOrderIndependent() {
 }
 
 void testWhoMovesFirstIsNotAlwaysTheSameDevice() {
-  // The defect this replaced: "lower address moves first" over two fixed MACs
-  // meant one device played White in every game of chess ever played on the
-  // pair. The DS's first player was whoever tapped first; a coin toss reaches
-  // the same place with nothing for the user to do.
+  // "Lower address moves first" over two fixed MACs would give one device the
+  // first move in every game ever played on the pair. A coin toss spreads it
+  // with nothing for the user to do.
   constexpr int kTrials = 40;
   int lowFirst = 0;
   int highFirst = 0;
@@ -505,7 +504,7 @@ void testThirdDeviceIsLeftOut() {
 }
 
 void testDifferentGamesIgnoreEachOther() {
-  // Two devices in chess and one in connect four must not pair across games.
+  // Two devices in one game and one in another must not pair across games.
   Medium medium;
   Player a(medium, 0x10, "A");
   Player b(medium, 0x20, "B");

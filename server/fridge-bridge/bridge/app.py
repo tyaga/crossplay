@@ -86,7 +86,7 @@ app.add_middleware(
     max_age=600,
 )
 
-# Copied in spirit from read-bridge's table. The claim limits are the ones that
+# Copied in spirit from study-bridge's table. The claim limits are the ones that
 # matter here: a six-digit code is a million, so the caps are what makes
 # guessing hopeless rather than the size of the space.
 CLAIM_IP = Window(10, 300)
@@ -177,8 +177,8 @@ def _build() -> str:
 async def device_reports(request: Request, call_next):
     """Relay whatever crash or install record the reader is carrying.
 
-    Byte-for-byte the shape study-bridge and read-bridge use, and the three
-    details that matter are the same three:
+    Byte-for-byte the shape study-bridge uses, and the three details that
+    matter are the same three:
 
     AFTER the response and only on < 400, so a request the device will retry
     does not post the same crash twice.

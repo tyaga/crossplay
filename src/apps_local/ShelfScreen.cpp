@@ -36,8 +36,8 @@ const char* const kEmptyHint = "TAP TO CHOOSE WHAT THIS FOLDER SHOWS";
 // hairline outline: the page marks below mean exactly that by the same pair, so
 // this is the screen's own language rather than a new one. Drawn rather than
 // blitted because a 1-bpp mask cannot be both a fill and a knockout, and
-// because a hand-drawn TICK is what goes wrong (solitaire's pips, minesweeper's
-// flag, three attempts each) -- so the tick is Lucide's and the box is two
+// because a hand-drawn TICK is what goes wrong (solitaire's pips took three
+// attempts) -- so the tick is Lucide's and the box is two
 // primitives.
 constexpr int16_t kBoxSize = toybox::kIconSize;
 constexpr int16_t kTickSize = 24;

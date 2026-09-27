@@ -3,13 +3,14 @@
 // The shelf: everything this fork adds to the device, and the only way in or
 // out of it.
 //
-// Home gets two rows, GAMES and APPS, as siblings. Each opens a folder holding
-// the things of that kind. That is the whole hierarchy.
+// Home gets the Home items, launched directly, and one folder row, APPS &
+// GAMES, holding everything else -- upstream's file browser and settings
+// included. That is the whole hierarchy.
 //
 //   Home
-//     Browse Files / Recent Books / File Transfer / Settings   (upstream's)
-//     GAMES >   chess, battleship, connections, solitaire
-//     APPS  >   study, hacker news, ...
+//     Library / File Transfer                          (upstream's)
+//     Study                                            (Home item)
+//     Apps & Games >  browse files, settings, hacker news, ..., battleship
 //
 // ---------------------------------------------------------------------------
 // Three rules, and the reason each exists.
@@ -20,20 +21,13 @@
 //    second a third tap is a real cost.
 //
 // 2. Games and apps are the same kind of row. The only difference between
-//    chess and a spaced-repetition deck is which folder it sits in, so there is
-//    one `Item` type and one launcher. The previous fork had two near-identical
-//    entry structs for no reason anyone could name.
+//    solitaire and a spaced-repetition deck is where it sits, so there is one
+//    `Item` type and one launcher.
 //
 // 3. An app never knows where it came from. It calls leave() and lands in its
-//    folder; a folder calls leave() and lands on Home. This is the one exit and
-//    every app uses it.
-//
-// Rule 3 is why this file was written before any app moved. The fork this
-// replaces carried a `setReturnHere()` / `takeReturnHere()` breadcrumb that had
-// to be *redeemed by a different activity on entry*, so a missed redemption
-// stranded you in the wrong menu -- and it existed only because upstream's own
-// games each hardcoded `goToApps()` and could not be edited. Every app here is
-// ours. None of them should ever name a destination.
+//    folder, or on Home when Home opened it; a folder calls leave() and lands
+//    on Home. Upstream's screens in a folder cannot call leave(): they call
+//    goHome(), and goHome() asks leaveToFolder() first.
 // ---------------------------------------------------------------------------
 
 #include <Icon.h>
@@ -82,7 +76,7 @@ struct Folder {
   const freeink::Icon* mark;
   const Item* items;
   int count;
-  // Whether the footer shows this device's face and name. True for GAMES,
+  // Whether the footer shows this device's face and name. True for APPS & GAMES,
   // because the name exists for playing against somebody in the room and this
   // bar is the only way into PLAYER, where it is changed. False elsewhere,
   // where it would be a face with no job.
@@ -95,6 +89,30 @@ int folderCount();
 // Open folder `index` from Home. Out of range is a no-op and logged.
 void openFolder(int index, GfxRenderer& renderer, MappedInputManager& mappedInput);
 
+// The items Home launches directly, drawn after upstream's rows and before the
+// folders.
+const Item* homeItems();
+int homeItemCount();
+UIIcon homeItemIcon(int index);
+
+// Open Home item `index`. leave() from it lands on Home. False if the item
+// could not be created.
+bool openHomeItem(int index, GfxRenderer& renderer, MappedInputManager& mappedInput);
+
+// Which Home item Home should select on entry, or -1 when the last thing opened
+// from Home was not one.
+int lastHomeItemOnHome();
+
+// Open the folder the activity named `activityName` was launched from, and say
+// whether it did. False when that activity was not opened from a folder, so
+// the caller goes Home. This is how upstream's own screens, which leave by
+// goHome(), return to Apps & Games.
+bool leaveToFolder(const char* activityName, GfxRenderer& renderer, MappedInputManager& mappedInput);
+
+// Drop the folder an open item came from, so the next goHome() lands on Home.
+// The Home gesture calls it: that gesture means Home, from anywhere.
+void forgetOpenFolder();
+
 // Open item `item` of folder `folder`, and remember which folder it came from
 // so leave() can undo it. False if the item could not be created, in which case
 // nothing was replaced and the caller still owns the screen.
@@ -103,8 +121,8 @@ bool openItem(int folder, int item, GfxRenderer& renderer, MappedInputManager& m
 // ---------------------------------------------------------------------------
 // What a folder SHOWS, which is not the same as what it holds.
 //
-// Every item above is installed and stays installed. A person who never plays
-// Sudoku can take it off the list, and a folder then draws, pages and resumes
+// Every item above is installed and stays installed. A person who never reads
+// XKCD can take it off the list, and a folder then draws, pages and resumes
 // over what is left. Nothing else changes: a hidden item still resumes on wake
 // and still answers to CROSSPLAY_AUTOSTART, because this is a listing, not an
 // uninstall, and a device that woke up having forgotten the game on its own
@@ -172,7 +190,7 @@ void openPlayer(GfxRenderer& renderer, MappedInputManager& mappedInput);
 // is set and matches an item title (case-insensitive). A no-op everywhere the
 // variable does not exist, which is every real device: this is how the site's
 // installer page boots its emulator straight into Study with the user's own
-// deck, and how `CROSSPLAY_AUTOSTART=chess ./bin/sim` skips the shelf during
+// deck, and how `CROSSPLAY_AUTOSTART=solitaire ./bin/sim` skips the shelf during
 // development. Same getenv-in-firmware precedent as CROSSPLAY_SEED.
 void autostartFromEnv(GfxRenderer& renderer, MappedInputManager& mappedInput);
 
@@ -189,7 +207,7 @@ void leave(GfxRenderer& renderer, MappedInputManager& mappedInput);
 // Which shelf row Home should select on entry, or -1 if the shelf was not the
 // last thing open. Home restores its own selection by matching the departing
 // activity's name against its HomeMenuItem list, which has no idea our rows
-// exist; this is how leaving GAMES puts the cursor back on GAMES.
+// exist; this is how leaving a folder puts the cursor back on its row.
 int lastFolderOnHome();
 
 // The row folder `index` should reopen on -- which is to say the PAGE it should

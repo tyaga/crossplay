@@ -200,7 +200,7 @@ int pageStep(int page, int pageCount, int delta);
 // folder draws its rows at the same eight screen positions, so a page arrived at
 // by accident looks exactly like the page that was wanted, and the next tap
 // opens a different game. A cold tester walked forward off the last page and
-// launched CHECKERS believing it was TRIVIA -- forward from the last page is the
+// launched one game believing it was another -- forward from the last page is the
 // one step nobody ever means, so it is the one step that does nothing.
 //
 // The far page stays one tap away on the page bar, which is the same one tap the

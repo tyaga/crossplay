@@ -36,11 +36,11 @@
 
 namespace shelf {
 
-// "KNUCKLEBONES" is the longest title in the registry today. Shelf.cpp
-// static_asserts every title against this, so a longer one does not build.
+// Shelf.cpp static_asserts every title against this, so a longer one does not
+// build.
 constexpr size_t MAX_ITEM_TITLE = 24;
 
-// Two folders today (GAMES, APPS). A third needs only this raised.
+// One folder today (APPS & GAMES). A fifth needs only this raised.
 constexpr int MAX_FOLDERS = 4;
 
 struct State {

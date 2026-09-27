@@ -2,11 +2,8 @@
 # hand from a developer machine, so the only thing between a maintainer's
 # `git add -A` and their AnkiWeb credentials on GitHub is this file.
 #
-# Until 2026-09-05 this file was two lines (.venv, __pycache__/) and did NOT
-# ignore .env or data/. Nothing had leaked -- deploy.sh excludes both from the
-# rsync TO the pi, which is why it never bit -- but nothing stopped either
-# going INTO git from a dev machine. It is now the read-bridge list, plus the
-# artefacts only this service writes.
+# deploy.sh excludes .env and data/ from the rsync TO the pi; this file stops
+# them going INTO git from a dev machine.
 #
 # Every entry below is something this service, its deploy or its tests
 # actually write. Nothing here is speculative, and nothing that is written is

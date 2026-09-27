@@ -127,31 +127,5 @@ ok(
     "the asset route is an allowlist, so no name can traverse out of it",
 )
 
-# -------------------------------------------------------------- the two twins
-# The other service's chrome is this one with three strings changed. Drift
-# between them is how one bridge quietly stops looking like the product.
-twin = (
-    ROOT.parent
-    / ("study-bridge" if ROOT.name == "read-bridge" else "read-bridge")
-    / "bridge"
-    / "chrome.py"
-)
-if twin.is_file():
-    mine = (ROOT / "bridge" / "chrome.py").read_text()
-    theirs = twin.read_text()
-    norm = lambda t: (
-        t.replace("Instapaper", "@")
-        .replace("AnkiWeb", "@")  # noqa: E731
-        .replace("Read later", "%")
-        .replace("Anki sync", "%")
-        .replace("read.ma-r-s.com", "#")
-        .replace("sync.ma-r-s.com", "#")
-        .replace("articles", "&")
-        .replace("cards", "&")
-        .replace("study-bridge/bridge/chrome.py", "~")
-        .replace("read-bridge/bridge/chrome.py", "~")
-    )
-    ok(norm(mine) == norm(theirs), "both bridges' chrome is the same file")
-
 print(f"\n{'FAILED' if FAILED else 'ok'}: {FAILED} failed")
 sys.exit(1 if FAILED else 0)

@@ -5,7 +5,7 @@
 
 <p align="center">
   <strong>E-ink is good at waiting.</strong><br>
-  So is a chess position, a flashcard, a puzzle you are halfway through.
+  So is a flashcard, a hand of solitaire, a comic you are halfway through.
 </p>
 
 <p align="center">
@@ -26,9 +26,8 @@ devices with an 800x480 panel, capacitive touch and two physical buttons
 (three on the Sticky, and the design targets the two both boards share), and
 [CrossPoint](https://crosspointreader.com/) already makes them good at reading.
 CrossPlay is firmware that keeps all of that and adds the other things a screen
-that holds still is good at: **22 games and 10 apps**,
-spaced-repetition flashcards, comics, a read-later queue, and two devices that
-play together with nothing to set up.
+that holds still is good at: spaced-repetition flashcards, comics, a news
+reader, two games, and two devices that play together with nothing to set up.
 
 ## Try it without a device
 
@@ -40,62 +39,41 @@ in the hero, or ask for two devices and watch them find each other.
 It is the real thing rather than a video, with three things faked, all listed
 in [site/README.md](site/README.md): the network answers from a snapshot,
 Study's headword font is a smaller cut standing in for the large one, and sleep
-is off. The snapshot is also what put Connections in the browser at all: the
-build answers its archive fetch from a 40-puzzle slice of the real thing, so
-the import lands a real pack instead of failing on an unreachable host.
+is off.
 
 ## What is on it
 
-### Games
+Home shows the last two books, then **Library**, **File Transfer**, **Study**
+and **Apps & Games**. Study opens straight from Home; everything else lives in
+the Apps & Games folder.
 
-|                  |                                                                              |
-| ---------------- | ---------------------------------------------------------------------------- |
-| **Chess**        | A full engine on the device, or a board between two of them.                 |
-| **Battleship**   | Lay out a fleet, then hunt someone else's.                                   |
-| **Connections**  | The daily word grid, with an archive of past boards.                         |
-| **Solitaire**    | Klondike, turned sideways because that is the shape of a tableau.            |
-| **Hearts**       | Duck the tricks. Every heart costs one and the queen of spades costs 13.     |
-| **D&Diagrams**   | A nonogram whose clues are a dungeon. 64 of them.                            |
-| **Insider**      | A party game for a table and one device.                                     |
-| **Jaipur**       | The two-player trading game, solo or nearby.                                 |
-| **Murdle**       | A logic grid built through the solver, so you never have to guess.           |
-| **Checkers**     | English draughts, where taking is compulsory and the board says so.          |
-| **Connect Four** | Drop a disc, get four in a line. Seven columns, one tap each.                |
-| **Yahtzee**      | Thirteen boxes, three rolls a turn, and the Joker rules in full.             |
-| **Knucklebones** | Cult of the Lamb's dice game. Matching dice multiply; yours destroy theirs.  |
-| **Minesweeper**  | Tap to dig, hold to flag, tap a finished number to chord its neighbours.     |
-| **Sudoku**       | Generated on the device and graded by the technique it needs, not the clues. |
-| **Picross**     | Fill the grid from the clues and a picture appears. Wrong fills lock in.     |
-| **Sea Salt**     | Sea Salt & Paper: collect duos, bet on STOP or LAST CHANCE.                  |
-| **Toy Battle**   | Nine boards of bases and paths. Hold regions, take medals, solo or nearby.   |
-| **Forehead**     | Screen against your forehead, the room shouts clues, sixty seconds.          |
-| **Trivia**       | 50,000 questions off 42 years of Jeopardy. Read them out, or play alone.     |
-| **Wavelength**   | A hidden point on a spectrum, one clue, and the whole table arguing.         |
-| **Go**           | 9x9 or 13x13, against the device or someone next to you. It counts for you.  |
+### On Home
 
-### Apps
+|           |                                              |
+| --------- | -------------------------------------------- |
+| **Study** | Anki decks with the FSRS scheduler, offline. |
 
-|                 |                                                                          |
-| --------------- | ------------------------------------------------------------------------ |
-| **Study**       | Anki decks with the FSRS scheduler, offline.                             |
-| **Reading**     | Time read per day and per book, a streak, and the time left in the book. |
-| **Hacker News** | The front page in a reading serif, articles kept on the card.            |
-| **xkcd**        | The archive, packed for the card and drawn one to one.                   |
-| **Get Books**   | Browse any OPDS catalog and download straight to the card, no computer.  |
-| **Instapaper**  | Your read-later queue, synced both ways: reading position and archiving. |
-| **Wallpapers**  | Pick an image on the card as the sleep screen, one tap to set it.        |
-| **Wikipedia**   | Fifty thousand articles on the card, read like a book, no internet.      |
-| **Calculator**  | A calculator with keys the size of a thumb, and the sums you already did. |
-| **Notes**       | Lists you tick with one hand, kept as plain text files on the card.      |
+### Apps & Games
+
+|                  |                                                                         |
+| ---------------- | ----------------------------------------------------------------------- |
+| **Browse Files** | CrossPoint's file browser.                                              |
+| **Settings**     | CrossPoint's settings.                                                  |
+| **Reading**      | Time read per day and per book, a streak, and the time left in the book. |
+| **Hacker News**  | The front page in a reading serif, articles kept on the card.           |
+| **xkcd**         | The archive, packed for the card and drawn one to one.                  |
+| **Get Books**    | Browse any OPDS catalog and download straight to the card, no computer. |
+| **Wallpapers**   | Pick an image on the card as the sleep screen, one tap to set it.       |
+| **Solitaire**    | Klondike, turned sideways because that is the shape of a tableau.       |
+| **Battleship**   | Lay out a fleet, then hunt someone else's.                              |
 
 And the reader is still CrossPoint's reader: the EPUB engine, sync and the file
 browser are theirs and stay theirs.
 
 ### Two devices, nothing to type
 
-Ten of the games play over **PLAY NEARBY**: Chess, Checkers, Connect Four,
-Yahtzee, Knucklebones, Battleship, Jaipur, Sea Salt, Toy Battle and Go. Put two
-devices next to each other and they find one another. No pairing screen, no room
+Battleship plays over **PLAY NEARBY**. Put two devices next to each other and
+they find one another. No pairing screen, no room
 code, no account, no router, no internet.
 
 ### Why it is shaped like this
@@ -109,9 +87,7 @@ short version of one of them:
   1-bit panel, and the ink budget that governs it.
 - [docs/buttons.md](docs/buttons.md) -- how the two physical buttons are used,
   and why there are only two.
-- [docs/games-at-scale.md](docs/games-at-scale.md) -- how a game gets built, and
-  the critic agents that tear it apart before it ships.
-- [docs/apps/](docs/apps/) -- per-game rules, state machines and the decisions
+- [docs/apps/](docs/apps/) -- per-app rules, state machines and the decisions
   behind each one.
 
 ## Install it
@@ -165,12 +141,8 @@ Most of the shelf never touches the network. Of the parts that do:
   upstream's infrastructure rather than this fork's, inherited so that flashing
   CrossPlay over CrossPoint does not orphan an existing sync. The address is a
   setting and can be pointed at any KOSync server.
-- **Connections, xkcd, Hacker News, Trivia, Get Books and Instapaper** fetch
-  what you ask them for, when you ask. Connections downloads the published
-  puzzle archive in one go when you press the button for it, from a GitHub
-  mirror rather than from the New York Times, and CrossPlay ships none of the
-  puzzles; Trivia's question pack and xkcd's comics are downloaded once onto
-  the card.
+- **xkcd, Hacker News and Get Books** fetch what you ask them for, when you
+  ask. xkcd's comics are downloaded once onto the card.
 - **Opening a Hacker News article sends its URL to a third party.** The story
   list comes from the public [Algolia API](https://hn.algolia.com/api), and
   opening an article proxies it through [r.jina.ai](https://r.jina.ai) to get
@@ -214,25 +186,8 @@ re-implementing it. It stands on CrossPoint and the
 [docs/crosspoint-readme.md](docs/crosspoint-readme.md).
 
 xkcd comics are by Randall Munroe, [CC BY-NC 2.5](https://xkcd.com/license.html),
-fetched by the device from [xkcd.com](https://xkcd.com). Connections puzzles are
-the New York Times'; CrossPlay ships none of them and fetches the archive, when
-you ask it to, from the community mirror at
-[Eyefyre/NYT-Connections-Answers](https://github.com/Eyefyre/NYT-Connections-Answers).
-Trivia's questions are built from the community
-[Jeopardy! clue dataset](https://github.com/jwolle1/jeopardy_clue_dataset).
-Type is Jersey 25 and Instrument Serif, both SIL OFL. The Calculator's
-arithmetic is IBM's [decNumber](https://speleotrove.com/decimal/decnumber.html),
-under the ICU License (ICU 1.8.1 and later), vendored at `lib/decNumber` with
-its notice; it is there so the calculator answers 0.1 + 0.2 - 0.3 with zero,
-which a binary one cannot.
-
-Where a game on the shelf carries the name of a published game, that name is
-its owner's trademark and is used to say what the thing is; game mechanics are
-not copyrightable. Sea Salt & Paper was designed by Bruno Cathala and Theo
-Riviere and is published by Bombyx. Toy Battle was designed by Paolo Mori and
-Alessandro Zucchini and is published by Repos Production. CrossPlay implements
-the games; it is not affiliated with, endorsed by or sponsored by any of their
-owners.
+fetched by the device from [xkcd.com](https://xkcd.com). The device's UI type is
+Jersey 25; the website adds Instrument Serif; both are SIL OFL.
 
 Every third-party notice in one place, including what is knowingly outstanding:
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). To report a security problem,

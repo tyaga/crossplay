@@ -20,8 +20,8 @@ sits there at zero power for as long as you need it. That property was spent
 entirely on books, and it fits a much wider class of activity: anything where the
 screen presents a situation, you think, and then you decide.
 
-A flashcard is that. A chess position is that. A logic grid, a nonogram, a hand
-of cards, a comic, a saved article. In every one the screen is still for almost
+A flashcard is that. A hand of cards is that. A fleet you are hunting, a comic,
+a saved article. In every one the screen is still for almost
 the whole activity, and the interesting part happens in your head. A device that
 is bad at animation is not a compromised game console; it is exactly the right
 console for that kind of game, and nothing else is trying to be it.
@@ -95,10 +95,8 @@ Read the strings the apps already ship, because the voice is already decided and
 it is consistent:
 
 > `PICK IT UP` · `DEAL FRESH` · `PLAY NEARBY` · `297 TO GO` · `0 MOVES DEEP`
-> `TAP A SHIP TO MOVE IT` · `WHAT EACH GOOD PAYS, BEST FIRST` · `YOUR LAST SIXTEEN`
-> `PASS IT ON` · `NOTHING RECORDED YET` · `3 DEALT, 0 CLEARED, 0 IN A ROW`
-> `DROP THIS CASE? The marks you have made will go with it.`
-> `THAT IS EVERY RULE. SIXTY-FOUR DUNGEONS ARE WAITING FOR YOU.`
+> `TAP A SHIP TO MOVE IT` · `YOUR LAST SIXTEEN` · `NOTHING RECORDED YET`
+> `3 DEALT, 0 CLEARED, 0 IN A ROW`
 
 What those have in common:
 
@@ -108,12 +106,12 @@ What those have in common:
   person who is holding it.
 - **Concrete numbers over adjectives.** `297 TO GO` tells you more than "lots of
   cards due", and it is different every day, which is the point.
-- **State the situation, then the action.** `DROP THIS CASE?` then what it costs.
-  Never the action alone.
+- **State the situation, then the action.** A question that drops something says
+  what it costs. Never the action alone.
 - **No exclamation marks, no emoji, no jargon, and no enthusiasm on our own
   behalf.** Nothing is "powerful", "seamless", "revolutionary" or "blazingly
   fast". The dryness is the charm; it is what makes the occasional warm line
-  ("SIXTY-FOUR DUNGEONS ARE WAITING FOR YOU") actually land.
+  actually land.
 - **Never mention the machinery.** No user-facing string says UDP, socket, peer,
   sync or protocol. If a sentence explains how it works rather than what it does,
   it belongs in a doc, not on a screen.
@@ -127,8 +125,6 @@ sentence where a button gets three words, but it may not become a brochure.
   The lowercase form survives only where it is an identifier rather than the
   name: the `ma-r-s/crossplay` repo, the `crossplay.ma-r-s.com` host, the
   release binary, and the `crossplay_*` symbols the browser build exports.
-- **D&Diagrams** for the nonogram game. Lowercase "dungeons" when you mean the
-  puzzles themselves.
 - **PLAY NEARBY** for the link layer, in any user-facing context. "Link" and
   "linkplay" are internal words.
 - It is a **fork of CrossPoint**, said plainly and early. We track it, we did not
@@ -149,7 +145,7 @@ Corner brackets around a screen. See `site/assets/logo.svg`, and
 `scripts/generate_logo.py` for the version the device draws.
 
 The brackets are the one shape this fork invented rather than inherited: they
-frame the chess board, the mini board on its menu, and every Toybox panel. That
+frame the game boards and every Toybox panel. That
 makes the mark the same material as everything else here, which is the only kind
 of ornament this document allows.
 
@@ -213,6 +209,6 @@ costs a session:
 - **Colour as a brand accent.** Everything upstream uses one. Ours is the
   absence: a black-and-white page next to accented ones is the most
   differentiated we can be, and it is honest about what the screen does.
-- **Calling it a games console.** It is a device for still activities. Half of
+- **Calling it a games console.** It is a device for still activities. Most of
   them are not games, and the reading the fork inherited is still there and still
   good.

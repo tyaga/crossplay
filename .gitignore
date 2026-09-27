@@ -80,25 +80,9 @@ qa-artifacts/
 # upstream (1.6.0rc): nix flake outputs
 flake.*
 
-# scratch for tools_local/trivia/rate_local.py: corpus, venv, per-model runs
-.rate/
-
-# scratch for tools_local/trivia/assemble_pack.py: corpus snapshot, built packs
-.pack/
-
 # scratch snapshots copied out of a live rating run; derived, large, not history
 .panel/
 wallpapers.dat
-# Wikipedia pack tool: fetched Vital Articles data, never committed
-tools_local/wikipedia/cache/
-
-# The Wikipedia page's mock pack: 12 MB of seeded noise that
-# site/wikipedia/mock/make_mock.py regenerates byte for byte. The manifest it
-# writes is committed; the data it names is not.
-site/wikipedia/mock/*.zst
-site/wikipedia/mock/*.idx
-site/wikipedia/mock/*.dir
-site/wikipedia/mock/shards/
 
 # scripts_local/ship.sh assembles the release here. Not committed, and
 # ignored so a finished run does not leave the tree dirty -- which would

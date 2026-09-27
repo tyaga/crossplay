@@ -224,31 +224,7 @@ if reached "$(stmt "$I2" 'renderer\.displayBuffer\(\)')" "$(body "$KOA" '^void K
 else bad "KOReaderAuthActivity::render() has no REACHABLE displayBuffer() at function-body level"; fi
 
 # ---------------------------------------------------------------------------
-# CASE 3: Instapaper. Not a mis-ordered busy state -- there was NONE, on both
-# of its blocking pairAbandon() calls, one switch branch apart.
-# ---------------------------------------------------------------------------
-INS=src/apps_local/instapaper/InstapaperActivity.cpp
-need_file "$INS"
-paint=$(body "$INS" '^void InstapaperActivity::paintBusyNow[(]')
-
-if has_re "$(stmt "$I4" 'phase_ = Phase::Busy')" "$paint"; then ok
-else bad "paintBusyNow() sets no busy phase; there is nothing for the repaint to show"; fi
-
-# IMMEDIATE. The default would defer to a loop tail the caller's socket call
-# never lets it reach, which is the whole defect.
-if has_re "$(stmt "$I2" 'requestUpdate\(true\)')" "$paint"; then ok
-else bad "paintBusyNow() does not requestUpdate(true) at function-body level; a deferred update never notifies the render task before the caller blocks"; fi
-
-# EVERY pairAbandon, not the one in front of me. The first fix landed on
-# performDisconnect() and left the identical call in the Back handler alone.
-if nocomment < "$INS" | preceded_within '^[[:space:]]+paintBusyNow[(]' 'sync_[.]pairAbandon[(]' 8; then ok
-else bad "a sync_.pairAbandon() in $INS is not preceded by paintBusyNow(); that is a blocking TLS revoke with whatever screen the reader was on left frozen behind it"; fi
-
-if reached "$(stmt "$I2" 'renderer\.displayBuffer\(\)')" "$(body "$INS" '^void InstapaperActivity::render[(]')"; then ok
-else bad "InstapaperActivity::render() has no REACHABLE displayBuffer() at function-body level"; fi
-
-# ---------------------------------------------------------------------------
-# CASE 4: xkcd's catch-up. Not a mis-ordered busy state and not a missing one:
+# CASE 3: xkcd's catch-up. Not a mis-ordered busy state and not a missing one:
 # the busy state is correct, it is painted before the run starts, and then the
 # app spends MINUTES on a frame that has stopped being true.
 #

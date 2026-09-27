@@ -19,7 +19,10 @@ thread under the user's lock. The rules, from the plan and enforced here:
 
 import logging
 
+import time
+
 import deck_to_anki as d2a
+import words_to_anki
 from anki.collection import Collection
 
 log = logging.getLogger("bridge.engine")
@@ -98,16 +101,18 @@ def _sync_media(col, auth, summary, timeout_s: int = 7200):
     summary["media"] = False
 
 
-def sync_cycle(store, journal, hostkey: str, endpoint: str, device_cards: dict) -> dict:
+def sync_cycle(store, journal, hostkey: str, endpoint: str, device_cards: dict, words=None) -> dict:
     """One full cycle. device_cards: {card_id: device state} from the posted
     cards.dat, used by apply() to set final card state for touched cards.
+    words: a words.WordsInbox of dictionary words the reader saved, added as
+    notes after the reviews and dropped only once the push is confirmed.
     Returns a summary dict for the job status. Raises Frozen when a human
     is needed."""
     from anki.errors import SyncError, SyncErrorKind
     from anki.sync import SyncAuth
 
     col = Collection(str(store.collection_path))
-    summary = {"applied": 0, "skipped": 0, "missing": 0, "updated": 0, "pulled": False}
+    summary = {"applied": 0, "skipped": 0, "missing": 0, "updated": 0, "pulled": False, "words": 0}
     try:
         auth = SyncAuth(hkey=hostkey, endpoint=endpoint)
 
@@ -148,6 +153,13 @@ def sync_cycle(store, journal, hostkey: str, endpoint: str, device_cards: dict) 
             col.set_config("bridgeLastApply", int(pending[-1]["atMs"]))
             journal.mark_applied(pending)
 
+        saved = words.pending() if words is not None else []
+        if saved:
+            added, _skipped = words_to_anki.import_words(col, saved)
+            summary["words"] = len(added)
+            if added:
+                col.set_config("bridgeLastWords", int(time.time() * 1000))
+
         out2 = col.sync_collection(auth, sync_media=False)
         _sync_media(col, auth, summary)
         if out2.required != REQUIRED_NONE:
@@ -164,6 +176,8 @@ def sync_cycle(store, journal, hostkey: str, endpoint: str, device_cards: dict) 
             log.warning("push answered required=%s; journal kept", out2.required)
         else:
             journal.clear_pushed()
+            if saved:
+                words.drop_taken()
         return summary
     except SyncError as e:
         # An expired or revoked AnkiWeb session is not an outage, and the

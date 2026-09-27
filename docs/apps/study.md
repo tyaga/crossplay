@@ -45,7 +45,7 @@ finds the SD card, and asks one question for each. Then it converts the deck,
 builds fonts if the deck needs them, and packs any sentence images. Answers are
 remembered in `~/.config/crosspoint-study.json`, so the next run asks nothing.
 
-Put the card in the reader: **Apps > STUDY**.
+Put the card in the reader: **Study** on the Home screen.
 
 Run setup again to put another deck on the card -- adding alongside is the
 default, replacing is offered. The browser installer at /study/ does the same:
@@ -155,6 +155,61 @@ exactly as they would in Anki.
 - A card whose text the installed fonts cannot draw falls back to the built-in
   face on its own, per card. A wrong font install can look plain; it cannot
   look blank.
+
+## Words from the dictionary
+
+A word looked up while reading can become a card. On the definition screen,
+press **Confirm** or tap the headword at the top: the reader says
+`Saved for Anki (NL)`, and a second press says `Already saved`. The word waits
+on the card in `/study/.inbox/<language>/`, one file per word, holding the
+dictionary entry and the sentence it was read in.
+
+Then press **SYNC** in Study. Saved words travel with the reviews, a batch
+of up to sixteen per sync; the bridge adds them to your collection, pushes to
+AnkiWeb, chooses the language's deck for this reader and builds it, so the
+words come back as cards on the same sync. The verdict counts them
+(`3 WORDS SENT TO ANKI`), and the reader deletes each file once the bridge has
+acknowledged it.
+
+Without the bridge, the same import runs on a computer:
+
+```bash
+./tools_local/study/study.py words                          # the card is mounted
+./tools_local/study/study.py words --device http://192.168.1.11   # over Wi-Fi, File Transfer on
+```
+
+Each word becomes a note of type `CrossPlay Word` in a deck per language --
+`Dictionary::Dutch`, `Dictionary::English`, `Dictionary::Icelandic` -- the
+language being the first part of the dictionary's folder name (`nl-en` and
+`nl-ru` are both Dutch). A word already in its deck is skipped. Imported
+files are removed from the reader. `--dry-run` shows the notes and writes
+nothing; `--ankiweb` pushes the collection afterwards; `--deck-prefix` puts
+the decks somewhere other than `Dictionary`.
+
+The note is built to fit a card face, not to hold the entry:
+
+| Field          | What goes in it                                                        |
+| -------------- | ---------------------------------------------------------------------- |
+| Word           | the headword as the dictionary stores it                               |
+| Transcription  | the first IPA transcription                                            |
+| Part of speech | normalised across dictionaries, with gender where the entry gives one  |
+| Meaning        | up to five senses, three translations each, about 110 characters       |
+| Sentence       | the sentence the word was read in                                      |
+| Source         | the book                                                               |
+
+In a bilingual entry the meaning is the translations, not the glosses: the
+WikDict en-ru entry for "device" becomes `аппарат, гаджет, девайс; девиз,
+эмблема`, without "piece of equipment" and without stress marks. Usage
+examples, register labels ("разг.") and descriptions longer than a few words
+are dropped. `tools_local/study/dict_card.py` is where that is
+decided, and its tests show it on real entries.
+
+Transcription stays in Anki. The reader draws a card's reading in its
+built-in face, which has no IPA, so the field is named so that the converter
+leaves it off the device.
+
+Words imported from a computer arrive on the reader once their deck is
+chosen in a sync.
 
 ## After every session: sync
 

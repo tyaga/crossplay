@@ -465,8 +465,8 @@ Linkplay match must be refused rather than fought.
 
 ### Route B, and the one place it wins
 
-A bridge (`server/read-bridge`, `server/study-bridge` are the precedent, and
-their `pairing.py` is 90 stateless lines) costs a container or a function, a new
+A bridge (`server/study-bridge` is the precedent, and its `pairing.py` is 90
+stateless lines) costs a container or a function, a new
 `*.ma-r-s.com` label, a `deploy.sh`, an entry in `server/attacks.py`, a section
 in `docs/bridge-security.md`, and on the device a pairing screen, a poll loop and
 a download -- not less firmware, merely different. And the wallpaper case needs
@@ -618,7 +618,7 @@ Rendered at native 480x800 through the device path, composed in
 the address in words (a QR tells a person nothing, and the one failure this
 screen has is a phone on the wrong network) and that Back stops it.
 
-1. **The pairing twin** -- Instapaper's screen, which Mario named as the
+1. **The pairing twin** -- a bridge pairing screen, which Mario named as the
    precedent, with the address where its 8-character code sits. QR 232px.
    **CHOSEN.** Built; the macro and the other two are deleted.
 2. **The three steps** -- the site's numbered rail, on the panel. QR 200px.
@@ -653,8 +653,8 @@ enough to hold it -- `SCAN THIS CODE`.
 `text()` clamps the negative centring offset to zero, so the line ran 758..798,
 below `body.bottom()` at 784 and eleven pixels from the panel edge. Measured in
 the render before the fix: ink at 769..789. After: 755..775. It came verbatim
-from `InstapaperScreens.cpp:527`, where the same box is correct because it draws
-in toybox_10 (line box 21) -- **the box came across from the twin and the font
+from the pairing twin, where the same box is correct because it draws in
+toybox_10 (line box 21) -- **the box came across from the twin and the font
 did not.** Every text height on this screen is now asked of the face that will
 draw it.
 

@@ -1,8 +1,7 @@
 // A real game of battleship, played between two devices over a hostile link.
 //
-// This is the second game on the layer, so it is also the test of whether the
-// layer was a layer. Two things about battleship stress it in ways chess never
-// did, and both are asserted here rather than argued about:
+// Two things about battleship stress the layer, and both are asserted here
+// rather than argued about:
 //
 //   * Hidden information. The shared state carries BOTH fleets, and a device
 //     keeps the one it is arranging OUTSIDE that state until it hands it over.
@@ -135,9 +134,8 @@ void run(Medium& medium, std::vector<Device*>& devices, const uint32_t durationM
 }
 
 void testTheWholeGameFitsOnePacket() {
-  // Chess sends 100 bytes of FEN. A whole battleship -- two fleets, two shot
-  // maps, the turn -- is half that, which is why sending the state rather than
-  // the move was never in question for this game.
+  // A whole battleship -- two fleets, two shot maps, the turn -- is about 50
+  // bytes, which is why the state is sent rather than the move.
   CHECK(sizeof(bship::Game) <= kMaxPayloadBytes);
   std::printf("  wire: sizeof(bship::Game) = %d of %d bytes\n", static_cast<int>(sizeof(bship::Game)),
               static_cast<int>(kMaxPayloadBytes));

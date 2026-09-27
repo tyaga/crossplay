@@ -296,8 +296,7 @@ HttpDownloader::DownloadError runGetSecure(const std::string& url, const std::st
   // No radio, no request. Entering the TLS stack with WiFi never started does
   // not fail, it PANICS: the socket layer takes a mutex that has not been
   // created and FreeRTOS asserts on the null handle (xQueueSemaphoreTake,
-  // queue.c:1709). Trivia's pack download shipped that way and crashed the
-  // device on the button. A caller that forgets the radio deserves an error it
+  // queue.c:1709), and the device crashes on the button. A caller that forgets the radio deserves an error it
   // can show, not a reboot -- and this is the one place every fetch passes
   // through, so the guard cannot be forgotten by the next app either.
   // Also correct while a match owns the radio: ESP-NOW leaves status

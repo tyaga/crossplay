@@ -1,6 +1,5 @@
 #pragma once
 
-// The suit artwork moved to the shared deck when Hearts became the second game
-// to need it. This shim keeps solitaire/ compiling against its old include
-// rather than touching every reference in a commit about a different game.
+// The suit artwork lives in the shared deck; this include keeps solitaire/'s
+// references short.
 #include "../cards/CardSuits.h"

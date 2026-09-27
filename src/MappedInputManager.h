@@ -125,12 +125,6 @@ class MappedInputManager {
   // other way here, on exactly the screens where tap and hold do different
   // things. A gap, named so the next person sees it.
   static constexpr unsigned long SCREEN_HOLD_MS = 500;
-  // fork-local: ignore the remainder of the in-progress contact -- its hold
-  // and its release edge -- via the SDK's suppression latch. For apps that do
-  // their own hold timing against geometry outside the interaction buffer
-  // (Minesweeper's flag hold): after the hold fires, the finger lift must not
-  // also arrive as a tap. The SDK self-clears once the contact ends.
-  void swallowCurrentTouch() const;
   bool isScreenTouchHeld(int& x, int& y) const;
   // Raw release edge, also true when the contact ended in a swipe or drag-off
   // (which wasScreenTapped never reports). InputSnapshot builders forward it

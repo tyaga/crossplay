@@ -10,8 +10,8 @@
 #include "RecentBooksStore.h"
 #include "activities/UiTabListActivity.h"
 
-// One Library screen: every indexed book on the card shown by recency, title,
-// or author. The Recent shelf orders by file modification time (when a book
+// One Library screen: every indexed book on the card shown by recency, by the
+// card's folders (Genres), or by author. The Recent shelf orders by file modification time (when a book
 // landed on the card) and pins the recently OPENED books from RecentBooksStore
 // on top, so active reads and fresh arrivals share one list.
 //
@@ -103,6 +103,19 @@ class LibraryListActivity final : public UiTabListActivity {
   void drawHoldHelp() const;
   const char* headerTitle() const override;
 
+  // --- Genres: the card's folders, one level at a time -----------------------
+  // Active on the Genres tab with no search typed. Entries below genreDirs.size()
+  // are subfolders of genrePath holding at least one book; the rest are the
+  // books directly in it, in title order.
+  bool genreMode() const;
+  bool isGenreFolder(int entry) const;
+  // Re-read which folders and books sit under genrePath. Walks the index once.
+  void buildGenreListing();
+  void enterGenreFolder(int entry);
+  void leaveGenreFolder();
+  // Record ordinal of a book entry in the current view, 0xFFFF for none.
+  uint16_t ordinalFor(int entry);
+
   // Ring 0 is the strip; the selected BOOK is ring - 1, with the strip keeping
   // row 0 as the working selection exactly as the pre-ring code did.
   int selectedEntry() const;
@@ -164,6 +177,18 @@ class LibraryListActivity final : public UiTabListActivity {
   uint16_t overlapRows[RecentBooksStore::MAX_RECENT_BOOKS] = {};
   uint8_t pinnedTotal = 0;
   uint8_t overlapCount = 0;
+
+  struct GenreDir {
+    std::string name;
+    uint16_t books;  // anywhere below it, not just directly inside
+  };
+  std::string genrePath = "/";
+  // The last component of genrePath, stable for the render task's header.
+  std::string genreTitle;
+  std::vector<GenreDir> genreDirs;
+  std::unique_ptr<uint16_t[]> genreBooks;
+  uint16_t genreBookCount = 0;
+  uint16_t genreBookCapacity = 0;
 
   bool lockNextConfirmRelease = false;
   bool lockNextBackRelease = false;

@@ -90,8 +90,8 @@ SKIP_SOURCES = {
     # that references it, which is almost never the cheaper trade.
     "simulator_main.cpp",
     # Replaced by src/http_canned.cpp, which answers from files on the card.
-    # Hacker News and the Connections daily are the two apps that look broken
-    # without a network, and the browser build has no sockets.
+    # Hacker News looks broken without a network, and the browser build has
+    # no sockets.
     "HttpDownloader.cpp",
 }
 
@@ -112,10 +112,10 @@ def load_entries():
                  "(plain `pio run` builds but does NOT write the database)")
 
     # The database IS the source list -- this build does not glob src/ -- so a
-    # file added since it was written is simply not in the build. Adding
-    # ToyBattleHowTo.cpp cost a link error, which is the lucky version: a new
-    # translation unit nothing references yet would have been quietly absent,
-    # and the page would have run the old code with no sign of it. Same family
+    # file added since it was written is simply not in the build. A new file
+    # that something references costs a link error, which is the lucky version:
+    # a new translation unit nothing references yet would be quietly absent,
+    # and the page would run the old code with no sign of it. Same family
     # as the header-dependency bug this file already carries a fix for.
     stale = [
         p

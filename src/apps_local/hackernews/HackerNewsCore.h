@@ -127,7 +127,7 @@ struct Story {
   int commentCount = 0;
   // Set from urlCanBeArticle() when the list is parsed, so the row can carry
   // the mark without a fetch. A story with no URL is its own text and is always
-  // readable; see ConnectionsActivity for why a flag beats recomputing.
+  // readable. A flag set once at parse time beats recomputing on every paint.
   bool mayBeReadable = false;
 };
 

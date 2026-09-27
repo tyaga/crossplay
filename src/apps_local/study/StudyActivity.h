@@ -282,6 +282,8 @@ class StudyActivity final : public Activity {
   bool wifiActivated_ = false;
   studyui::SyncFlowModel flow_;
   bool secondPass_ = false;
+  // Dictionary words the bridge accepted on this sync, for the verdict.
+  int wordsSent_ = 0;
   // A runtime request for the deck picker; never persisted, so cancelling it
   // cannot leave the reader stuck answering the question on every sync.
   bool pickerRequested_ = false;

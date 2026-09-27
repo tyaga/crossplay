@@ -101,8 +101,7 @@ function clientIp(req) {
   // The LAST entry, not the first. x-forwarded-for is append-only as a request
   // crosses proxies, so the first element is whatever the CALLER put there --
   // letting anyone choose their own rate-limit bucket by sending a header. The
-  // last is the one the nearest trusted proxy wrote. api/trivia.js has said
-  // this since it was written; this file took the first hop until card #444.
+  // last is the one the nearest trusted proxy wrote.
   const fwd = req.headers["x-forwarded-for"];
   if (typeof fwd === "string" && fwd.length) {
     const hops = fwd.split(",").map((h) => h.trim()).filter(Boolean);

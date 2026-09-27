@@ -128,7 +128,7 @@ def main(env):
     # HalStorage and a library's own headers shadow ours, so without this the
     # method exists on the device and NOT in the simulator -- and the build stays
     # green until some app actually calls it, at which point the error names a file
-    # that app never touched. Trivia was the first caller and found exactly that.
+    # that app never touched.
     #
     # The implementation is real rather than a stub. The simulator's card is a host
     # directory, so statvfs is the honest answer, and its failure is a genuine
@@ -594,8 +594,8 @@ def main(env):
     # means a library's own headers shadow ours. Nothing in lib/hal says so. Add a
     # method there and the device gets it, the simulator does not, and the build
     # stays green until some app calls it -- at which point the error names a file
-    # that app never touched. That is how freeBytes shipped (2026-08-31); Trivia
-    # found it by being the first caller.
+    # that app never touched. That is how freeBytes shipped (2026-08-31): the
+    # first caller found it.
     #
     # The knowledge lived in two places neither reachable from the file you edit.
     # Now the two surfaces are compared here, after the patches above have run,

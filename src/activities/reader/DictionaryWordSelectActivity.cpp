@@ -152,6 +152,48 @@ void DictionaryWordSelectActivity::moveVertical(const int direction) {
   }
 }
 
+word_capture::Meta DictionaryWordSelectActivity::captureMeta() const {
+  // A saved card's example sentence. 240 bytes is about six lines on the card
+  // face, which is where check_deck starts calling a sentence too long.
+  constexpr size_t kContextBytes = 240;
+
+  // Every token on the page, punctuation included, which `words` leaves out.
+  // A line starting further below the previous one than a line height and a
+  // half is a paragraph or heading break, and a sentence does not cross it.
+  std::vector<word_capture::Token> tokens;
+  tokens.reserve(words.size() * 2);
+  size_t index = 0;
+  unsigned row = 0;
+  int previousY = INT_MIN;
+  for (const auto& element : page->elements) {
+    if (element->getTag() != TAG_PageLine) continue;
+    const auto* line = static_cast<const PageLine*>(element.get());
+    const auto* block = line->getBlock();
+    if (!block || !block->valid() || block->wordCount() == 0) continue;
+    const bool gap = previousY != INT_MIN && line->yPos - previousY > lineHeight * 3 / 2;
+    previousY = line->yPos;
+    for (uint16_t i = 0; i < block->wordCount(); i++) {
+      const char* text = block->wordText(i);
+      if (text == words[selected].text) index = tokens.size();
+      tokens.push_back({text, row, gap && i == 0});
+    }
+    row++;
+  }
+
+  word_capture::Meta meta;
+  meta.dictionary = SETTINGS.dictionaryName;
+  meta.lookedUp = words[selected].text;
+  while (!meta.lookedUp.empty() && std::ispunct(static_cast<unsigned char>(meta.lookedUp.back()))) {
+    meta.lookedUp.pop_back();
+  }
+  while (!meta.lookedUp.empty() && std::ispunct(static_cast<unsigned char>(meta.lookedUp.front()))) {
+    meta.lookedUp.erase(meta.lookedUp.begin());
+  }
+  meta.context = word_capture::contextSentence(tokens, index, kContextBytes);
+  meta.source = bookTitle;
+  return meta;
+}
+
 void DictionaryWordSelectActivity::performLookup() {
   popup = Popup::Busy;
   if (!dictOpenAttempted) {
@@ -181,7 +223,7 @@ void DictionaryWordSelectActivity::performLookup() {
     popup = Popup::None;
     startActivityForResult(
         std::make_unique<DictionaryDefinitionActivity>(renderer, mappedInput, std::move(headword),
-                                                       std::move(definition), dict.definitionsAreHtml()),
+                                                       std::move(definition), dict.definitionsAreHtml(), captureMeta()),
         [this](const ActivityResult&) { requestUpdate(); });
     return;
   }

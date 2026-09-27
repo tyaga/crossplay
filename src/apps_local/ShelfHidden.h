@@ -11,7 +11,7 @@
 //
 // The file is /.crosspoint/shelf-hidden.cfg and is one item TITLE per line:
 //
-//   MINESWEEPER
+//   SOLITAIRE
 //   XKCD
 //
 // Only the hidden ones are written, so the common file is empty or absent and

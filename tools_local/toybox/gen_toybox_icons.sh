@@ -26,5 +26,5 @@ echo "wrote src/apps_local/ui/ToyboxIcons.h"
 # come out upright. Feeding it an upright icon lands it on its side, which is
 # how the joystick first shipped lying down.
 uv run --quiet --with pillow python tools_local/toybox/rotate_icons.py \
-  src/apps_local/ui/ToyboxIcons.h src/components/icons/shelfIcons.h games apps
+  src/apps_local/ui/ToyboxIcons.h src/components/icons/shelfIcons.h apps study
 echo "wrote src/components/icons/shelfIcons.h"

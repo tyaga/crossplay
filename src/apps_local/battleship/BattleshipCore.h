@@ -10,8 +10,8 @@
 // ---------------------------------------------------------------------------
 // The state is the wire format, deliberately.
 //
-// Chess sends a FEN because its position has a text form older than computers.
-// Battleship has no such thing, so `Game` itself is what travels: it is
+// Battleship has no text notation for a position, so `Game` itself is what
+// travels: it is
 // trivially copyable, it is 52 bytes against the link's 192-byte packet, and
 // making it the wire format means there is exactly one description of a game in
 // this app instead of two that can drift.

@@ -1,20 +1,15 @@
 """The attacks an outsider would actually run, as a suite that fails a deploy.
 
-Both bridges are open to the world and their source is public: the rate
-limits, the code alphabet, the lockout windows and the token lifetimes are all
+The bridge is open to the world and its source is public: the rate limits,
+the code alphabet, the lockout windows and the token lifetimes are all
 readable by whoever is attacking them. Security therefore cannot rest on any
 of them being unknown, and this file is how that is checked rather than
 asserted. It is the sibling of scripts/isolation_test.sh -- the precedent that
 a claim about safety which nothing runs is not a claim -- and it is wired into
-both deploy scripts for the same reason.
+the deploy script for the same reason.
 
-ONE FILE, TWO SERVICES, deliberately. read-bridge and study-bridge are twins
-and every security bug found in them so far has been a fix that landed on one
-twin and not the other (the fix-the-twin-too memory; the cross-user traversal
-this suite was written to catch was exactly that shape -- read-bridge sanitised
-the filename it took off the wire, study-bridge did not). A shared checklist
-cannot drift. What differs between the services is described by the Service
-profile below and nothing else.
+What a check needs to know about the service is described by the Service
+profile below and nothing else, so the checks themselves name no endpoint.
 
 The suite runs against the service's real ASGI app, over its real HTTP surface,
 with a real fake upstream behind it. It does not import the limiters and ask
@@ -41,16 +36,16 @@ from dataclasses import dataclass, field
 from typing import Awaitable, Callable
 
 # ---------------------------------------------------------------------------
-# What differs between the two services.
+# The service under attack, as the checks see it.
 # ---------------------------------------------------------------------------
 
 
 @dataclass
 class Service:
-    """One bridge, described only where it differs from the other."""
+    """One bridge: its endpoints, credentials and victim file."""
 
     name: str
-    # Session cookie name: read_session / bridge_session.
+    # Session cookie name, e.g. bridge_session.
     cookie: str
     # An account the fake upstream will accept, and its password.
     good_user: str
@@ -343,7 +338,7 @@ async def session_for(svc, username=None, password=None, ip="203.0.113.61"):
     cookie = resp.cookies.get(svc.cookie)
     if not cookie:
         return None, None
-    key = os.environ.get("READ_FERNET_KEY") or os.environ["BRIDGE_FERNET_KEY"]
+    key = os.environ["BRIDGE_FERNET_KEY"]
     csrf = _json.loads(Fernet(key.encode()).decrypt(cookie.encode()))["csrf"]
     return cookie, csrf
 
@@ -517,10 +512,9 @@ async def cross_user_files(svc, r):
     their encrypted AnkiWeb hostKey and every device token hash paired to
     them -- was one segment away.
 
-    The twin was safe for a reason worth writing down: read-bridge strips
-    everything but alphanumerics out of the filename it takes off the wire, so
-    the escape cannot be spelled at all. The lesson is not "add a check", it is
-    that a path from the network must be sanitised before it becomes a path.
+    The lesson is not "add a check", it is that a path from the network must
+    be sanitised before it becomes a path: a filename stripped to alphanumerics
+    cannot spell the escape at all.
 
     This probe climbs every depth from one to six, so it cannot pass merely
     because the depth it happened to try was wrong.
@@ -529,8 +523,8 @@ async def cross_user_files(svc, r):
     leaked = []
     tried = []
     # Both spellings at every depth. The right one depends on how many
-    # directories the endpoint's own base sits below <data>/, which differs
-    # between the two services -- and a probe that guesses that wrong reports
+    # directories the endpoint's own base sits below <data>/, which is the
+    # service's business -- and a probe that guesses that wrong reports
     # a clean run against a service that is wide open.
     tails = [svc.victim_relative, "users/" + svc.victim_relative]
     for up in range(1, 7):

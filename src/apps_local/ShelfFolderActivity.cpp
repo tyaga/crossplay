@@ -84,7 +84,7 @@ void ShelfFolderActivity::onEnter() {
 void ShelfFolderActivity::setChoosing(const bool on) {
   if (choosing == on) return;
   // The table on the panel belongs to the mode that drew it, and every action
-  // id on this screen changes meaning here: the row that opened CHESS a moment
+  // id on this screen changes meaning here: the row that opened SOLITAIRE a moment
   // ago now hides it. render() runs on the other core and only after this
   // loop() returns, so between the chip's tap and the repaint there is a window
   // where the OLD table is live and `choosing` is already the new value -- and
@@ -172,13 +172,12 @@ void ShelfFolderActivity::loop() {
   // already says, not a new thing to learn. That is also why there is no
   // on-screen hint for it: the affordance is moulded into the case.
   //
-  // They used to move a CURSOR, opened with Confirm. On this device that was a
+  // They do not move a CURSOR opened with Confirm. On this device that is a
   // dead end in the most literal way: `frontButtonConfirm` resolves to
   // PIN_UNASSIGNED, which InputManager::begin skips entirely, so Confirm can
-  // never fire. You could move a selection you had no way to act on. The
-  // design language had already removed this exact input model from Chess and
-  // Connections for being a second, worse one running beside the real one;
-  // here it was second, worse, and broken.
+  // never fire, and a selection would be one you had no way to act on. The
+  // design language rules that input model out for being a second, worse one
+  // running beside the real one.
   //
   // The page marks stay tappable. A button must never be the only route to
   // something, or the invisible input model wins arguments it should not.

@@ -14,11 +14,11 @@
 // twin that gets fixed on one path and not the other (see the fix-the-twin-too
 // memory; every instance of that pattern in this repo started here).
 //
-// So the Instapaper app uses this and Study does not, YET. Study's copy is
-// deliberately untouched because app/studyradio is a long-lived branch sitting
-// on top of StudySync.cpp, and refactoring under it would turn a merge into
-// an archaeology session. Moving Study onto this file is listed in
-// docs/open-items.md and should happen the week that branch lands.
+// So Live uses this and Study does not, YET. Study's copy is deliberately
+// untouched because app/studyradio is a long-lived branch sitting on top of
+// StudySync.cpp, and refactoring under it would turn a merge into an
+// archaeology session. Moving Study onto this file is listed in
+// docs/open-items.md.
 //
 // The one thing that is NOT duplicated is the certificate bundle: this
 // includes Study's, because both services sit behind the same operator's

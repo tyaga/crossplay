@@ -10,11 +10,10 @@
 # killed while the socket lived on in a child.
 #
 # This exercises the REAL code, not a copy:
-#   * server/{read,study}-bridge/tests/portguard.py -- the shared guard the four
-#     CI-run python harnesses import -- loaded by path and driven directly;
-#   * the require_free_port function LIFTED out of each sim_stack.sh by text, the
-#     way host-tests/qastack lifts qa_stack.sh's down(), and run against a real
-#     foreign listener.
+#   * server/study-bridge/tests/portguard.py -- the shared guard the CI-run
+#     python harnesses import -- loaded by path and driven directly;
+#   * the require_free_port function LIFTED out of sim_stack.sh by text and run
+#     against a real foreign listener.
 #
 # The python half needs nothing installed (portguard is stdlib only), so it runs
 # even in a bare checkout. The shell half needs nc (to see the listener) and
@@ -32,16 +31,15 @@ PASS=0; FAIL=0
 ok()  { PASS=$((PASS+1)); echo "  ok   $1"; }
 bad() { FAIL=$((FAIL+1)); echo "  FAIL $1"; }
 
-READ_PG="$ROOT/server/read-bridge/tests/portguard.py"
 STUDY_PG="$ROOT/server/study-bridge/tests/portguard.py"
-for p in "$READ_PG" "$STUDY_PG"; do
+for p in "$STUDY_PG"; do
   [ -f "$p" ] || { bad "missing $p"; echo "$((PASS+FAIL)) checks, $FAIL failed"; exit 1; }
 done
 
 # --- the shared python guard, driven directly -----------------------------
-echo "portguard.py (the guard the four CI harnesses import)"
-for PG in "$READ_PG" "$STUDY_PG"; do
-  label="$(basename "$(dirname "$(dirname "$PG")")")"   # read-bridge / study-bridge
+echo "portguard.py (the guard the CI harnesses import)"
+for PG in "$STUDY_PG"; do
+  label="$(basename "$(dirname "$(dirname "$PG")")")"   # study-bridge
 
   # 1. a free port is allowed through.
   if python3 - "$PG" <<'PY'
@@ -106,7 +104,7 @@ done
 # --- the shell guard, lifted out of each sim_stack.sh ----------------------
 echo "sim_stack.sh require_free_port (lifted, vs a real foreign listener)"
 if ! command -v nc >/dev/null 2>&1; then
-  # A skip on a laptop, a failure in CI, same rule as host-tests/qastack: the
+  # A skip on a laptop, a failure in CI, same rule as host-tests/release: the
   # guard is written with nc and cannot be exercised without it.
   if [ -n "${CI:-}" ]; then
     bad "no nc on PATH; the shell guard cannot be exercised (a skip is a failure in CI)"
@@ -114,7 +112,7 @@ if ! command -v nc >/dev/null 2>&1; then
     echo "  SKIP  no nc on PATH; sim_stack.sh's nc-based guard cannot be exercised"
   fi
 else
-  for SS in "$ROOT/server/read-bridge/tests/sim_stack.sh" "$ROOT/server/study-bridge/tests/sim_stack.sh"; do
+  for SS in "$ROOT/server/study-bridge/tests/sim_stack.sh"; do
     label="$(basename "$(dirname "$(dirname "$SS")")")"
     [ -f "$SS" ] || { bad "$label: missing $SS"; continue; }
     # Lift require_free_port() by text: one brace-balanced block from the

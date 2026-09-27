@@ -28,7 +28,10 @@ import time
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 
+import words_to_anki
+
 from . import accounts, chrome, decks, engine, events, jobs, pairing, store, wire
+from . import words as words_mod
 from .ratelimit import Lockout, Window
 from .journal import Journal
 
@@ -39,6 +42,11 @@ MAX_CHOSEN_DECKS = 8
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
 MAX_SYNC_BODY = 8 * 1024 * 1024  # revlog tails + cards.dat; a 5k-card deck is ~320KB
+# Words saved from the dictionary ride the same POST. The device trims each
+# entry to a few KB and sends a batch; these are the backstop for one that
+# does not.
+MAX_WORDS_PER_SYNC = 64
+MAX_WORD_BYTES = 16 * 1024
 # Eight deck names. Anki's own deck-name limit is far under this; the cap is
 # here to bound a hostile client, not to constrain a real one.
 MAX_CHOOSE_BODY = 64 * 1024
@@ -46,9 +54,7 @@ MAX_DECK_NAME = 512
 
 
 # ---------------------------------------------------------------- rate limits
-# The shape here is read-bridge's, arrived at there and ported on 2026-09-05
-# because this service had a weaker one and nobody could say why. See
-# server/attacks.py for the run that found the difference.
+# server/attacks.py floods each of these and fails a deploy that lets it through.
 LOGIN_IP = Window(5, 300)  # 5 attempts / 5 min / IP
 # There is deliberately NO flat per-username Window beside LOGIN_LOCKOUT. There
 # was, and it shadowed nothing here only because there was no lockout to
@@ -579,7 +585,8 @@ async def start_sync(request: Request, dev=Depends(require_device)):
         return JSONResponse({"error": "That sync payload is too large."}, 413)
 
     # Wire: [u32 header_len][JSON header][blobs in header order].
-    # Header: {"decks": [{"slug", "revlogOffset", "revlogLen", "cardsLen"}]}
+    # Header: {"decks": [{"slug", "revlogOffset", "revlogLen", "cardsLen"}],
+    #          "words": [{"file", "len"}]}   -- words optional, after the decks
     if len(body) < 4:
         return JSONResponse({"error": "Malformed sync payload."}, 400)
     (hlen,) = struct.unpack("<I", body[:4])
@@ -608,6 +615,37 @@ async def start_sync(request: Request, dev=Depends(require_device)):
     finally:
         journal.close()
 
+    # Saved words: validated whole before any is kept, so a malformed batch
+    # is refused rather than half taken and half acknowledged.
+    word_entries = []
+    raw_words = header.get("words", [])
+    if not isinstance(raw_words, list) or len(raw_words) > MAX_WORDS_PER_SYNC:
+        return JSONResponse({"error": "Too many saved words in one sync."}, 413)
+    for w in raw_words:
+        try:
+            file, length = str(w["file"]), int(w["len"])
+        except (KeyError, TypeError, ValueError):
+            return JSONResponse({"error": "Malformed sync payload."}, 400)
+        if not words_mod.FILE_RE.match(file) or not 0 < length <= MAX_WORD_BYTES:
+            return JSONResponse({"error": "Malformed sync payload."}, 400)
+        blob = blobs[pos : pos + length]
+        pos += length
+        if len(blob) != length:
+            return JSONResponse({"error": "Malformed sync payload."}, 400)
+        word_entries.append((file, blob.decode("utf-8", "replace")))
+    words_mod.WordsInbox(st.root / "words.jsonl").add(word_entries)
+    accepted = [file for file, _ in word_entries]
+    # A deck per language, chosen for the reader the first time a word in that
+    # language arrives, so the words come back as cards on this same sync.
+    # Not when a chosen deck already contains it: "Dictionary" builds with its
+    # subdecks, and choosing Dictionary::Dutch beside it put every Dutch card
+    # on the reader twice, in two decks scheduling it apart.
+    for lang in words_mod.languages(accepted):
+        name = words_to_anki.deck_name(words_to_anki.DEFAULT_PREFIX, lang)
+        covered = any(name == c or name.startswith(c + "::") for c in state["chosen_decks"])
+        if not covered and len(state["chosen_decks"]) < MAX_CHOSEN_DECKS:
+            state["chosen_decks"].append(name)
+
     # The ack is valid the moment the journal commit above returned; the
     # device may advance its offsets on this response even if the job fails.
     state["devices"][th]["last_seen"] = int(time.time())
@@ -627,7 +665,9 @@ async def start_sync(request: Request, dev=Depends(require_device)):
         try:
             cards = json.loads((devcards_dir / "latest.json").read_text())
             cards = {int(k): v for k, v in cards.items()}
-            summary = engine.sync_cycle(st, journal, hostkey, endpoint, cards)
+            summary = engine.sync_cycle(
+                st, journal, hostkey, endpoint, cards, words_mod.WordsInbox(st.root / "words.jsonl")
+            )
         finally:
             journal.close()
         fresh = st.load_state()
@@ -678,7 +718,7 @@ async def start_sync(request: Request, dev=Depends(require_device)):
         # decks; reviews: what this sync carried up into the collection.
         props=lambda s: {"cards": len(device_cards), "reviews": s["applied"]},
     )
-    return {"job": job.id, "ackOffsets": acks}
+    return {"job": job.id, "ackOffsets": acks, "wordsAccepted": accepted}
 
 
 @app.get("/api/sync/status")

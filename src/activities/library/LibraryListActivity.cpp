@@ -31,7 +31,7 @@ constexpr int SIDE_PADDING = 12;
 constexpr unsigned long LONG_PRESS_MS = 1000;
 
 constexpr int RECENT_TAB = 0;
-constexpr int TITLE_TAB = 1;
+constexpr int GENRE_TAB = 1;
 constexpr int AUTHOR_TAB = 2;
 constexpr int TAB_SLOTS = AUTHOR_TAB + 1;
 
@@ -50,13 +50,15 @@ constexpr bool isAuthorSort(const library::SortOrder order) {
 
 constexpr library::SortOrder orderForTab(const int tab, const uint8_t descendingTabs) {
   const bool descending = (descendingTabs & (1u << tab)) != 0;
-  if (tab == TITLE_TAB) return descending ? library::SortOrder::TitleDesc : library::SortOrder::TitleAsc;
+  // Genres lists folders and books by name; a search typed there searches the
+  // whole card in title order.
+  if (tab == GENRE_TAB) return library::SortOrder::TitleAsc;
   if (tab == AUTHOR_TAB) return descending ? library::SortOrder::AuthorDesc : library::SortOrder::AuthorAsc;
   return descending ? library::SortOrder::RecentDesc : library::SortOrder::RecentAsc;
 }
 
 const char* tabLabelFor(const int tab) {
-  if (tab == TITLE_TAB) return tr(STR_LIBRARY_TAB_TITLE);
+  if (tab == GENRE_TAB) return tr(STR_LIBRARY_TAB_GENRE);
   if (tab == AUTHOR_TAB) return tr(STR_LIBRARY_TAB_AUTHOR);
   return tr(STR_LIBRARY_TAB_RECENT);
 }
@@ -193,7 +195,11 @@ void LibraryListActivity::openSelectedBook() {
     path = books[static_cast<size_t>(selectedEntry())].path;
   } else {
     if (!index.isOpen()) return;
-    const uint16_t ordinal = index.ordinalForRow(sortOrder, static_cast<uint16_t>(rowFor(selectedEntry())));
+    if (isGenreFolder(selectedEntry())) {
+      enterGenreFolder(selectedEntry());
+      return;
+    }
+    const uint16_t ordinal = ordinalFor(selectedEntry());
     if (ordinal == 0xFFFF) return;
 
     library::ClixRecord record{};
@@ -228,7 +234,9 @@ void LibraryListActivity::activateIndex(const int index) {
 bool LibraryListActivity::deleteEligible() const { return !groupsCollapsed && (!query.empty() || !groupable()); }
 
 void LibraryListActivity::onRowLongPress(const int index) {
-  if (index < pinnedCount()) {
+  if (isGenreFolder(index)) {
+    activateIndex(index);
+  } else if (index < pinnedCount()) {
     const auto& books = RECENT_BOOKS.getBooks();
     if (index < 0 || index >= static_cast<int>(books.size())) return;
     promptRemoveRecentBook(books[static_cast<size_t>(index)].path, books[static_cast<size_t>(index)].title);
@@ -272,7 +280,7 @@ void LibraryListActivity::promptRemoveRecentBook(const std::string& path, const 
 
 void LibraryListActivity::promptDeleteBook(const int entry) {
   if (!index.isOpen() || entry < 0 || entry >= bookRowCount()) return;
-  const uint16_t ordinal = index.ordinalForRow(sortOrder, static_cast<uint16_t>(rowFor(entry)));
+  const uint16_t ordinal = ordinalFor(entry);
   if (ordinal == 0xFFFF) return;
 
   std::string path;
@@ -316,6 +324,7 @@ void LibraryListActivity::promptDeleteBook(const int entry) {
         // order.
         applyFilter();
         resolvePinned();
+        buildGenreListing();
         auto& nav = activeNav();
         const int count = listCount();
         if (count == 0) {
@@ -375,13 +384,19 @@ void LibraryListActivity::onTabAction(const int index) {
 
 void LibraryListActivity::selectTab(const int index, const bool toggleIfActive) {
   if (index < 0 || index >= TAB_SLOTS) return;
-  if (toggleIfActive && index == activeTab()) descendingTabs ^= static_cast<uint8_t>(1u << index);
+  if (toggleIfActive && index == activeTab() && index != GENRE_TAB) {
+    descendingTabs ^= static_cast<uint8_t>(1u << index);
+  }
   sortOrder = orderForTab(index, descendingTabs);
   // The filter and the overlap rows hold positions in the old order, so they
   // must be rebuilt.
   applyFilter();
   activeTabIndex = index;
   refreshOverlap();
+  if (index == GENRE_TAB) {
+    RenderLock lock(*this);
+    buildGenreListing();
+  }
   // Tab changes happen only while the bar owns focus. A tab's remembered row
   // must not pull focus back into the list after the switch.
   auto& nav = activeNav();
@@ -399,11 +414,12 @@ int LibraryListActivity::activeTab() const { return activeTabIndex; }
 const char* LibraryListActivity::tabLabel(const int index) const { return tabLabelFor(index); }
 
 fui::TabIndicator LibraryListActivity::tabIndicator(const int index) const {
-  if (index != activeTab()) return fui::TabIndicator::None;
+  if (index != activeTab() || index == GENRE_TAB) return fui::TabIndicator::None;
   return isDescending(sortOrder) ? fui::TabIndicator::Down : fui::TabIndicator::Up;
 }
 
 int LibraryListActivity::bookRowCount() const {
+  if (genreMode()) return static_cast<int>(genreDirs.size()) + genreBookCount;
   if (!query.empty()) return static_cast<int>(filteredCount);
   // Pinned books already in the index are skipped below the pins, not doubled;
   // pinned books the index missed still show, so the difference stays split.
@@ -431,7 +447,109 @@ int LibraryListActivity::rowFor(const int entry) const {
   return row;
 }
 
-bool LibraryListActivity::groupable() const { return !degraded && !isRecentSort(sortOrder) && bookRowCount() > 0; }
+bool LibraryListActivity::groupable() const {
+  return !degraded && !genreMode() && !isRecentSort(sortOrder) && bookRowCount() > 0;
+}
+
+bool LibraryListActivity::genreMode() const { return activeTabIndex == GENRE_TAB && query.empty() && !degraded; }
+
+bool LibraryListActivity::isGenreFolder(const int entry) const {
+  return genreMode() && entry >= 0 && entry < static_cast<int>(genreDirs.size());
+}
+
+uint16_t LibraryListActivity::ordinalFor(const int entry) {
+  if (genreMode()) {
+    const int book = entry - static_cast<int>(genreDirs.size());
+    if (book < 0 || book >= genreBookCount || !genreBooks) return 0xFFFF;
+    return genreBooks[book];
+  }
+  return index.ordinalForRow(sortOrder, static_cast<uint16_t>(rowFor(entry)));
+}
+
+void LibraryListActivity::buildGenreListing() {
+  genreDirs.clear();
+  genreBookCount = 0;
+  const int total = static_cast<int>(index.bookCount());
+  if (total > genreBookCapacity) {
+    // Sized for the whole library, like the search result buffer: the folder
+    // being shown can hold every book on the card.
+    genreBooks = makeUniqueNoThrow<uint16_t[]>(static_cast<size_t>(total));
+    genreBookCapacity = genreBooks ? static_cast<uint16_t>(total) : 0;
+    if (!genreBooks) LOG_ERR("LIB", "cannot allocate %u-byte genre list", static_cast<unsigned>(total * 2));
+  }
+  std::string path;
+  path.reserve(160);
+  for (int row = 0; row < total && genreBooks; row++) {
+    const uint16_t ordinal = index.ordinalForRow(library::SortOrder::TitleAsc, static_cast<uint16_t>(row));
+    library::ClixRecord record{};
+    if (ordinal == 0xFFFF || !index.readRecord(ordinal, record) || !index.readPath(record, path)) continue;
+    if (path.compare(0, genrePath.size(), genrePath) != 0) continue;
+    const size_t slash = path.find('/', genrePath.size());
+    if (slash == std::string::npos) {
+      genreBooks[genreBookCount++] = ordinal;
+      continue;
+    }
+    const std::string name = path.substr(genrePath.size(), slash - genrePath.size());
+    auto dir = std::find_if(genreDirs.begin(), genreDirs.end(), [&name](const GenreDir& d) { return d.name == name; });
+    if (dir == genreDirs.end()) {
+      genreDirs.push_back({name, 1});
+    } else {
+      dir->books++;
+    }
+  }
+  std::sort(genreDirs.begin(), genreDirs.end(), [](const GenreDir& a, const GenreDir& b) { return a.name < b.name; });
+
+  // A folder emptied by a delete, or gone since, leaves nothing to show: climb
+  // to the nearest one that still holds a book.
+  if (genreDirs.empty() && genreBookCount == 0 && genrePath != "/") {
+    genrePath.pop_back();
+    genrePath.erase(genrePath.find_last_of('/') + 1);
+    buildGenreListing();
+    return;
+  }
+  if (genrePath == "/") {
+    genreTitle.clear();
+  } else {
+    const size_t start = genrePath.find_last_of('/', genrePath.size() - 2) + 1;
+    genreTitle = genrePath.substr(start, genrePath.size() - 1 - start);
+  }
+}
+
+void LibraryListActivity::enterGenreFolder(const int entry) {
+  if (!isGenreFolder(entry)) return;
+  app.clearTapFlash();
+  {
+    RenderLock lock(*this);
+    genrePath += genreDirs[static_cast<size_t>(entry)].name + "/";
+    buildGenreListing();
+  }
+  auto& nav = activeNav();
+  nav.selected = bookRowCount() > 0 ? 1 : 0;
+  nav.top = 0;
+  requestUpdate();
+}
+
+void LibraryListActivity::leaveGenreFolder() {
+  if (genrePath == "/") return;
+  app.clearTapFlash();
+  int landing = 0;
+  {
+    RenderLock lock(*this);
+    genrePath.pop_back();
+    const size_t cut = genrePath.find_last_of('/') + 1;
+    const std::string left = genrePath.substr(cut);
+    genrePath.erase(cut);
+    buildGenreListing();
+    for (size_t i = 0; i < genreDirs.size(); i++) {
+      if (genreDirs[i].name == left) landing = static_cast<int>(i);
+    }
+  }
+  auto& nav = activeNav();
+  nav.selected = landing + 1;
+  nav.top = 0;
+  nav.followOnBuild = true;
+  requestUpdate();
+}
 
 uint32_t LibraryListActivity::titleInitialFor(const int entry) {
   const uint16_t ordinal = index.ordinalForRow(sortOrder, static_cast<uint16_t>(rowFor(entry)));
@@ -585,7 +703,19 @@ bool LibraryListActivity::rowTextFor(const int entry, std::string& title, std::s
     if (fileName) *fileName = book.path;
     return true;
   }
-  const uint16_t ordinal = index.ordinalForRow(sortOrder, static_cast<uint16_t>(rowFor(entry)));
+  if (isGenreFolder(entry)) {
+    const GenreDir& dir = genreDirs[static_cast<size_t>(entry)];
+    title = dir.name;
+    if (dir.books == 1) {
+      author = tr(STR_LIBRARY_GENRE_ONE_BOOK);
+    } else {
+      char count[24];
+      snprintf(count, sizeof(count), tr(STR_LIBRARY_GENRE_BOOKS), static_cast<unsigned>(dir.books));
+      author = count;
+    }
+    return true;
+  }
+  const uint16_t ordinal = ordinalFor(entry);
   library::ClixRecord record{};
   if (ordinal != 0xFFFF && index.readRecord(ordinal, record)) {
     // The build already decided both fields — from the book's own metadata when
@@ -626,6 +756,8 @@ bool LibraryListActivity::handleButtons() {
   if (mappedInput.wasLongPressed(MappedInputManager::Button::Confirm, LONG_PRESS_MS)) {
     if (tabsFocused()) {
       if (!degraded) toggleSortDirection();
+    } else if (isGenreFolder(selectedEntry())) {
+      activateIndex(selectedEntry());
     } else if (selectedEntry() < pinnedCount()) {
       const auto& books = RECENT_BOOKS.getBooks();
       if (selectedEntry() < static_cast<int>(books.size())) {
@@ -651,6 +783,8 @@ bool LibraryListActivity::handleButtons() {
       requestUpdate();
     } else if (groupsCollapsed) {
       restoreExpandedList();
+    } else if (genreMode() && genrePath != "/") {
+      leaveGenreFolder();
     } else if (!tabsFocused() && !degraded) {
       // Keep the current list and viewport while returning focus to the tabs.
       nav.selected = 0;
@@ -708,8 +842,8 @@ void LibraryListActivity::navigateButtons() {
 void LibraryListActivity::buildRows(UiScreen& screen) {
   auto& nav = activeNav();
   const int count = listCount();
-  const bool authorGrouped = isAuthorSort(sortOrder);
-  const bool grouped = !isRecentSort(sortOrder);
+  const bool authorGrouped = isAuthorSort(sortOrder) && !genreMode();
+  const bool grouped = !isRecentSort(sortOrder) && !genreMode();
 
   fui::ListProps props;
   props.count = static_cast<uint16_t>(count);
@@ -774,7 +908,11 @@ void LibraryListActivity::buildRows(UiScreen& screen) {
 
     item.label = title.c_str();
     // Group headings stay bare; every book row gets its file-type icon.
-    if (!groupsCollapsed && !rowFile.empty()) item.icon = listIconFor(UITheme::getFileIcon(rowFile), 32);
+    if (isGenreFolder(entry)) {
+      item.icon = listIconFor(UIIcon::Folder, 32);
+    } else if (!groupsCollapsed && !rowFile.empty()) {
+      item.icon = listIconFor(UITheme::getFileIcon(rowFile), 32);
+    }
     item.actionValue = static_cast<int16_t>(entry);
     winItems.push_back(item);
     rows++;
@@ -878,7 +1016,9 @@ void LibraryListActivity::drawPositionReadout() const {
   if (count <= 0) return;
 
   char buf[32];
-  const char* positionFormat = groupsCollapsed ? tr(STR_LIBRARY_GROUP_POSITION) : tr(STR_LIBRARY_POSITION);
+  const char* positionFormat = groupsCollapsed ? tr(STR_LIBRARY_GROUP_POSITION)
+                               : genreMode()   ? tr(STR_LIBRARY_ITEM_POSITION)
+                                               : tr(STR_LIBRARY_POSITION);
   snprintf(buf, sizeof(buf), positionFormat, selectedEntry() + 1, count);
   const auto& metrics = UITheme::getInstance().getMetrics();
   const int width = renderer.getTextWidth(SMALL_FONT_ID, buf);
@@ -889,16 +1029,19 @@ void LibraryListActivity::drawPositionReadout() const {
 
 const char* LibraryListActivity::headerTitle() const {
   if (!headerSearchTitle.empty()) return headerSearchTitle.c_str();
+  if (genreMode() && !genreTitle.empty()) return genreTitle.c_str();
   return degraded ? tr(STR_LIBRARY_TITLE_UNSORTED) : tr(STR_LIBRARY);
 }
 
 void LibraryListActivity::drawHoldHelp() const {
   if (mappedInput.hasTouch() || groupsCollapsed) return;
   const char* help = nullptr;
-  if (tabsFocused() && !degraded)
+  if (tabsFocused() && !degraded && activeTab() != GENRE_TAB)
     help = tr(STR_LIBRARY_HOLD_SORT);
   else if (!tabsFocused() && selectedEntry() < pinnedCount())
     help = tr(STR_HOLD_OPEN_TO_REMOVE);  // pinned recents: hold removes from the list
+  else if (!tabsFocused() && isGenreFolder(selectedEntry()))
+    help = nullptr;
   else if (!tabsFocused() && deleteEligible() && listCount() > 0)
     help = tr(STR_HOLD_OPEN_TO_DELETE);
   else if (!tabsFocused() && groupable())
@@ -915,7 +1058,7 @@ void LibraryListActivity::drawFooter() {
   drawPositionReadout();
   drawHoldHelp();
 
-  const bool backGoesHome = tabsFocused() && !groupsCollapsed && query.empty();
+  const bool backGoesHome = tabsFocused() && !groupsCollapsed && query.empty() && !(genreMode() && genrePath != "/");
   const char* backLabel = backGoesHome ? tr(STR_HOME) : tr(STR_BACK);
   const char* confirmLabel = groupsCollapsed ? tr(STR_SELECT) : tr(STR_OPEN);
   const bool canSearch = tabsFocused() && !degraded;

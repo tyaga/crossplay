@@ -2,6 +2,7 @@
 
 #include <Epub/Page.h>
 #include <Epub/blocks/TextBlock.h>
+#include <Fb2Book.h>
 #include <FontCacheManager.h>
 #include <FsHelpers.h>
 #include <GfxRenderer.h>
@@ -134,8 +135,15 @@ void moveFinishedBookToReadFolder(const std::string& srcPath, const std::string&
     return;
   }
 
-  const std::string newCachePath = "/.crosspoint/epub_" + std::to_string(std::hash<std::string>{}(dstPath));
-  if (!oldCachePath.empty() && Storage.exists(oldCachePath.c_str())) {
+  std::string newCachePath;
+  if (fb2::isFb2Path(srcPath)) {
+    // fork-local seam: the pages live with the EPUB made from the book.
+    fb2::moveEpub(srcPath, dstPath);
+    newCachePath = fb2::epubCachePathForBook(dstPath);
+  } else {
+    newCachePath = "/.crosspoint/epub_" + std::to_string(std::hash<std::string>{}(dstPath));
+  }
+  if (!fb2::isFb2Path(srcPath) && !oldCachePath.empty() && Storage.exists(oldCachePath.c_str())) {
     if (!Storage.rename(oldCachePath.c_str(), newCachePath.c_str())) {
       LOG_ERR("ERS", "Failed to rename cache dir %s -> %s (non-fatal)", oldCachePath.c_str(), newCachePath.c_str());
     }
@@ -165,7 +173,7 @@ EpubReaderActivity::~EpubReaderActivity() {
 
   section.reset();
   if (pendingReadFolderMove && epub) {
-    const std::string srcPath = epub->getPath();
+    const std::string srcPath = bookPath;
     const std::string oldCachePath = epub->getCachePath();
     const std::string dstPath = buildReadFolderDestination(srcPath);
     epub.reset();
@@ -176,7 +184,35 @@ EpubReaderActivity::~EpubReaderActivity() {
 }
 
 bool EpubReaderActivity::loadBook() {
-  auto loadedEpub = makeUniqueNoThrow<Epub>(bookPath, "/.crosspoint");
+  // fork-local seam: an FB2 book is read through the EPUB made from it, made
+  // here on first open. bookPath stays the FB2 for recents and resume.
+  std::string epubPath = bookPath;
+  if (fb2::isFb2Path(bookPath)) {
+    if (!fb2::epubIsCurrent(bookPath)) {
+      disableFastInitialRefresh();
+      struct Popup {
+        GfxRenderer& renderer;
+        Rect rect;
+        int shown;
+      } popup{renderer, GUI.drawPopup(renderer, tr(STR_FB2_PREPARING)), -1};
+      const bool prepared = fb2::prepareEpub(
+          bookPath,
+          [](void* ctx, const int percent) {
+            // Every tenth percent: each fill is a panel refresh.
+            auto* p = static_cast<Popup*>(ctx);
+            if (percent / 10 == p->shown) return;
+            p->shown = percent / 10;
+            GUI.fillPopupProgress(p->renderer, p->rect, percent);
+          },
+          &popup);
+      if (!prepared) {
+        LOG_ERR("ERS", "Cannot read %s as FB2", bookPath.c_str());
+        return false;
+      }
+    }
+    epubPath = fb2::epubPathFor(bookPath);
+  }
+  auto loadedEpub = makeUniqueNoThrow<Epub>(epubPath, "/.crosspoint");
   if (!loadedEpub) {
     LOG_ERR("ERS", "Failed to allocate EPUB object");
     return false;
@@ -329,9 +365,10 @@ void EpubReaderActivity::openDictionaryWordSelect() {
   orientedMarginTop += SETTINGS.screenMargin;
   orientedMarginLeft += SETTINGS.screenMargin;
 
-  startActivityForResult(std::make_unique<DictionaryWordSelectActivity>(renderer, mappedInput, std::move(page),
-                                                                        orientedMarginLeft, orientedMarginTop),
-                         [this](const ActivityResult&) { requestUpdate(); });
+  startActivityForResult(
+      std::make_unique<DictionaryWordSelectActivity>(renderer, mappedInput, std::move(page), orientedMarginLeft,
+                                                     orientedMarginTop, epub->getTitle()),
+      [this](const ActivityResult&) { requestUpdate(); });
 }
 
 void EpubReaderActivity::loop() {
@@ -409,15 +446,15 @@ void EpubReaderActivity::loop() {
 
   if (SETTINGS.removeReadBooksFromRecents) {
     if (atEndOfBook && !recentsEntryRemoved) {
-      recentsEntryRemoved = RECENT_BOOKS.removeByPath(epub->getPath());
+      recentsEntryRemoved = RECENT_BOOKS.removeByPath(bookPath);
     } else if (!atEndOfBook && recentsEntryRemoved) {
-      RECENT_BOOKS.addBook(epub->getPath(), epub->getTitle(), epub->getAuthor(), epub->getThumbBmpPath());
+      RECENT_BOOKS.addBook(bookPath, epub->getTitle(), epub->getAuthor(), epub->getThumbBmpPath());
       recentsEntryRemoved = false;
     }
   }
 
   if (atEndOfBook) {
-    pendingReadFolderMove = SETTINGS.moveFinishedToReadFolder && !isInReadFolder(epub->getPath());
+    pendingReadFolderMove = SETTINGS.moveFinishedToReadFolder && !isInReadFolder(bookPath);
   } else {
     pendingReadFolderMove = false;
   }
@@ -919,9 +956,8 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
       break;
     }
     case EpubReaderMenuActivity::MenuAction::BOOKMARKS: {
-      startActivityForResult(
-          std::make_unique<EpubReaderBookmarksActivity>(renderer, mappedInput, epub, epub->getPath()),
-          progressChangeResultHandler);
+      startActivityForResult(std::make_unique<EpubReaderBookmarksActivity>(renderer, mappedInput, epub, bookPath),
+                             progressChangeResultHandler);
       break;
     }
     case EpubReaderMenuActivity::MenuAction::TOGGLE_BOOKMARK: {
@@ -2595,7 +2631,7 @@ void EpubReaderActivity::loadCachedBookmarks() {
     return;
   }
 
-  BookmarkFile::load(epub->getPath(), cachedBookmarks);
+  BookmarkFile::load(bookPath, cachedBookmarks);
   updateBookmarkFlag();
 }
 
@@ -2649,7 +2685,7 @@ void EpubReaderActivity::addBookmark() {
     currentPageBookmarked = true;
   }
 
-  if (!BookmarkFile::save(epub->getPath(), cachedBookmarks)) {
+  if (!BookmarkFile::save(bookPath, cachedBookmarks)) {
     LOG_ERR("ERS", "Failed to save bookmarks");
   }
   requestUpdate();

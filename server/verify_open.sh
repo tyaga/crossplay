@@ -7,7 +7,7 @@
 #
 # WHY THIS EXISTS AND WHY NOTHING ELSE ANSWERS IT
 #
-# Three services are gated, each by one environment variable on the pi, and
+# Two services are gated, each by one environment variable on the pi, and
 # every gate FAILS CLOSED. Every instrument we already have is blind to a shut
 # gate:
 #
@@ -21,8 +21,8 @@
 #                                 the process holds, never who may sign in
 #
 # So the only question worth asking is the one a stranger asks, and the answer
-# lives in the response BODY rather than the status code. Both bridges answer
-# 200 whether they let you in or refuse you.
+# lives in the response BODY rather than the status code. The bridge answers
+# 200 whether it lets you in or refuses you.
 #
 # THE TWO SENTENCES, AND THEY MEAN OPPOSITE THINGS
 #
@@ -30,7 +30,6 @@
 #       OUR gate refused. The door is shut. Nobody but the allowlist gets in.
 #
 #   "AnkiWeb did not accept that email and password."
-#   "Instapaper did not accept that email and password."
 #       Our gate let the attempt THROUGH and the upstream refused the
 #       credential. The door is open and this probe's key is wrong, which is
 #       the whole point: the key is deliberately bogus.
@@ -39,15 +38,7 @@
 # They are opposite verdicts. That confusion is the reason this file is a
 # script and not a paragraph in a runbook.
 #
-# WHAT THIS PROVES AND WHAT IT DOES NOT
-#
-# It proves OUR gate is open. For read-bridge it does NOT prove a stranger can
-# actually sign in: if Instapaper's application were still in owner-only mode,
-# a non-owner xAuth returns 403 and the bridge prints the same "Instapaper did
-# not accept" sentence. Only a real third-party Instapaper credential separates
-# those two. Say so rather than overclaiming.
-#
-# COST: one bogus sign-in per bridge per run. LOGIN_IP is 5 per 5 minutes per
+# COST: one bogus sign-in per run. LOGIN_IP is 5 per 5 minutes per
 # address, so about five runs per five minutes before this probe rate-limits
 # itself. The usernames are fresh and end in .invalid (RFC 2606), which can
 # never be a registrable domain, so no real person's account is ever touched
@@ -62,7 +53,6 @@ WHY=0
 # should ever set these: the entire value of this script is that it asks the
 # public internet.
 BASE_STUDY="${VERIFY_BASE_STUDY:-https://sync.ma-r-s.com}"
-BASE_READ="${VERIFY_BASE_READ:-https://read.ma-r-s.com}"
 BASE_BOOKS="${VERIFY_BASE_BOOKS:-https://books.ma-r-s.com}"
 
 # The pair CrossPlay's firmware seeds as the Get Books default
@@ -84,7 +74,7 @@ rule
 say "IS THE BOX ANSWERING AT ALL"
 rule
 up=1
-for host in "$BASE_STUDY" "$BASE_READ" "$BASE_BOOKS"; do
+for host in "$BASE_STUDY" "$BASE_BOOKS"; do
   code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "$host/healthz" 2>/dev/null)"
   printf '  %-28s %s' "${host#https://}" "$code"
   case "$code" in
@@ -121,10 +111,8 @@ probe_bridge() {
   if printf '%s' "$body" | grep -qF "This bridge is invitation-only for now."; then
     say "  SHUT.  Our own gate refused before the credential went anywhere."
     say "         A stranger cannot use this service."
-    say "         Fix: the allowlist variable on the pi. Mind WHICH ONE:"
-    say "           /srv/readbridge/.env   -> READ_ALLOWLIST"
-    say "           /srv/ankibridge/.env   -> BRIDGE_ALLOWLIST"
-    say "         They are DIFFERENT NAMES. Setting the other one is silent."
+    say "         Fix: BRIDGE_ALLOWLIST in /srv/ankibridge/.env on the pi."
+    say "         A misspelt variable name is silent."
     fail=1
     return
   fi
@@ -153,13 +141,11 @@ probe_bridge() {
 
 probe_bridge "$BASE_STUDY" "STUDY  (ankibridge, AnkiWeb)" \
   "AnkiWeb did not accept that email and password."
-probe_bridge "$BASE_READ" "READ   (readbridge, Instapaper)" \
-  "Instapaper did not accept that email and password."
 
 # ---------------------------------------------------------------- get books
 # NOT "open by design". It is HTTP Basic auth with a second, deliberately
-# public account for the firmware, and it fails closed the same way the two
-# allowlists do: with GETBOOKS_PUBLIC_USER/PASS unset, every shipped reader in
+# public account for the firmware, and it fails closed the same way the
+# allowlist does: with GETBOOKS_PUBLIC_USER/PASS unset, every shipped reader in
 # the world gets 401 while Mario's own credentials keep working perfectly, so
 # nothing he does would ever show him the outage.
 say
@@ -198,13 +184,10 @@ if [ "$WHY" -eq 1 ]; then
   rule
   say "DIAGNOSTICS (not evidence: this is what the container HOLDS)"
   rule
-  for pair in "readbridge:READ_ALLOWLIST" "ankibridge:BRIDGE_ALLOWLIST"; do
-    svc="${pair%%:*}"; var="${pair##*:}"
-    say "  $svc $var:"
-    ssh -o BatchMode=yes -o ConnectTimeout=10 orange \
-      "docker exec $svc printenv $var 2>/dev/null || echo '(unset or container down)'" \
-      2>&1 | sed 's/^/    /'
-  done
+  say "  ankibridge BRIDGE_ALLOWLIST:"
+  ssh -o BatchMode=yes -o ConnectTimeout=10 orange \
+    "docker exec ankibridge printenv BRIDGE_ALLOWLIST 2>/dev/null || echo '(unset or container down)'" \
+    2>&1 | sed 's/^/    /'
   say "  getbooks GETBOOKS_PUBLIC_USER:"
   ssh -o BatchMode=yes -o ConnectTimeout=10 orange \
     "docker exec getbooks printenv GETBOOKS_PUBLIC_USER 2>/dev/null || echo '(unset or container down)'" \
@@ -229,12 +212,7 @@ if [ "$inconclusive" -eq 1 ] && [ "$fail" -eq 0 ]; then
   exit 2
 fi
 if [ "$fail" -eq 0 ]; then
-  say "ALL THREE ARE OPEN TO STRANGERS."
-  say
-  say "One honest caveat, on read-bridge only: this proves OUR gate is open."
-  say "It does not prove Instapaper's application has left owner-only mode,"
-  say "because a non-owner 403 prints the same sentence as a wrong password."
-  say "Only a real third-party Instapaper account settles that."
+  say "BOTH ARE OPEN TO STRANGERS."
   exit 0
 fi
 say "AT LEAST ONE DOOR IS STILL SHUT. Read the section above that says SHUT."

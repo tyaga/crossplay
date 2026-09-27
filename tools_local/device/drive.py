@@ -30,7 +30,7 @@ is saved in), and the script converts.
     ... heap
     ... watch 30                        # just relay log output for N seconds
     ... ls /.crosspoint                 # list a card directory
-    ... cat /.crosspoint/chess.sav      # stream a card file
+    ... cat /.crosspoint/shelf.cfg      # stream a card file
     ... writetest /.crosspoint/x.sav    # the exact open the games use, verbose
     ... mkdir /d, rm /f, rmdir /d       # card housekeeping
     ... sdprobe                         # raw cardBegin/volumeBegin, error codes

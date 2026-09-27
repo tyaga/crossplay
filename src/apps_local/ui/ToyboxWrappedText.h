@@ -20,11 +20,11 @@
 // ---------------------------------------------------------------------------
 // The dangerous half is not the speed, it is the staleness.
 //
-// The line count is not decoration. Instapaper's reading position is the top
-// line over the total and that number goes up to somebody's real account. A
-// count kept from a wrap that no longer describes the panel -- a rotation, a
-// bigger reading size, a different cut installed off the SD card -- would send
-// a wrong position, and there would be nothing on screen to say so. A cache
+// The line count is not decoration. A reading position is the top line over
+// the total, and the page label and forward control are drawn from it. A count
+// kept from a wrap that no longer describes the panel -- a rotation, a bigger
+// reading size, a different cut installed off the SD card -- would be a wrong
+// position, and there would be nothing on screen to say so. A cache
 // that goes stale here is worse than the slowness it removes.
 //
 // Two layers stop it, and neither is a list of things somebody thought of.
@@ -102,9 +102,8 @@
 //
 // Disagreement costs a rebuild, never a wrong page. And a rebuild changes the
 // line count, so whoever asked for that count has to ask again AFTER the
-// drawing: see InstapaperActivity's Phase::Reading, where getting that order
-// wrong sent a reading position computed against the wrong length to a real
-// account. That is the property to preserve if this is ever changed.
+// drawing, or it holds a position computed against the wrong length. That is
+// the property to preserve if this is ever changed.
 // ---------------------------------------------------------------------------
 
 #include <FreeInkUI.h>

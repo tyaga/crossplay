@@ -17,12 +17,11 @@ here: both shipped to the live page and were found by a person looking at it.
    and shelf_coverage.py still finds both names in the text, so nothing else in
    this suite can fail on it.
 
-2. A shot stored at 2x. The simulator captures at twice the panel, and the
-   four scripted shots (scripts_local/shoot-*.sh) copy that straight into
-   site/assets/shots/. The declared width/height are the 1x numbers, so the
-   aspect is right and the card looks perfect -- it is simply four times the
-   pixels, on a page that lazy-loads two dozen of them. trivia, wavelength,
-   toybattle and forehead were all 2x on 2026-09-01 and nothing said so.
+2. A shot stored at 2x. The simulator captures at twice the panel, and a
+   script that copies that straight into site/assets/shots/ stores it at 2x.
+   The declared width/height are the 1x numbers, so the aspect is right and
+   the card looks perfect -- it is simply four times the pixels, on a page
+   that lazy-loads a dozen of them.
 
 Prints one line per problem and nothing when there are none; run.sh counts the
 lines and checks the exit status.

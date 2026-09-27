@@ -920,8 +920,7 @@ void HackerNewsActivity::render(RenderLock&&) {
       // Through wrap_ rather than textAreaMeasure(), which wrapped the whole
       // document on every single paint with not even a branch to hang a cache
       // on. An article is long and a flattened comment thread is longer; both
-      // were re-wrapped twice per page turn. Instapaper was reported first and
-      // this is the same bug in the same shape. See ToyboxWrappedText.h.
+      // would be re-wrapped twice per page turn. See ToyboxWrappedText.h.
       const fui::Rect body = hnui::readerBody(device);
       const int16_t lineHeight = target.lineHeight(tokens.bodyText.font);
       visibleLines_ = fui::textAreaVisibleLines(body, lineHeight);
@@ -965,8 +964,8 @@ void HackerNewsActivity::render(RenderLock&&) {
       // A save the card just refused, drawn as a toast over the page instead of
       // a full-screen notice that would have lost the reader's place (card #40).
       model.saveNotice = saveFailedNotice_ ? "Not saved: the card is full." : nullptr;
-      // The count the panel was drawn from; see the twin in
-      // InstapaperActivity.cpp. No reading position goes anywhere from here,
+      // The count the panel was drawn from. No reading position goes anywhere
+      // from here,
       // but the page label and the forward control were both computed from
       // the count taken before the drawing.
       lineCount_ = hnui::buildReader(screen, model, bodyText);

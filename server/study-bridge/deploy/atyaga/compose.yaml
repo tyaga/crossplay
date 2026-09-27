@@ -1,0 +1,44 @@
+# ankibridge on a small VPS, under /opt/ankibridge, behind a shared Caddy
+# (repository atyaga-services), which reaches it as anki-app:8080 on the web
+# network and terminates TLS for the domain in its .env. No port is published.
+#
+# The same hardening as the upstream compose (server/study-bridge/compose.yaml)
+# minus the Orange Pi specifics: no cloudflared, no pinned subnet, and a memory
+# ceiling sized for a 1 GB box with swap rather than 2g.
+services:
+  app:
+    build: .
+    image: ankibridge:local
+    restart: unless-stopped
+    networks:
+      web:
+        aliases: [anki-app]
+    expose:
+      - "8080"
+    environment:
+      BRIDGE_DATA: /data
+      BRIDGE_FERNET_KEY: ${BRIDGE_FERNET_KEY}
+      BRIDGE_ALLOWLIST: ${BRIDGE_ALLOWLIST}
+    volumes:
+      - ./data:/data
+    user: "10002:10002"
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    # workers=1 is load-bearing (the image CMD): the per-user lock is an
+    # asyncio mutex. A sync of a few-MB collection and one deck build peak
+    # around 300 MB; the box carries a 1 GB swap file for the rest.
+    mem_limit: 600m
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8080/healthz').read()"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+networks:
+  web:
+    external: true
