@@ -7,8 +7,8 @@
 Why this exists
 ---------------
 CrossPlay v1.0.0 crashed on the first device it ever ran on. Not a logic bug: the
-render task was created with 8192 bytes and one trip through
-ShelfFolderActivity::render() needed 8016 of them, so the drawing underneath ran
+render task was created with 8192 bytes and one trip through the shelf
+folder's render() needed 8016 of them, so the drawing underneath ran
 off the end and tripped the stack canary. Nothing caught it because nothing
 measured it, and the simulator hands every task a host thread whose stack is a
 thousand times larger. See https://github.com/ma-r-s/crossplay/issues/1.

@@ -45,7 +45,7 @@ pages = {
     "the README": flat((root / "README.md").read_text()),
 }
 
-for table, kind in (("kHomeItems", "Home item"), ("kAppsAndGames", "shelf item")):
+for table, kind in (("kHomeItems", "Home item"), ("kApps", "shelf item")):
     for title in titles(table):
         needle = " " + flat(title).strip() + " "
         for where, text in pages.items():

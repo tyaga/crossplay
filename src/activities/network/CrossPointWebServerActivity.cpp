@@ -95,6 +95,11 @@ void CrossPointWebServerActivity::onEnter() {
   lastHandleClientTime = 0;
   requestUpdate();
 
+  if (joinNetworkOnly) {
+    onNetworkModeSelected(NetworkMode::JOIN_NETWORK);
+    return;
+  }
+
   // Launch network mode selection subactivity
   LOG_DBG("WEBACT", "Launching NetworkModeSelectionActivity...");
   startActivityForResult(std::make_unique<NetworkModeSelectionActivity>(renderer, mappedInput),
@@ -222,6 +227,8 @@ void CrossPointWebServerActivity::onWifiSelectionComplete(const bool connected) 
 
     // Start the web server
     startWebServer();
+  } else if (joinNetworkOnly) {
+    onGoHome();
   } else {
     // User cancelled - go back to mode selection
     state = WebServerActivityState::MODE_SELECTION;

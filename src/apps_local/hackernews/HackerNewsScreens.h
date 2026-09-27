@@ -84,9 +84,8 @@ struct ListModel {
   // invisible control, and hn::emptyState decides them together.
   const char* emptyActionLabel = nullptr;
   fui::ActionId emptyAction = fui::NO_ACTION;
-  // Built by the Activity, the way shelfui::MenuModel carries its rows: label
-  // is the story, subtitle is "412 points, 88 comments", which is the only
-  // metadata worth the ink.
+  // Built by the Activity: label is the story, subtitle is "412 points, 88
+  // comments", which is the only metadata worth the ink.
   const fui::ListItem* items = nullptr;
   int count = 0;
   int selected = 0;

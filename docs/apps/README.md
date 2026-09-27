@@ -55,5 +55,5 @@ edited.
 
 Solitaire, Battleship, Hacker News, xkcd, Wallpapers and Get Books. Some have
 auxiliary records here (a format, a plan, a flow); none has a file saying what
-the app is. To check the list, read `Shelf.cpp`'s `kAppsAndGames` and
+the app is. To check the list, read `Shelf.cpp`'s `kApps` and
 `kHomeItems` against "What an app is" above.

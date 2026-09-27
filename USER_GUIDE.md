@@ -12,7 +12,7 @@ Welcome to the **CrossPlay** firmware, a fork of CrossPoint for the Xteink X4 Pr
     - [First Launch](#first-launch)
   - [3. Screens](#3-screens)
     - [3.1 Home Screen](#31-home-screen)
-      - [3.1.1 Study and Apps & Games (CrossPlay)](#311-study-and-apps--games-crossplay)
+      - [3.1.1 Study and Apps (CrossPlay)](#311-study-and-apps-crossplay)
     - [3.2 Reading Mode](#32-reading-mode)
     - [3.3 Browse Files Screen](#33-browse-files-screen)
     - [3.4 Library Screen](#34-library-screen)
@@ -121,18 +121,17 @@ Upon turning the device on for the first time, you will be placed on the **[Home
 
 ### 3.1 Home Screen
 
-The Home screen is the main entry point to the firmware. It shows the covers of the most recently read books (one, or two with the **Lyra Extended** theme); tap one to open it in **[Reading Mode](#4-reading-mode)**. Below them are the **[Library](#34-library-screen)**, **[File Transfer](#35-file-transfer-screen)**, the two rows CrossPlay adds, **Study** and **Apps & Games**, and **[Settings](#36-settings)**. **[Browse Files](#33-browse-files-screen)** is the first row of Apps & Games.
+The Home screen is the main entry point to the firmware. It shows the covers of the most recently read books (one, or two with the **Lyra Extended** theme, each with its title in up to two lines); tap one to open it in **[Reading Mode](#4-reading-mode)**. Below them, spread down the rest of the screen: **[Library](#34-library-screen)** across the full width with a rule under it, then two to a row **Study** and **Apps**, **[Settings](#36-settings)** and **Wi-Fi**. **Wi-Fi** goes straight to joining a network and opening the file transfer page, the first choice of **[File Transfer](#35-file-transfer-screen)**. **[Browse](#33-browse-files-screen)** and **File Transfer** are rows in Apps.
 
-### 3.1.1 Study and Apps & Games (CrossPlay)
+### 3.1.1 Study and Apps (CrossPlay)
 
 **Study** opens the flashcard app straight from Home; Back returns you here.
 
-**Apps & Games** opens the shelf: Browse Files, Reading, Hacker News, xkcd,
-Get Books, Wallpapers, Solitaire and Battleship. A folder that does not fit
-pages vertically: swipe up for the next page, down for the previous, and the
-header says which page you are on. A row opens that app; Back (the
-left-to-right swipe) closes it and returns you to the folder, and Back from the
-folder returns you here.
+**Apps** opens the shelf, a list in the theme's own style: Browse, File
+Transfer, Reading, Hacker News, xkcd, Get Books, Wallpapers, Solitaire,
+Battleship and Player. A row opens that app; Back (the left-to-right swipe)
+closes it and returns you to the list, and Back from the list returns you here.
+**Player** sets the name and face this device shows another one in Battleship.
 
 Battleship also plays between two devices over **PLAY NEARBY**, with no pairing
 screen and nothing to type. Put two devices next to each other and they find
@@ -384,7 +383,7 @@ The Settings screen allows you to configure the device's behavior. There are a f
 
 #### 3.6.5 Get Books (OPDS Catalogs)
 
-**Get Books** lives in **Apps & Games** on the Home screen, and downloads books
+**Get Books** lives in **Apps** on the Home screen, and downloads books
 straight to the device from an OPDS catalog. Two catalogs are set up on first run, so it works
 without any configuration:
 

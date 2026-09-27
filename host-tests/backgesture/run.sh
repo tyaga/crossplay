@@ -7,8 +7,7 @@
 #     -> if (button == Button::Back && wasBackGesture()) return true;
 #
 # `MappedInputManager::wasSwipe()` is something else, the four-direction PAGING
-# swipe: ShelfFolderActivity and hackernews compare it against Up and Down to
-# turn pages. So the hole is not a missing gesture. It is an app written
+# swipe: hackernews compares it against Up and Down to turn pages. So the hole is not a missing gesture. It is an app written
 # touch-only, exiting through an on-screen button, whose loop() returns early
 # unless a tap arrived: a swipe is not a tap, the Back read never happens, and
 # the screen has no exit. This suite is what notices.
@@ -156,6 +155,18 @@ def reachable_back(body):
     return gate is None
 
 
+# A screen built on the shared list base inherits its Back: UiListActivity's
+# handleButtons() reads Button::Back on every frame and hands it to
+# onBackButton(). Recognised from the class declaration in the header beside
+# the .cpp.
+LIST_BASE = re.compile(r':\s*public\s+(UiListActivity|UiTabListActivity)\b')
+
+
+def inherits_back(path):
+    header = path[:-len('.cpp')] + '.h'
+    return os.path.exists(header) and LIST_BASE.search(open(header, encoding='utf-8').read()) is not None
+
+
 def offenders(tree):
     """Activities under `tree` with no Button::Back read a swipe can reach."""
     missing, sideways = [], []
@@ -168,8 +179,8 @@ def offenders(tree):
             path = os.path.join(dirpath, f)
             text = open(path, encoding='utf-8').read()
             rel = os.path.relpath(path, tree)
-            if not any(on_frame_path(n) and reachable_back(b)
-                       for n, b in functions(text)):
+            if not inherits_back(path) and not any(on_frame_path(n) and reachable_back(b)
+                                                   for n, b in functions(text)):
                 missing.append(rel)
             for n, b in functions(text):
                 if SIDEWAYS.search(b):
@@ -229,6 +240,16 @@ void BelowGateActivity::loop() {
 with tempfile.TemporaryDirectory() as tmp:
     apps = os.path.join(tmp, 'apps_local', 'sample')
     os.makedirs(apps)
+    open(os.path.join(apps, 'ListActivity.h'), 'w').write(
+        'class ListActivity final : public UiListActivity {};\n')
+    open(os.path.join(apps, 'ListActivity.cpp'), 'w').write('void ListActivity::activateIndex(int) {}\n')
+    missing, _ = offenders(tmp)
+    check(missing == [], 'fixture: a list-base screen, whose Back the base reads, was flagged: %s' % missing)
+    os.remove(os.path.join(apps, 'ListActivity.h'))
+    missing, _ = offenders(tmp)
+    check(any('ListActivity' in m for m in missing),
+          'fixture: without the list base the same file must be caught')
+    os.remove(os.path.join(apps, 'ListActivity.cpp'))
     open(os.path.join(apps, 'GoodActivity.cpp'), 'w').write(GOOD)
     missing, sideways = offenders(tmp)
     check(missing == [], 'fixture: an activity reading Back in loop() was flagged: %s' % missing)
