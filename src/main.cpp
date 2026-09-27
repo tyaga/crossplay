@@ -40,6 +40,7 @@
 #include "apps_local/Shelf.h"
 #include "apps_local/live/LiveEngine.h"
 #include "apps_local/powerprobe/PowerProbe.h"
+#include "apps_local/readingstats/ReadingStats.h"
 
 // How long the device sleeps before waking itself, in microseconds. 0 means
 // only the power button ends a sleep, which is how every build has behaved
@@ -395,6 +396,8 @@ void enterDeepSleep(bool fromTimeout = false, bool unattended = false) {
     // Before goToSleep() replaces the activity: after it, the thing on screen is
     // the sleep screen and the shelf can no longer tell what the user was doing.
     shelf::rememberForWake(activityManager.currentActivityName());
+    // Also before goToSleep(): the open page is still the reader's.
+    readstats::beforeSleep(fromTimeout);
   }
 
   // Commit to sleeping before goToSleep() runs the outgoing activity's onExit():
@@ -1213,6 +1216,7 @@ void loop() {
   const unsigned long activityStartTime = millis();
   activityManager.loop();
   const unsigned long activityDuration = millis() - activityStartTime;
+  readstats::service(activityManager.isReaderActivity());
 
   const unsigned long loopDuration = millis() - loopStartTime;
   if (loopDuration > maxLoopDuration) {

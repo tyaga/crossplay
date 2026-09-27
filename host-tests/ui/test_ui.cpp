@@ -37,6 +37,7 @@
 #include "../../src/apps_local/picross/PicrossScreens.h"
 #include "../../src/apps_local/player/PlayerAvatar.h"
 #include "../../src/apps_local/player/PlayerScreen.h"
+#include "../../src/apps_local/readingstats/StatsScreens.h"
 #include "../../src/apps_local/seasalt/SeaSaltScreens.h"
 #include "../../src/apps_local/solitaire/SolitaireScreens.h"
 #include "../../src/apps_local/study/StudyScreens.h"
@@ -13423,7 +13424,120 @@ void testWikipediaInstallSaysTheAddressFirst() {
   CHECK(retry != nullptr && tapRun(failed, retry).action == wikiui::ActionRetry);
 }
 
+// --- READING ----------------------------------------------------------------
+
+template <typename Model, void (*Build)(toybox::Screen&, const Model&)>
+void buildStats(Rendered& out, const Model& model) {
+  const fui::InputSnapshot noInput{};
+  toybox::Frame frame(out.target, device(), noInput, out.interactions);
+  toybox::Screen screen(frame, toybox::themeTokens());
+  Build(screen, model);
+}
+
+// The month is one hit target resolved arithmetically, because 31 cells do
+// not fit the interaction table. calendarDayAt has to invert calendarCell for
+// every layout a month can take, or a tap reports the day next to it.
+void testTheDayYouTapIsTheDayTheCalendarDrew() {
+  const fui::Rect grid = statsui::calendarGrid(device());
+  bool allMatch = true;
+  for (int first = 0; first < 7; ++first) {
+    for (const int days : {28, 29, 30, 31}) {
+      for (int day = 1; day <= days; ++day) {
+        const int index = first + day - 1;
+        const fui::Rect cell = statsui::calendarCell(grid, index / 7, index % 7);
+        const int corners[4][2] = {{cell.x, cell.y},
+                                   {cell.right() - 1, cell.y},
+                                   {cell.x, cell.bottom() - 1},
+                                   {cell.right() - 1, cell.bottom() - 1}};
+        for (const auto& p : corners) {
+          if (statsui::calendarDayAt(device(), first, days, p[0], p[1]) != day) allMatch = false;
+        }
+      }
+      if (first > 0) {
+        const fui::Rect blank = statsui::calendarCell(grid, 0, 0);
+        CHECK(statsui::calendarDayAt(device(), first, days, blank.x + 5, blank.y + 5) == 0);
+      }
+    }
+  }
+  CHECK(allMatch);
+  CHECK(statsui::calendarDayAt(device(), 0, 31, grid.x - 1, grid.y) == 0);
+  CHECK(statsui::calendarDayAt(device(), 0, 31, grid.x, grid.bottom()) == 0);
+  CHECK(grid.bottom() < device().height - toybox::kPillHeight - toybox::kMargin);
+}
+
+void testReadingScreensKeepEveryControlTappable() {
+  {
+    statsui::HomeModel model;
+    model.goalMinutes = 30;
+    model.todayMs = 12 * 60000;
+    model.bookCount = 2;
+    for (int i = 0; i < statsui::kHistoryDays; ++i) model.historyMs[i] = static_cast<uint32_t>(i * 4 * 60000);
+    Rendered out;
+    buildStats<statsui::HomeModel, statsui::buildHome>(out, model);
+    CHECK(!out.interactions.overflowed());
+    CHECK(out.has(statsui::ActionCalendar) && out.has(statsui::ActionBooks) && out.has(statsui::ActionSettings));
+    CHECK(out.target.find("12 MIN") != nullptr);
+    CHECK(out.target.find("18 MIN TO GOAL   0 PAGES") != nullptr);
+  }
+  {
+    statsui::CalendarModel model;
+    model.firstWeekday = 6;
+    model.dayCount = 31;
+    model.selected = 31;
+    model.canGoNext = true;
+    Rendered out;
+    buildStats<statsui::CalendarModel, statsui::buildCalendar>(out, model);
+    CHECK(!out.interactions.overflowed());
+    const int index = model.firstWeekday + 30;
+    const fui::Rect last = statsui::calendarCell(statsui::calendarGrid(device()), index / 7, index % 7);
+    CHECK(last.bottom() <= statsui::calendarGrid(device()).bottom());
+    CHECK(out.tap(last.x + last.width / 2, last.y + last.height / 2).action == statsui::ActionPickDay);
+    CHECK(out.has(statsui::ActionPrevMonth) && out.has(statsui::ActionNextMonth));
+  }
+  {
+    fui::ListItem items[statsui::kBookRows] = {};
+    const char* titles[statsui::kBookRows] = {"A", "B", "C", "D", "E", "F", "G"};
+    for (int i = 0; i < statsui::kBookRows; ++i) {
+      items[i].label = titles[i];
+      items[i].subtitle = "1 h 02 min";
+      items[i].actionValue = static_cast<int16_t>(14 + i);
+    }
+    statsui::BooksModel model;
+    model.items = items;
+    model.count = statsui::kBookRows;
+    model.canPageOlder = true;
+    Rendered out;
+    buildStats<statsui::BooksModel, statsui::buildBooks>(out, model);
+    CHECK(!out.interactions.overflowed());
+    for (int i = 0; i < statsui::kBookRows; ++i) {
+      const FakeTarget::TextRun* run = out.target.find(titles[i]);
+      CHECK(run != nullptr);
+      if (run == nullptr) continue;
+      const fui::ActionEvent event = out.tap(run->rect.x + 2, run->rect.y + run->rect.height / 2);
+      CHECK(event.action == statsui::ActionOpenBook && event.value == 14 + i);
+    }
+  }
+  {
+    statsui::SettingsModel model;
+    model.values[statsui::RowGoal] = "30 MIN";
+    model.values[statsui::RowTimeLeft] = "CHAPTER";
+    model.values[statsui::RowIdle] = "5 MIN";
+    Rendered out;
+    buildStats<statsui::SettingsModel, statsui::buildSettings>(out, model);
+    const char* labels[statsui::kSettingRows] = {"DAILY GOAL", "TIME LEFT", "IDLE LIMIT"};
+    for (int i = 0; i < statsui::kSettingRows; ++i) {
+      const FakeTarget::TextRun* run = out.target.find(labels[i]);
+      CHECK(run != nullptr);
+      if (run == nullptr) continue;
+      const fui::ActionEvent event = out.tap(run->rect.x + 2, run->rect.y + run->rect.height / 2);
+      CHECK(event.action == statsui::ActionCycleSetting && event.value == i);
+    }
+  }
+}
+
 int main() {
+  testTheDayYouTapIsTheDayTheCalendarDrew();
+  testReadingScreensKeepEveryControlTappable();
   heartsDrawsNothingOnTopOfAnythingElse();
   heartsPassOwnsTheTable();
   heartsScoreSaysWhatHappened();

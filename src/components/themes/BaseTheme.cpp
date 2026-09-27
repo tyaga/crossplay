@@ -14,6 +14,7 @@
 
 #include "I18n.h"
 #include "RecentBooksStore.h"
+#include "apps_local/readingstats/ReadingStats.h"
 #include "components/UIScale.h"
 #include "components/UITheme.h"
 #include "components/UIThemeTokens.h"
@@ -856,6 +857,18 @@ void BaseTheme::drawStatusBar(GfxRenderer& renderer, const float bookProgress, c
       }
       renderer.drawText(SMALL_FONT_ID, clockX, textY, timeBuf);
     }
+  }
+
+  // CrossPlay reading stats: every reader paints its page position through
+  // here, so this is where page views are recorded. The label is the
+  // time-left estimate built from them.
+  char timeLeft[16];
+  readstats::onReaderStatusBar(currentPage, pageCount, bookProgress, timeLeft, sizeof(timeLeft));
+  if (showStatusBarTextLane && timeLeft[0] != '\0') {
+    const int timeLeftWidth = renderer.getTextWidth(SMALL_FONT_ID, timeLeft);
+    const int timeLeftX = rightClusterX - rightClusterWidth - (rightClusterWidth > 0 ? 10 : 0) - timeLeftWidth;
+    renderer.drawText(SMALL_FONT_ID, timeLeftX, textY, timeLeft);
+    rightClusterWidth += timeLeftWidth + 10;
   }
 
   // Draw Bookmark

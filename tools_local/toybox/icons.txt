@@ -134,6 +134,9 @@ jaipur      = gem
 # player avatar), `newspaper` (taken by Hacker News, and two apps that both
 # read as "a page of text" is the one thing a 62px row cannot disambiguate).
 xkcd        = gallery-vertical-end
+# READING: three columns of different heights, the minutes per day the app
+# itself draws. `book-open` would read as the reader, not as its record.
+readingstats = chart-no-axes-column
 # Murdle: a murder-mystery logic grid. `footprints` -- two shoe soles, and
 # nothing else on this shelf is that shape. `fingerprint` was the first choice
 # and this lucide pin does not carry it; of what is here, `puzzle` is a jigsaw
