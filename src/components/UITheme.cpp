@@ -1,5 +1,6 @@
 #include "UITheme.h"
 
+#include <Fb2Book.h>
 #include <FsHelpers.h>
 #include <GfxRenderer.h>
 #include <HalGPIO.h>
@@ -118,7 +119,7 @@ UIIcon UITheme::getFileIcon(const std::string& filename) {
   if (filename.back() == '/') {
     return Folder;
   }
-  if (FsHelpers::hasEpubExtension(filename) || FsHelpers::hasXtcExtension(filename)) {
+  if (FsHelpers::hasEpubExtension(filename) || fb2::isFb2Path(filename) || FsHelpers::hasXtcExtension(filename)) {
     return Book;
   }
   if (FsHelpers::hasTxtExtension(filename) || FsHelpers::hasMarkdownExtension(filename)) {

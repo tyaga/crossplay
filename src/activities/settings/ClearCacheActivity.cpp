@@ -5,6 +5,8 @@
 #include <I18n.h>
 #include <Logging.h>
 
+#include <cstring>
+
 #include "MappedInputManager.h"
 #include "components/UITheme.h"
 #include "fontIds.h"
@@ -124,6 +126,17 @@ void ClearCacheActivity::clearCache() {
 
       if (Storage.removeDir(fullPath.c_str())) {
         clearedCount++;
+      } else {
+        LOG_ERR("CLEAR_CACHE", "Failed to remove: %s", fullPath.c_str());
+        failedCount++;
+      }
+    } else if (!file.isDirectory() && strncmp(name, "fb2_", 4) == 0) {
+      // fork-local seam: the EPUBs made from FB2 books are cache too, remade
+      // on the next open.
+      String fullPath = "/.crosspoint/" + itemName;
+      file.close();
+      if (Storage.remove(fullPath.c_str())) {
+        if (itemName.endsWith(".epub")) clearedCount++;
       } else {
         LOG_ERR("CLEAR_CACHE", "Failed to remove: %s", fullPath.c_str());
         failedCount++;

@@ -1,5 +1,6 @@
 #include "NextBookFinder.h"
 
+#include <Fb2Book.h>
 #include <FsHelpers.h>
 #include <HalStorage.h>
 #include <Logging.h>
@@ -15,8 +16,8 @@ constexpr size_t NAME_BUFFER_SIZE = 500;
 
 bool isSupportedBookFile(const std::string_view name) {
   // Formats ReaderActivity can open (bmp is a viewer, not a book, so it is excluded)
-  return FsHelpers::hasEpubExtension(name) || FsHelpers::hasXtcExtension(name) || FsHelpers::hasTxtExtension(name) ||
-         FsHelpers::hasMarkdownExtension(name);
+  return FsHelpers::hasEpubExtension(name) || fb2::isFb2Path(name) || FsHelpers::hasXtcExtension(name) ||
+         FsHelpers::hasTxtExtension(name) || FsHelpers::hasMarkdownExtension(name);
 }
 }  // namespace
 

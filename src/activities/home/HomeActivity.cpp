@@ -2,6 +2,7 @@
 
 #include <Bitmap.h>
 #include <Epub.h>
+#include <Fb2Book.h>
 #include <FsHelpers.h>
 #include <GfxRenderer.h>
 #include <HalDisplay.h>
@@ -79,8 +80,9 @@ void HomeActivity::loadRecentCovers(int coverHeight) {
       std::string coverPath = UITheme::getCoverThumbPath(book.coverBmpPath, coverHeight);
       if (!Storage.exists(coverPath.c_str())) {
         // If epub, try to load the metadata for title/author and cover
-        if (FsHelpers::hasEpubExtension(book.path)) {
-          Epub epub(book.path, "/.crosspoint");
+        // fork-local seam: an FB2 book's cover comes from the EPUB made from it.
+        if (FsHelpers::hasEpubExtension(book.path) || fb2::isFb2Path(book.path)) {
+          Epub epub(fb2::isFb2Path(book.path) ? fb2::epubPathFor(book.path) : book.path, "/.crosspoint");
           // Skip loading css since we only need metadata here
           epub.load(false, true);
 

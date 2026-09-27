@@ -1,6 +1,7 @@
 #include "BookCacheUtils.h"
 
 #include <Epub.h>
+#include <Fb2Book.h>
 #include <FsHelpers.h>
 #include <Logging.h>
 #include <Txt.h>
@@ -23,6 +24,8 @@ bool isBookCacheDirectoryName(const char* name) {
 void clearBookCache(const std::string& path) {
   if (FsHelpers::hasEpubExtension(path)) {
     Epub(path, "/.crosspoint").clearCache();
+  } else if (fb2::isFb2Path(path)) {
+    fb2::removeEpub(path);
   } else if (FsHelpers::hasXtcExtension(path)) {
     Xtc(path, "/.crosspoint").clearCache();
   } else if (FsHelpers::hasTxtExtension(path)) {

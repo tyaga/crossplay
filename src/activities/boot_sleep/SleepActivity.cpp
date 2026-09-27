@@ -3,6 +3,7 @@
 #include <BitmapHelpers.h>
 #include <Epub.h>
 #include <Epub/converters/PngToFramebufferConverter.h>
+#include <Fb2Book.h>
 #include <FontCacheManager.h>
 #include <FsHelpers.h>
 #include <GfxRenderer.h>
@@ -839,9 +840,11 @@ void SleepActivity::renderCoverSleepScreen() const {
     }
 
     coverBmpPath = lastTxt.getCoverBmpPath();
-  } else if (FsHelpers::hasEpubExtension(APP_STATE.openEpubPath)) {
-    // Handle EPUB file
-    Epub lastEpub(APP_STATE.openEpubPath, "/.crosspoint");
+  } else if (FsHelpers::hasEpubExtension(APP_STATE.openEpubPath) || fb2::isFb2Path(APP_STATE.openEpubPath)) {
+    // Handle EPUB file; fork-local seam: an FB2 book shows the EPUB made from it.
+    Epub lastEpub(
+        fb2::isFb2Path(APP_STATE.openEpubPath) ? fb2::epubPathFor(APP_STATE.openEpubPath) : APP_STATE.openEpubPath,
+        "/.crosspoint");
     // Skip loading css since we only need metadata here
     if (!lastEpub.load(true, true)) {
       LOG_ERR("SLP", "Failed to load last epub");

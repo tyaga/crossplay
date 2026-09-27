@@ -1,5 +1,6 @@
 #include "FileBrowserActivity.h"
 
+#include <Fb2Book.h>
 #include <FsHelpers.h>
 #include <GfxRenderer.h>
 #include <HalStorage.h>
@@ -29,6 +30,8 @@ constexpr unsigned long GO_HOME_MS = 1000;
 constexpr size_t NAME_BUFFER_SIZE = 500;
 
 std::string getBookCachePath(const std::string& path) {
+  // fork-local seam: an FB2 book's pages live with the EPUB made from it.
+  if (fb2::isFb2Path(path)) return fb2::epubCachePathForBook(path);
   const char* prefix = nullptr;
   if (FsHelpers::hasEpubExtension(path)) {
     prefix = "epub_";
@@ -130,9 +133,10 @@ void FileBrowserActivity::loadFiles() {
         if (FsHelpers::checkFileExtension(filename, ".bin")) {
           files.emplace_back(filename);
         }
-      } else if (FsHelpers::hasEpubExtension(filename) || FsHelpers::hasXtcExtension(filename) ||
-                 FsHelpers::hasTxtExtension(filename) || FsHelpers::hasMarkdownExtension(filename) ||
-                 FsHelpers::hasBmpExtension(filename) || FsHelpers::hasPngExtension(filename)) {
+      } else if (FsHelpers::hasEpubExtension(filename) || fb2::isFb2Path(filename) ||
+                 FsHelpers::hasXtcExtension(filename) || FsHelpers::hasTxtExtension(filename) ||
+                 FsHelpers::hasMarkdownExtension(filename) || FsHelpers::hasBmpExtension(filename) ||
+                 FsHelpers::hasPngExtension(filename)) {
         files.emplace_back(filename);
       }
     }
@@ -477,7 +481,7 @@ void FileBrowserActivity::renameSelectedFile(const std::string& oldPath, const s
 
   const std::string oldCachePath = getBookCachePath(oldPath);
   const std::string newCachePath = getBookCachePath(newPath);
-  const bool isEpub = FsHelpers::hasEpubExtension(oldPath);
+  const bool isEpub = FsHelpers::hasEpubExtension(oldPath) || fb2::isFb2Path(oldPath);
   const std::string oldBookmarkPath = isEpub ? BookmarkUtil::getBookmarkPath(oldPath) : "";
   const std::string newBookmarkPath = isEpub ? BookmarkUtil::getBookmarkPath(newPath) : "";
   bool cacheMoved = false;
@@ -494,6 +498,7 @@ void FileBrowserActivity::renameSelectedFile(const std::string& oldPath, const s
     return;
   }
 
+  if (fb2::isFb2Path(oldPath)) fb2::moveEpub(oldPath, newPath);
   RECENT_BOOKS.updatePath(oldPath, newPath, oldCachePath, newCachePath);
   if (APP_STATE.openEpubPath == oldPath) {
     APP_STATE.openEpubPath = newPath;

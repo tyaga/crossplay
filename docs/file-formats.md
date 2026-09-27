@@ -486,3 +486,14 @@ make a real book disappear.
 
 `selfSize` is the expected file size. Comparing it against the real one is a free
 truncation guard: a build cut short by a power failure cannot pass.
+
+## FB2 books (`.crosspoint/fb2_<hash>.*`)
+
+An `.fb2` or `.fb2.zip` book is read through an EPUB made from it (`lib/Fb2/`).
+`<hash>` is `std::hash<std::string>` of the book's path, as for `epub_<hash>`.
+
+| File | Contents |
+| --- | --- |
+| `fb2_<hash>.epub` | The EPUB: a ZIP of stored (uncompressed) entries — `mimetype`, `META-INF/container.xml`, `OEBPS/c000.xhtml`… one per chapter, `OEBPS/images/img<N>.jpg\|png`, `OEBPS/style.css`, `OEBPS/toc.ncx`, `OEBPS/content.opf`. Its own reader cache is `epub_<hash of this path>/`, like any EPUB's. |
+| `fb2_<hash>.src` | One line, `<converter version> <book size> <book modification time>`. The EPUB is made again when this does not match the book, and when the converter version in `lib/Fb2/Fb2Book.cpp` is raised. |
+| `fb2_<hash>.epub.part`, `fb2_<hash>.unpacked.fb2` | Present only while a conversion runs: the EPUB being written, and the book taken out of its `.fb2.zip`. |

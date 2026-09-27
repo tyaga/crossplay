@@ -740,6 +740,16 @@ See [docs/dictionary.md](docs/dictionary.md) for supported formats, setup, and w
 * **Reader Menu:** Press **Confirm** to open the **[Reader Menu](#5-reader-menu)**, which includes chapter navigation, reading options, and more.
 * **Long-press Confirm (configurable):** Holding **Confirm** runs the function chosen by the **Long-press Menu** setting in **[Controls Settings](#363-controls)** — "Bookmark" (default) drops a bookmark, "KOSync" launches KOReader Sync, "Dictionary" starts a word lookup, "Disabled" does nothing. A short press always opens the Reader Menu.
 
+### FB2 Books
+
+Books in FictionBook 2 format open like EPUBs: `.fb2` files, and `.fb2.zip` archives holding one. The first time you open one, the reader shows **Preparing book** with a progress bar while it turns the book into an EPUB, which takes a few seconds for a typical novel and longer for a heavily illustrated one. Every later open is immediate.
+
+Everything the EPUB reader does works in an FB2 book: chapters and contents, footnotes, dictionary lookup and saving words, bookmarks, the cover on the Home screen and the sleep screen, and the Library's titles and authors. Chapters follow the book's sections; the notes at the end of the book are their own chapter, and footnote links lead there.
+
+Text in UTF-8, Windows-1251 and KOI8-R is read correctly, whether or not the file names its encoding. JPEG and PNG images are shown; other image types are left out.
+
+The prepared EPUB is kept in `/.crosspoint`, next to the other book caches; your `.fb2` file is never changed. It is made again when the book file changes, and removed when you delete the book or use **Clear Reading Cache** in Settings.
+
 ### Supported Languages
 
 CrossPlay renders text using the following Unicode character blocks, enabling support for a wide range of languages:
