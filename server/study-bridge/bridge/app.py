@@ -639,9 +639,13 @@ async def start_sync(request: Request, dev=Depends(require_device)):
     accepted = [file for file, _ in word_entries]
     # A deck per language, chosen for the reader the first time a word in that
     # language arrives, so the words come back as cards on this same sync.
+    # Not when a chosen deck already contains it: "Dictionary" builds with its
+    # subdecks, and choosing Dictionary::Dutch beside it put every Dutch card
+    # on the reader twice, in two decks scheduling it apart.
     for lang in words_mod.languages(accepted):
         name = words_to_anki.deck_name(words_to_anki.DEFAULT_PREFIX, lang)
-        if name not in state["chosen_decks"] and len(state["chosen_decks"]) < MAX_CHOSEN_DECKS:
+        covered = any(name == c or name.startswith(c + "::") for c in state["chosen_decks"])
+        if not covered and len(state["chosen_decks"]) < MAX_CHOSEN_DECKS:
             state["chosen_decks"].append(name)
 
     # The ack is valid the moment the journal commit above returned; the

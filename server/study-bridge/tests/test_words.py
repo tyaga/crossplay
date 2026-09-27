@@ -164,6 +164,13 @@ async def run(tmp):
         status = await wait_job(web, dev, r.json()["job"])
         ok(status["summary"].get("words") == 0, "a word already in its deck is not added twice")
 
+        # --- A parent already chosen covers the language's deck.
+        await web.post("/api/decks/choose", headers=dev, json={"decks": ["Dictionary"]})
+        r = await web.post("/api/sync", headers=dev, content=payload([("nl/huis.txt", MOOI.replace(b"mooi", b"huis"))]))
+        await wait_job(web, dev, r.json()["job"])
+        chosen = (await web.get("/api/decks", headers=dev)).json()["chosen"]
+        ok(chosen == ["Dictionary"], f"Dictionary::Dutch is not chosen beside Dictionary, which holds it: {chosen}")
+
         # --- A sync with no words is the old wire, unchanged.
         header = json.dumps({"decks": []}).encode()
         r = await web.post("/api/sync", headers=dev, content=struct.pack("<I", len(header)) + header)
