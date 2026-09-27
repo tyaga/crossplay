@@ -461,6 +461,9 @@ void walk(WalkState& st, const std::string& path, const int depth) {
     if (st.nameBuf[0] == '\0' || isHiddenOrSidecar(st.nameBuf)) continue;
     const std::string name(st.nameBuf);
 
+    // fork-local seam: /study holds Study's decks and glyph tables, whose .txt
+    // files would otherwise list as unreadable books.
+    if (isDir && depth == 0 && name == "study") continue;
     if (isDir) {
       const size_t resumePosition = dir.position();
       dir.close();
