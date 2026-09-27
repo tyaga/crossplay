@@ -54,9 +54,7 @@ MAX_DECK_NAME = 512
 
 
 # ---------------------------------------------------------------- rate limits
-# The shape here is read-bridge's, arrived at there and ported on 2026-09-05
-# because this service had a weaker one and nobody could say why. See
-# server/attacks.py for the run that found the difference.
+# server/attacks.py floods each of these and fails a deploy that lets it through.
 LOGIN_IP = Window(5, 300)  # 5 attempts / 5 min / IP
 # There is deliberately NO flat per-username Window beside LOGIN_LOCKOUT. There
 # was, and it shadowed nothing here only because there was no lockout to

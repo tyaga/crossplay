@@ -45,7 +45,7 @@ finds the SD card, and asks one question for each. Then it converts the deck,
 builds fonts if the deck needs them, and packs any sentence images. Answers are
 remembered in `~/.config/crosspoint-study.json`, so the next run asks nothing.
 
-Put the card in the reader: **Apps > STUDY**.
+Put the card in the reader: **Study** on the Home screen.
 
 Run setup again to put another deck on the card -- adding alongside is the
 default, replacing is offered. The browser installer at /study/ does the same:

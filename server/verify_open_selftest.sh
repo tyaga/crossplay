@@ -33,7 +33,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 SC = os.environ["SCENARIO"]
 SHUT = b"<p class=lede>This bridge is invitation-only for now.</p>"
 ANKI = b"<p class=lede>AnkiWeb did not accept that email and password.</p>"
-INSTA = b"<p class=lede>Instapaper did not accept that email and password.</p>"
 SLOW = b"<h1>Slow down</h1><p class=lede>Too many attempts.</p>"
 WEIRD = b"<p class=lede>Something nobody has written a branch for.</p>"
 FEED = b'<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"></feed>'
@@ -73,10 +72,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, SLOW)
         if SC == "weird":
             return self.send(200, WEIRD)
-        # open, and books_shut: both bridges let the attempt through. Which
-        # upstream sentence comes back does not depend on the port here, so
-        # answer with both -- verify_open.sh greps for one each.
-        return self.send(200, ANKI + INSTA)
+        # open, and books_shut: the bridge lets the attempt through.
+        return self.send(200, ANKI)
 
 
 HTTPServer(("127.0.0.1", int(sys.argv[1])), H).serve_forever()
@@ -107,7 +104,6 @@ run_case() {
     return
   fi
   out="$(VERIFY_BASE_STUDY="http://127.0.0.1:$PORT" \
-         VERIFY_BASE_READ="http://127.0.0.1:$PORT" \
          VERIFY_BASE_BOOKS="http://127.0.0.1:$PORT" \
          bash "$HERE/verify_open.sh" 2>&1)"
   got=$?
@@ -130,10 +126,9 @@ run_case() {
 # agreeing with nothing real. So the literals are checked against the source
 # that produces them.
 #
-# Verified on 2026-09-05 by running both real services in-process and reading
-# what they actually returned, in three configurations each: variable unset
-# (SHUT), variable set to * (OPEN), and the TWIN'S variable name set to *
-# (byte-identical to unset, which is the trap this whole card is about).
+# Verified on 2026-09-05 by running the real service in-process and reading
+# what it actually returned: variable unset (SHUT), variable set to * (OPEN),
+# and a misspelt variable name set to * (byte-identical to unset).
 # ---------------------------------------------------------------------------
 echo "the sentences, against the source that produces them"
 check_literal() {
@@ -146,20 +141,17 @@ check_literal() {
     fail=1
   fi
 }
-check_literal "$HERE/read-bridge/bridge/accounts.py"  "This bridge is invitation-only for now."
 check_literal "$HERE/study-bridge/bridge/accounts.py" "This bridge is invitation-only for now."
-check_literal "$HERE/read-bridge/bridge/instapaper.py" "Instapaper did not accept that email and password."
 check_literal "$HERE/study-bridge/bridge/accounts.py" "AnkiWeb did not accept that email and password."
-# And the variable names themselves, because they are the trap.
-check_literal "$HERE/read-bridge/bridge/accounts.py"  'os.environ.get("READ_ALLOWLIST"'
+# And the variable name itself, because a misspelling is silent.
 check_literal "$HERE/study-bridge/bridge/accounts.py" 'os.environ.get("BRIDGE_ALLOWLIST"'
 echo
 
 echo "proving verify_open.sh can reach each verdict"
 echo
-run_case open       0 "all three open to a stranger"
-run_case shut       1 "both bridges refuse before the credential leaves us"
-run_case books_shut 1 "bridges open, Get Books refuses the shipped pair"
+run_case open       0 "both open to a stranger"
+run_case shut       1 "the bridge refuses before the credential leaves us"
+run_case books_shut 1 "bridge open, Get Books refuses the shipped pair"
 run_case slow       2 "rate-limited, so the gate is unknowable right now"
 run_case weird      1 "a sentence with no branch is a failure, never a pass"
 
@@ -167,7 +159,6 @@ run_case weird      1 "a sentence with no branch is a failure, never a pass"
 # confident verdict. This is the state the pi was in on 2026-09-05.
 printf '%-14s ' "box_down"
 out="$(VERIFY_BASE_STUDY="http://127.0.0.1:$PORT" \
-       VERIFY_BASE_READ="http://127.0.0.1:$PORT" \
        VERIFY_BASE_BOOKS="http://127.0.0.1:$PORT" \
        bash "$HERE/verify_open.sh" 2>&1)"
 got=$?

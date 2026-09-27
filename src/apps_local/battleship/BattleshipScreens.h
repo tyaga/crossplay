@@ -5,8 +5,7 @@
 // No GfxRenderer, no Activity, no storage: a model in, a drawn frame out, which
 // is what lets host-tests/ui/ assert what they drew and what they made
 // tappable. The grids are not here -- they are the app's own surface and the
-// activity draws them into the rect each builder returns, the same split the
-// chess board uses.
+// activity draws them into the rect each builder returns.
 
 #include "../ui/ToyboxScreen.h"
 
@@ -74,8 +73,8 @@ struct BoardModel {
   // A cell is aimed and it is your turn, so the capsule is armed.
   bool canFire = false;
   bool gameOver = false;
-  // Who you are playing, or null against the computer. Same treatment as
-  // chess's, from the same shared helper, so the two games place it identically.
+  // Who you are playing, or null against the computer. Placed by the shared
+  // helper, so every multiplayer screen puts it in the same spot.
   const char* theirName = nullptr;
 };
 

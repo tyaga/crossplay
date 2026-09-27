@@ -192,8 +192,6 @@ bool MappedInputManager::wasScreenTouchDown(int& x, int& y) const {
   return true;
 }
 
-void MappedInputManager::swallowCurrentTouch() const { gpio.suppressTouchContact(); }
-
 bool MappedInputManager::tapWasHeldLong() const {
   return touchHeldOverrideValid && touchHeldOverrideMs >= SCREEN_HOLD_MS;
 }

@@ -1,43 +1,28 @@
 #!/bin/bash
 # Can an app in src/apps_local ship with no way back out of it?
 #
-# Card #250: "back swipe does not exit Trivia". It was filed as a Trivia bug and
-# it was one, but the diagnosis attached to it was wrong in a way worth writing
-# down, because the wrong version is the one a grep produces.
-#
-# THE WRONG VERSION. `MappedInputManager::wasSwipe()` exists, and only three
-# things in src/apps_local call it, so nineteen-odd games "never ask whether the
-# user swiped back". Every part of that is true and the conclusion does not
-# follow: wasSwipe() is the four-direction PAGING swipe. The two apps that call
-# it (ShelfFolderActivity, hackernews) compare it against Up and Down to turn
-# pages, and a test asserting that apps must not call it would delete paging
-# from both.
-#
-# THE ACTUAL MECHANISM. Back is already unified, and has been all along:
+# Every app that reads Button::Back gets the left-edge back swipe for free:
 #
 #   MappedInputManager::wasPressed/wasReleased(Button::Back)
 #     -> if (button == Button::Back && wasBackGesture()) return true;
 #
-# so the left-edge swipe IS Button::Back. Every app that reads that button
-# already gets the gesture, on every board, with no per-app gesture code -- and
-# 25 of the 26 activities in apps_local do read it. The one that did not was
-# Trivia, whose loop() returned early unless a tap had arrived; a swipe is not a
-# tap, so the read never happened and the front door had no exit.
-#
-# So the fork-wide hole is not a missing gesture. It is that ANY new app can be
-# written the way Trivia was -- touch-only, exiting through an on-screen button
-# -- and nothing notices until somebody swipes. This suite is what notices.
+# `MappedInputManager::wasSwipe()` is something else, the four-direction PAGING
+# swipe: ShelfFolderActivity and hackernews compare it against Up and Down to
+# turn pages. So the hole is not a missing gesture. It is an app written
+# touch-only, exiting through an on-screen button, whose loop() returns early
+# unless a tap arrived: a swipe is not a tap, the Back read never happens, and
+# the screen has no exit. This suite is what notices.
 #
 #   host-tests/backgesture/run.sh
 #
 # TWO CHECKS.
 #
 # 1. Every *Activity.cpp under src/apps_local must read Button::Back from a
-#    function on the PER-FRAME input path. That qualifier is the whole test:
-#    Trivia before the fix DID contain a Button::Back read, at line 300, inside
-#    runPackDownload() -- the "Back stops the download" affordance, on a path
-#    that only exists while a multi-minute fetch has blocked the loop. A
-#    file-level grep for Button::Back passes Trivia and finds nothing. The frame
+#    function on the PER-FRAME input path. That qualifier is the whole test: a
+#    Button::Back read inside a download worker -- the "Back stops the
+#    download" affordance, on a path that only exists while a multi-minute
+#    fetch has blocked the loop -- passes a file-level grep and exits nothing.
+#    The frame
 #    path is loop(), gameLoop() (the link-play base calls it) and the route*()
 #    handlers the bigger games split their screens into; that list is a
 #    WHITELIST, so an app whose handler is named something new fails this suite
@@ -45,7 +30,7 @@
 #    whether the new name should exist. POSITION counts as well as presence: a
 #    read below the function's "nothing to do unless a tap arrived" return is on
 #    the frame path in name only, because a swipe returns before reaching it.
-#    That is Trivia's bug moved one level in, and a check that merely counted
+#    That is the same bug moved one level in, and a check that merely counted
 #    frame-path functions would call it clean. Zero hits today -- no app reads
 #    Back below its tap gate -- so it fires only on something newly written.
 #
@@ -57,9 +42,8 @@
 #
 # THE SCANNER RUNS ON FIXTURES FIRST, for the reason marginguard does it: a
 # scanner that has quietly stopped matching anything is indistinguishable from a
-# tree with nothing to match. Four shapes: an activity shaped like Minesweeper
-# (Back in loop, must pass), one shaped like Trivia before the fix (Back only in
-# a download worker), one with the read below the tap gate, and one rolling its
+# tree with nothing to match. Four shapes: an activity with Back in loop (must
+# pass), one with Back only in a download worker, one with the read below the tap gate, and one rolling its
 # own back out of a horizontal swipe. The last three must all be caught.
 #
 # What this suite CANNOT do, said plainly: it reads source. It cannot tell you
@@ -68,12 +52,10 @@
 # different mechanism entirely. It tells you every app ASKS. Whether the answer
 # arrives is a device question.
 #
-# Nor can it see a frame on which an app asks and would not have. Several apps
-# return before their Back read in some state: Jaipur and Sea Salt while
-# `interactionsReady` is false, which is the whole of an e-ink repaint rather
-# than one frame (JaipurActivity.cpp:1462, SeaSaltActivity.cpp:712); xkcd on an
-# update frame; Instapaper, Murdle and Connections on their deferred-work
-# frames. A Back that lands there is dropped. That is LEFT UNPROVEN ON PURPOSE.
+# Nor can it see a frame on which an app asks and would not have. An app can
+# return before its Back read in some state -- xkcd on an update frame, for
+# one -- and a Back that lands there is dropped. That is LEFT UNPROVEN ON
+# PURPOSE.
 #
 # The alternative was a runtime gate in ActivityManager -- do the default back
 # when a Back edge existed and nothing read it -- and a cold review killed it on
@@ -128,7 +110,7 @@ def on_frame_path(name):
 BACK_READ = re.compile(r'Button::Back')
 # A horizontal wasSwipe() comparison -- a hand-rolled second Back.
 SIDEWAYS = re.compile(r'SwipeDir::(Left|Right)')
-# "Nothing to do unless a tap arrived", the early return that made Trivia's
+# "Nothing to do unless a tap arrived", the early return that made the touch-only app's
 # frame path unreachable to a swipe. A Back read BELOW one of these is on the
 # frame path in name only.
 TAP_GATE = re.compile(
@@ -164,7 +146,7 @@ def reachable_back(body):
 
     Not merely present in a frame-path function: above that function's
     "nothing to do unless a tap arrived" return. Below it the read is dead to
-    every gesture, which is Trivia's bug moved one level in and is exactly what
+    every gesture, which is the touch-only bug moved one level in and is exactly what
     a check counting frame-path functions would report clean.
     """
     m = BACK_READ.search(body)
@@ -207,7 +189,7 @@ void GoodActivity::loop() {
 }
 '''
 
-# Trivia before the fix, reduced: a Back read exists in the file, on a path that
+# The download-worker shape, reduced: a Back read exists in the file, on a path that
 # only runs while a download has blocked the loop.
 BAD = '''
 #include "Whatever.h"
@@ -230,7 +212,7 @@ void ParallelActivity::loop() {
 }
 '''
 
-# Trivia's bug moved one level in: the read IS in loop(), and it is below the
+# The touch-only bug moved one level in: the read IS in loop(), and it is below the
 # tap gate, so a swipe returns before ever reaching it. This shape is why the
 # suite looks at position and not just presence -- counting frame-path
 # functions calls this file clean.
@@ -295,7 +277,7 @@ check(sideways == [],
 # at all -- a moved directory, a renamed suffix -- otherwise reports clean.
 scanned = sum(1 for dirpath, _d, files in os.walk(os.path.join(root, "src", "apps_local"))
               for f in files if f.endswith('Activity.cpp') and os.sep + 'ui' not in dirpath)
-check(scanned >= 20, 'only %d activities scanned; the walk found nothing to check' % scanned)
+check(scanned >= 8, 'only %d activities scanned; the walk found nothing to check' % scanned)
 print('%d checks, %d failed' % (checks, failures))
 sys.exit(1 if failures else 0)
 PY

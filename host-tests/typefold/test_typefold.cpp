@@ -31,9 +31,6 @@
 #include <string>
 #include <vector>
 
-#include "fonts/instrument_10.h"
-#include "fonts/instrument_13.h"
-#include "fonts/instrument_24.h"
 #include "fonts/reading_serif_11.h"
 #include "fonts/reading_serif_14.h"
 #include "fonts/reading_serif_bold_12.h"
@@ -89,17 +86,14 @@ struct Cut {
 };
 
 const Cut kCuts[] = {
-    {"toybox_10", &toybox_10, true},                          // HN / Instapaper small slot
-    {"toybox_14", &toybox_14, true},                          // xkcd / Trivia small slot
+    {"toybox_10", &toybox_10, true},                          // Hacker News small slot
+    {"toybox_14", &toybox_14, true},                          // xkcd small slot
     {"toybox_20", &toybox_20, true},                          // link peer names, Study menus, shelf
     {"toybox_30", &toybox_30, true},                          // xkcd header title
-    {"toybox_44", &toybox_44, false},                         // Forehead cards
-    {"toybox_64", &toybox_64, false},                         // Forehead cards
-    {"instrument_10", &instrument_10, true},                  // Connections imported puzzles
-    {"instrument_13", &instrument_13, true},                  // Connections imported puzzles
-    {"instrument_24", &instrument_24, false},                 // Connections chrome
-    {"reading_serif_11", &reading_serif_11, true},            // HN / Instapaper / Trivia prose
-    {"reading_serif_14", &reading_serif_14, true},            // HN / Instapaper / Trivia prose
+    {"toybox_44", &toybox_44, false},                         // big-number and card faces
+    {"toybox_64", &toybox_64, false},                         // big-number and card faces
+    {"reading_serif_11", &reading_serif_11, true},            // Hacker News prose
+    {"reading_serif_14", &reading_serif_14, true},            // Hacker News prose
     {"reading_serif_bold_12", &reading_serif_bold_12, true},  // reader chrome
     {"reading_serif_bold_16", &reading_serif_bold_16, true},  // reader chrome
 };
@@ -382,7 +376,7 @@ int main() {
   // -- the live corpus, measured against the cut that carries it ------------
   //
   // reading_serif_14 is the BODY slot under readingFaces(), which is what Hacker
-  // News, Instapaper and Trivia draw a headline, a comment and a clue in.
+  // News draws a headline and a comment in.
   {
     int holesBefore = 0;
     int holesAfter = 0;

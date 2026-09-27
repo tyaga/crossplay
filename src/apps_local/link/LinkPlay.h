@@ -15,7 +15,7 @@
 //   struct Board { ... };                  // trivially copyable, <= 192 bytes
 //   linkplay::Play<Board> play_;
 //
-//   play_.start(linkplay::GameId::Chess, "MARIO");
+//   play_.start(linkplay::GameId::Battleship, "MARIO");
 //
 //   switch (play_.update(millis())) {
 //     case Phase::Searching:  break;                        // chrome draws it
@@ -60,38 +60,21 @@ namespace linkplay {
 // means an old device and a new one match happily and then misread each other's
 // states. Same discipline as the cache format version (CLAUDE.md golden rule 10).
 enum class GameId : uint16_t {
-  Chess = 0x0101,
-  ConnectFour = 0x0201,
   Battleship = 0x0301,
-  Jaipur = 0x0402,  // 0x0401 had no record of the last move in its state
-  Checkers = 0x0601,
-  Yahtzee = 0x0801,
-  Knucklebones = 0x0501,
-  SeaSalt = 0x0901,
-  // 0x0901 was Toy Battle's on its own branch and Sea Salt's here; both landed
-  // while the other was unmerged, and each was correct alone. Toy Battle moves
-  // because Sea Salt reached xteink first and this id is a wire protocol: an id
-  // that has been on the deploy branch has to be assumed to be on a device.
-  // Nothing had shipped with 0x0902, so this costs nobody a match.
-  ToyBattle = 0x0902,
-  Go = 0x0A01,
   // Reserved for host tests, which need an id no real game will ever use.
   Test = 0xFF01,
 };
 
-// Every id above must be distinct, and until 2026-08-11 nothing checked it.
-// Sea Salt and Toy Battle were built on separate branches and both took
-// 0x0901. Each branch's full suite passed, because neither branch contained
-// the other game -- the collision existed only in the merge, and the failure
-// it would have shipped is two devices running DIFFERENT games agreeing they
-// are in the same match. That is the one thing this id exists to prevent.
+// Ids an older build may still announce, so a new game must not take one: it
+// would match a device running a different game. 0x0101 0x0201 0x0401 0x0402
+// 0x0501 0x0601 0x0801 0x0901 0x0902 0x0A01.
 //
-// ADD NEW IDS HERE TOO. A list you have to remember to update is a weak
-// guard, but it turns a silent protocol bug into a compile error, and the
-// alternative is nothing.
+// Every id above must be distinct. ADD NEW IDS HERE TOO: a list you have to
+// remember to update is a weak guard, but it turns a silent protocol bug into a
+// compile error, and the alternative is nothing.
 constexpr GameId kAllGameIds[] = {
-    GameId::Chess,        GameId::ConnectFour, GameId::Battleship, GameId::Jaipur, GameId::Checkers, GameId::Yahtzee,
-    GameId::Knucklebones, GameId::SeaSalt,     GameId::ToyBattle,  GameId::Go,     GameId::Test,
+    GameId::Battleship,
+    GameId::Test,
 };
 
 constexpr bool gameIdsAreDistinct() {
@@ -170,7 +153,7 @@ class PlayBase {
   bool heard(uint8_t& note);
 
   // Which side you are. Decided by a coin toss both devices compute; there is
-  // nothing to negotiate and nothing to show. Chess maps this to White.
+  // nothing to negotiate and nothing to show.
   bool goesFirst() const { return session_.isHost(); }
 
   // A live match must keep the device awake: an opponent thinking for five

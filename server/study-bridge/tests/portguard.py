@@ -2,7 +2,7 @@
 
 Card #286. Every harness in here launches a server and then wait_port()s for the
 port to answer. That proves A process is listening, never that it is the one
-this suite started. On 2026-09-05 an orphaned read-bridge from a deleted
+this suite started. On 2026-09-05 an orphaned bridge from a deleted
 worktree held port 9003 for four days, and a bridge attack suite spent an hour
 signing credentials into it: every sign-in bounced, which reads exactly like a
 bridge correctly refusing a password. A probe whose passing state is

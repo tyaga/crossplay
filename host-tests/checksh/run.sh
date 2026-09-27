@@ -1418,10 +1418,9 @@ fi
 # enforced that phrase, so a suite whose summary says anything else is INVISIBLE
 # to the count: it runs, it passes, and the tally silently omits it.
 #
-# That is not hypothetical. host-tests/trivia/test_report.cpp printed
-# "274 checks, 0 failures" while its two siblings printed "0 failed", so a suite
-# of three reported "ok (2 sub-suite(s))" for a run in which all three passed.
-# The green was real and the number was wrong, which is the worse half: the
+# A suite printing "274 checks, 0 failures" beside siblings that print "0
+# failed" reports one sub-suite short for a run in which all of them passed.
+# The green is real and the number is wrong, which is the worse half: the
 # count is exactly what a person reads to answer "did everything I added run?".
 #
 # Same shape as the SKIP guard above, and for the same reason: this does not

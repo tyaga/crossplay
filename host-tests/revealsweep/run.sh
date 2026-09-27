@@ -14,20 +14,9 @@ mkdir -p "$BUILD_DIR"
   -I"$SDK/include" -I"$ICONS/include" \
   "$SDK/src/FreeInkUI.cpp" \
   ../../src/apps_local/battleship/BattleshipScreens.cpp \
-  ../../src/apps_local/forehead/ForeheadCore.cpp \
-  ../../src/apps_local/forehead/ForeheadScreens.cpp \
-  ../../src/apps_local/insider/InsiderCore.cpp \
-  ../../src/apps_local/insider/InsiderScreens.cpp \
-  ../../src/apps_local/instapaper/InstapaperScreens.cpp \
-  ../../src/apps_local/trivia/TriviaScreens.cpp \
   ../../src/apps_local/link/LinkScreens.cpp \
   ../../src/apps_local/study/StudyScreens.cpp \
   ../../src/apps_local/player/PlayerAvatar.cpp \
   ../../src/apps_local/player/PlayerName.cpp \
-  ../../src/apps_local/minesweeper/MinesweeperScreens.cpp \
-  ../../src/apps_local/sudoku/SudokuCore.cpp \
-  ../../src/apps_local/sudoku/SudokuScreens.cpp \
-  ../../src/apps_local/wavelength/WavelengthCore.cpp \
-  ../../src/apps_local/wavelength/WavelengthScreens.cpp \
   sweep.cpp -o "$BUILD_DIR/sweep"
 "$BUILD_DIR/sweep"

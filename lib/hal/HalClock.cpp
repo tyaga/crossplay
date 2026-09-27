@@ -16,7 +16,7 @@ void HalClock::begin() {
   // started at the 1970 epoch on every hard boot (flash, reset, battery loss)
   // and stayed there until an NTP sync happened to run in that power cycle.
   // The status-bar clock hid it by reading the RTC chip directly, while every
-  // consumer of time() -- Connections' today(), Study's due dates, the
+  // consumer of time() -- Study's due dates, the
   // clock-predates-build resync check -- saw 1970. Deep-sleep wakes preserve
   // system time, which is why the X4 Pro rarely showed it and a
   // frequently-reflashed device always did. The RTC stores UTC (the NTP path

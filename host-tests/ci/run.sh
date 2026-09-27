@@ -735,12 +735,12 @@ fi
 
 for path in \
   src/main.cpp \
-  src/apps_local/wikipedia/WikipediaCore.cpp \
+  src/apps_local/study/StudyDeck.cpp \
   lib/hal/HalDisplay.h \
   platformio.ini \
   scripts_local/check.sh \
   host-tests/ci/run.sh \
-  site/wikipedia/plan.js \
+  site/index.html \
   .github/workflows/crossplay-ci.yml \
   .github/workflows/crossplay-release.yml \
   docs/release-notes.md \
@@ -754,7 +754,7 @@ do
 done
 
 for path in \
-  docs/apps/wikipedia-plan.md \
+  docs/apps/study.md \
   docs/workflow/worker-contract.md \
   README.md
 do

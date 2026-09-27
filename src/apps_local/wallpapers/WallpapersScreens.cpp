@@ -336,9 +336,8 @@ int16_t hintStripHeight() { return kHintH; }
 
 const freeink::Icon& chooseChipIcon(const bool choosing) {
   // Four squares for "several", a tick for "that is my several". Both at 24 so
-  // the chip's ink does not change weight when the mode does; the lucide
-  // grid-2x2 glyph is borrowed for its shape, not for the app it is named for.
-  return choosing ? icon_tick_24 : icon_connections_24;
+  // the chip's ink does not change weight when the mode does.
+  return choosing ? icon_tick_24 : icon_choose_24;
 }
 
 const char* chooseHint() { return "Tap the grid button to pick several."; }
@@ -542,13 +541,11 @@ constexpr const char* kArrivedFoot = "BACK RETURNS";
 // The square, shared by the code and by the picture that replaces it.
 constexpr int16_t kAddPictureSide = 232;
 
-// Inherited from the Instapaper twin as `bottom() - 30, height 24`, which is
-// correct THERE because it draws in toybox_10 (line box 21). Here the same box
-// holds a 40px line box: DrawTarget::text clamps a negative centring offset to
-// zero, so the line ran 758..798 -- five pixels BELOW body.bottom() and eleven
-// from the panel edge, eating the whole page margin. The box came across from
-// the twin and the font did not. Sized from the bound face now, so it cannot
-// happen again when the face changes.
+// Not a fixed `bottom() - 30, height 24`, which is correct only for a line
+// drawn in toybox_10 (line box 21). Here the line box is 40px: DrawTarget::text
+// clamps a negative centring offset to zero, so the line would run 758..798 --
+// five pixels BELOW body.bottom() and eleven from the panel edge, eating the
+// whole page margin. Sized from the bound face, so a face change cannot do it.
 void drawFoot(toybox::Screen& screen, const fui::Rect& body, const char* label = kFoot) {
   fui::TextStyle style = onPaper(screen.theme().bodyText, fui::TextAlign::Center, 1);
   const int16_t lineH = screen.target().lineHeight(style.font);
@@ -589,8 +586,8 @@ AddRects buildAdd(toybox::Screen& screen, const AddModel& model) {
   const bool arrived = model.arrived != nullptr && model.arrived[0] != '\0';
   AddRects out;
 
-  // The pairing twin. Same skeleton as InstapaperScreens::buildPairQr, with the
-  // address occupying the line its 8-character code does. The arrival's picture
+  // The pairing layout: a QR code with the address on the line under it. The
+  // arrival's picture
   // takes the same square, which is why one constant serves both.
   constexpr int16_t kQrSide = kAddPictureSide;
   constexpr int16_t kHead = 48;

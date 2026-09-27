@@ -1,8 +1,7 @@
 #pragma once
 
-// The xkcd screens. Freestanding builders in the ChessScreens mould: a model
-// in, a drawn frame out, no renderer and no Activity, so host-tests/ui/ can
-// assert what they drew and what they made tappable.
+// The xkcd screens. Freestanding builders: a model in, a drawn frame out, no renderer and no Activity, so
+// host-tests/ui/ can assert what they drew and what they made tappable.
 //
 // ---------------------------------------------------------------------------
 // **Portrait, 480x800**, like every other app on the device, and the panel
@@ -19,8 +18,7 @@
 // XkcdCore.h for why none of this is decided by measuring the artwork.
 //
 // The reader is the one screen that is mostly not a screen: the comic is the
-// app's own surface and the Activity blits it, exactly as chess draws its
-// board. What lives here is the bar under it. `readerViewport()` is shared
+// app's own surface and the Activity blits it. What lives here is the bar under it. `readerViewport()` is shared
 // between the two so the rect that gets drawn and the rect that gets tapped
 // are the same rect -- the rule that has caught more bugs in this fork than
 // any other.
@@ -32,7 +30,7 @@ namespace xkcdui {
 
 namespace fui = freeink::ui;
 
-// Chess uses 1-4, the link layer owns the 200s, Hacker News the 300s.
+// The link layer owns the 200s, Hacker News the 300s.
 enum : fui::ActionId {
   ActionOpenLatest = 400,
   ActionBrowse = 401,
@@ -81,8 +79,7 @@ struct MenuModel {
 
 void buildMenu(toybox::Screen& screen, const MenuModel& model);
 
-// The band the mosaic is drawn into, shared with the Activity the way
-// Connections shares its grid band. See docs/design-language.md on ornament:
+// The band the mosaic is drawn into, shared with the Activity. See docs/design-language.md on ornament:
 // it has to be made of the app's own material and carry the app's own data.
 // Here it is one small rectangle per comic **at that comic's own aspect
 // ratio**, filled if you have read it. The material is the thing this app is

@@ -9,9 +9,9 @@ the CrossPlay site's own stylesheet and chrome. This host serves no page: it
 served one for a while and it shared nothing with the site.
 
 Runs on the Orange Pi at `/srv/fridgebridge`, behind a Cloudflare Tunnel, same
-shape as `read-bridge` and `study-bridge`. Its own subnet (172.31.87.0/24) and
-its own uid (10004), because a shared one would let a compromise in any of the
-three read the others' bind mounts.
+shape as `study-bridge`. Its own subnet (172.31.87.0/24) and its own uid
+(10004), because a shared one would let a compromise in either read the
+other's bind mounts.
 
 ## The one thing to understand
 
@@ -126,8 +126,8 @@ chain the reader sees was checked rather than assumed:
 
     CN=ma-r-s.com -> GTS WE1 -> GTS Root R4
 
-GTS Root R4 is in the firmware's baked bundle, the same chain Study and
-Instapaper already verify against, so the reader needs no root override and
+GTS Root R4 is in the firmware's baked bundle, the same chain Study already
+verifies against, so the reader needs no root override and
 nothing anywhere calls setInsecure().
 
 It must stay exactly one label below the apex. Universal SSL on the free plan

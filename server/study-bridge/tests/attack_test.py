@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Run server/attacks.py against study-bridge.
 
-The harness only. Every check lives in server/attacks.py and is shared with
-read-bridge, so a fix can never land on one twin alone -- which is the exact
-shape of the cross-user traversal this suite found on THIS service and not on
-its twin.
+The harness only. Every check lives in server/attacks.py; this file describes
+the service to it and supplies the upstream.
 
 Upstream is a real anki.syncserver on loopback with two throwaway accounts, so
 signing in exercises the same code path a real AnkiWeb sign-in does. It never
@@ -62,7 +60,7 @@ def require_free_port(port, what):
 
     wait_port() proves that A process is listening, never that it is the one
     this suite started -- and on 2026-09-05 that difference cost an hour: port
-    9003 was held by an orphaned read-bridge from another worktree, four days
+    9003 was held by an orphaned bridge from another worktree, four days
     old, and this suite spent every run signing AnkiWeb credentials into it.
     Every sign-in failed, which read exactly like a bridge refusing a password.
     A probe whose passing state is indistinguishable from the symptom proves

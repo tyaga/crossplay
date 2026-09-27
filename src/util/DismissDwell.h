@@ -7,8 +7,8 @@
 // It starts counting when the code decides to show something, which on this
 // panel is 0.3-2s before anything appears (HalDisplay::HALF_REFRESH is
 // 1720ms), and it keeps counting while the reader's own thumb is sitting on
-// top of the message. Wavelength's result screen was drawn correctly and four
-// cold testers never saw it, for exactly those two reasons.
+// top of the message. A result screen drawn correctly can go unseen by every
+// cold tester for exactly those two reasons.
 //
 // So the dwell runs only while both are true: the panel has SHOWN the screen,
 // and nobody is touching the glass. A finger arriving mid-dwell restarts it

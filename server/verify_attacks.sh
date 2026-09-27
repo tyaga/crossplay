@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Does the attack suite actually work? Watch every check go red.
 #
-#   server/verify_attacks.sh [read-bridge|study-bridge]
+#   server/verify_attacks.sh [study-bridge]
 #
 # The suite in attacks.py is only worth running if its checks CAN fail. This
 # script proves that they can, one weakening at a time: for each entry in
@@ -21,7 +21,7 @@
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVICES=("${1:-read-bridge study-bridge}")
+SERVICES=("${1:-study-bridge}")
 read -r -a SERVICES <<< "${SERVICES[*]}"
 
 # One port slice per tree, and away from the default: another worktree's stray

@@ -14,8 +14,8 @@
 #      `contributing/` among them, while three files in that directory were
 #      almost entirely this fork's and a fourth did not exist upstream at all.
 #      That file's whole job is saying who wrote what.
-#   3. `LOCAL_SCOPE.md` said "twenty-one apps, seventeen games" long after the
-#      shelf passed both.
+#   3. `LOCAL_SCOPE.md` counted apps and games long after the shelf had moved
+#      past both numbers.
 #
 # Every check here DISCOVERS its expected value -- from `Shelf.cpp`, from the
 # includes, from `crosspoint/develop` -- rather than holding a second copy of
@@ -52,21 +52,6 @@ def read(rel):
         return f.read()
 
 
-WORDS = {
-    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
-    "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12,
-    "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
-    "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
-}
-
-
-def number(token):
-    token = token.strip().lower()
-    if token.isdigit():
-        return int(token)
-    return WORDS.get(token)
-
-
 def key(title):
     """Shelf titles shout, README titles do not, and dirs run words together."""
     return re.sub(r"[^A-Z0-9&]", "", title.upper())
@@ -90,31 +75,22 @@ def shelf_table(name):
     return re.findall(r'\{\s*"([^"]+)"', m.group(1))
 
 
-games = shelf_table("kGames")
-apps = shelf_table("kApps")
-check(bool(games), "Shelf.cpp kGames table not found -- every count below is unmeasured")
-check(bool(apps), "Shelf.cpp kApps table not found -- every count below is unmeasured")
-if not games or not apps:
+folder = shelf_table("kAppsAndGames")
+home = shelf_table("kHomeItems")
+check(bool(folder), "Shelf.cpp kAppsAndGames table not found -- every count below is unmeasured")
+check(bool(home), "Shelf.cpp kHomeItems table not found -- every count below is unmeasured")
+if not folder or not home:
     print(f"{checks} checks, {failed} failed")
     sys.exit(1)
 
 # ---------------------------------------------------------------------------
-# README.md: the headline count, and the two tables under it.
+# README.md: the two tables under "What is on it", one per shelf table.
 # ---------------------------------------------------------------------------
 readme = read("README.md")
 
-m = re.search(r"\*\*(\S+) games and (\S+) apps\*\*", readme)
-check(bool(m), "README.md has no '**N games and M apps**' claim to check")
-if m:
-    said_games, said_apps = number(m.group(1)), number(m.group(2))
-    check(said_games == len(games), "README.md games count",
-          f"says {m.group(1)}, Shelf.cpp kGames has {len(games)}")
-    check(said_apps == len(apps), "README.md apps count",
-          f"says {m.group(2)}, Shelf.cpp kApps has {len(apps)}")
-
 
 def readme_section(heading):
-    m = re.search(r"^### " + heading + r"\s*$(.*?)(?=^#{2,3} |\Z)",
+    m = re.search(r"^### " + re.escape(heading) + r"\s*$(.*?)(?=^#{2,3} |\Z)",
                   readme, re.S | re.M)
     return m.group(1) if m else ""
 
@@ -123,7 +99,8 @@ def bold_rows(text):
     return [key(t) for t in re.findall(r"^\|\s*\*\*([^*]+)\*\*", text, re.M)]
 
 
-for heading, table, label in (("Games", games, "kGames"), ("Apps", apps, "kApps")):
+for heading, table, label in (("On Home", home, "kHomeItems"),
+                              ("Apps & Games", folder, "kAppsAndGames")):
     listed = bold_rows(readme_section(heading))
     want = [key(t) for t in table]
     check(bool(listed), f"README.md '### {heading}' table has no rows")
@@ -134,8 +111,7 @@ for heading, table, label in (("Games", games, "kGames"), ("Apps", apps, "kApps"
     check(not extra, f"README.md '### {heading}' table lists rows {label} does not",
           ", ".join(extra))
     # Length as well as membership. Set comparison alone passes a table that
-    # lists one game twice, which is a table with the wrong number of rows
-    # sitting under a headline count this same suite checks.
+    # lists one app twice.
     check(len(listed) == len(want),
           f"README.md '### {heading}' table has the wrong number of rows",
           f"{len(listed)} rows, {label} has {len(want)}")
@@ -158,14 +134,10 @@ for entry in sorted(os.listdir(apps_local)):
                 nearby_dirs.add(key(entry))
                 break
 
-m = re.search(r"(\w+) of the games play over \*\*PLAY NEARBY\*\*:\s*(.+?)\.",
-              readme, re.S)
-check(bool(m), "README.md has no PLAY NEARBY sentence to check")
+m = re.search(r"^([A-Z][^.\n]*?) plays? over \*\*PLAY NEARBY\*\*", readme, re.M)
+check(bool(m), "README.md has no '<games> play over **PLAY NEARBY**' sentence to check")
 if m:
-    said = number(m.group(1))
-    named = [key(n) for n in re.split(r",\s*|\s+and\s+", m.group(2).strip()) if n.strip()]
-    check(said == len(named), "README.md PLAY NEARBY count disagrees with its own list",
-          f"says {m.group(1)}, names {len(named)}")
+    named = [key(n) for n in re.split(r",\s*|\s+and\s+", m.group(1).strip()) if n.strip()]
     check(set(named) == nearby_dirs,
           "README.md PLAY NEARBY list disagrees with which apps include link/LinkActivity.h",
           f"named-not-linked={sorted(set(named) - nearby_dirs)} "

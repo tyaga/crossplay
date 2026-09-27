@@ -69,12 +69,8 @@ std::string utf8CollapseWhitespace(const std::string& in);
 // habit: no entry in the table is below U+00A0, and a string with no byte
 // above 0x7F returns without allocating.
 //
-// Not the same job as connections::foldToAscii (src/apps_local/connections/
-// ConnectionsText.h), and the two should not be merged. That one transliterates
-// a whole word down to strict ASCII -- accented letters included, emoji
-// rejected -- because a Connections tile is a fixed box of capitals and a word
-// it cannot draw is a puzzle nobody can play. This one is for prose, where the
-// cut CAN draw the letters and rewriting them would be the damage.
+// This is for prose, where the cut CAN draw the letters and rewriting them
+// would be the damage, so it does not transliterate down to strict ASCII.
 //
 // Invalid UTF-8 passes through unchanged. The decoder is only consulted to
 // find a codepoint to look up; bytes it cannot make sense of are copied

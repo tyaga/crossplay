@@ -3,12 +3,11 @@
 // The half of multiplayer that is the same in every game.
 //
 // LinkPlay handles the radio and LinkScreens draws the two seats, and between
-// them there was still a match's worth of behaviour that chess had written by
-// hand: when to start looking, how a rematch is asked and answered, which
-// screen owns the pass, what a seat says, when to keep the device awake. The
-// second game was going to copy about two hundred lines of it, and a rematch
-// conversation that two games implement separately is a rematch conversation
-// that will eventually work differently in each.
+// them there is still a match's worth of behaviour: when to start looking, how
+// a rematch is asked and answered, which screen owns the pass, what a seat
+// says, when to keep the device awake. A rematch conversation that two games
+// implement separately is a rematch conversation that will eventually work
+// differently in each.
 //
 // So this is where the DS's uniformity is enforced rather than hoped for. A
 // game inherits, fills in what only it can know, and gets everything else --
@@ -17,7 +16,7 @@
 // What a game must supply:
 //
 //   linkState()        the Play<State> it owns
-//   linkGameTitle()    "CHESS"
+//   linkGameTitle()    "BATTLESHIP"
 //   linkHeadline()     why the link screen is up, in the player's words
 //   onMatchStart()     a fresh game, and which side you are
 //   takeOpponentState()  adopt their state into yours, however that merges
@@ -51,9 +50,9 @@ class LinkActivity : public Activity {
       : Activity(name, renderer, mappedInput) {}
 
   // Final, both of them, because tick placement is the thing a game gets wrong.
-  // Chess's loop() has six early returns and the first is a settings overlay,
-  // so a tick written anywhere but the first line kills the match whenever
-  // somebody opens one for ten seconds. Here there is nowhere else to put it.
+  // A game loop with early returns, the first of them a settings overlay,
+  // kills the match whenever somebody opens one for ten seconds if the tick
+  // is written anywhere but the first line. Here there is nowhere else to put it.
   void loop() final;
   void render(RenderLock&& lock) final;
 
@@ -103,7 +102,7 @@ class LinkActivity : public Activity {
   virtual void gameLoop() = 0;
   virtual void gameRender() = 0;
 
-  // The phase changed. Optional: chess rebuilds the "MARIO'S MOVE" label here.
+  // The phase changed. Optional: a game rebuilds a "MARIO'S MOVE" label here.
   virtual void onLinkPhaseChanged() {}
   // Draws into the rect the link screen leaves under the seats. Optional; on a
   // rematch screen it is where the game you have just finished belongs.

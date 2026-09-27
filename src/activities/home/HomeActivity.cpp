@@ -24,33 +24,28 @@
 #include "fontIds.h"
 
 // --- fork-local seam ---------------------------------------------------
-// How many rows indexToMenuItem() walks. NOT getMenuItemCount(), which also
-// counts the recent-book tiles above the menu -- the dispatch has already
-// subtracted those to get its menuIndex, so using it here subtracts them twice.
-// With one book on the card that put Games out of range and made Apps open it.
-int HomeActivity::upstreamMenuRows() const {
-  // Browse Files, Recents, File transfer, Settings, plus OPDS when configured,
-  // plus the Continue Reading row the RoundedRaff theme inserts at the top.
-  //
-  // (indexToMenuItem() does not know about that Continue Reading row, so
-  // upstream's own dispatch is off by one under that theme. Not ours to fix,
-  // but it is why this counts the row and that function does not.)
-  const auto& metrics = UITheme::getInstance().getMetrics();
-  const bool continueRow = metrics.homeContinueReadingInMenu && !recentBooks.empty();
-  return 4 + (continueRow ? 1 : 0);
+int HomeActivity::menuRows(MenuRow* rows) const {
+  int n = 0;
+  rows[n++] = {MenuRow::Kind::Library, 0};
+  rows[n++] = {MenuRow::Kind::FileTransfer, 0};
+  for (int i = 0; i < shelf::homeItemCount() && n < MAX_MENU_ROWS; ++i) rows[n++] = {MenuRow::Kind::HomeItem, i};
+  for (int i = 0; i < shelf::folderCount() && n < MAX_MENU_ROWS; ++i) rows[n++] = {MenuRow::Kind::Folder, i};
+  return n;
+}
+
+// The selector index of a row, counting the recent books ahead of the menu.
+int HomeActivity::menuRowOf(const MenuRow::Kind kind, const int index) const {
+  MenuRow rows[MAX_MENU_ROWS];
+  const int count = menuRows(rows);
+  for (int i = 0; i < count; ++i) {
+    if (rows[i].kind == kind && rows[i].index == index) return static_cast<int>(recentBooks.size()) + i;
+  }
+  return 0;
 }
 
 int HomeActivity::getMenuItemCount() const {
-  // --- fork-local seam ---------------------------------------------------
-  // The shelf's folders (GAMES, APPS) are appended after upstream's rows, so
-  // upstream's indices never shift and indexToMenuItem()/menuItemToIndex() stay
-  // untouched. Everything below returns NONE for our indices, which is what the
-  // dispatch switch's default case picks up. See src/apps_local/Shelf.h.
-  int count = 4 + shelf::folderCount();  // File Browser, Library, File transfer, Settings, + ours
-  if (!recentBooks.empty()) {
-    count += recentBooks.size();
-  }
-  return count;
+  MenuRow rows[MAX_MENU_ROWS];
+  return menuRows(rows) + static_cast<int>(recentBooks.size());
 }
 
 void HomeActivity::loadRecentBooks(int maxBooks) {
@@ -136,19 +131,33 @@ void HomeActivity::onEnter() {
   const auto& metrics = UITheme::getInstance().getMetrics();
   loadRecentBooks(metrics.homeRecentBooksCount);
 
-  const auto base = static_cast<int>(recentBooks.size());
-  selectorIndex =
-      initialMenuItem == HomeMenuItem::NONE ? 0 : base + menuItemToIndex(initialMenuItem, /*hasOpdsUrl=*/false);
-
-  // fork-local seam: goHome() restores the selection by matching the departing
-  // activity's name against HomeMenuItem, which cannot know about shelf rows,
-  // so leaving GAMES would otherwise drop the cursor on Browse Files.
-  if (const int shelfRow = shelf::lastFolderOnHome(); shelfRow >= 0) {
-    selectorIndex = base + upstreamMenuRows() + shelfRow;
+  // fork-local seam: goHome() names the departing upstream screen; the shelf
+  // remembers its own rows, which HomeMenuItem cannot name.
+  switch (initialMenuItem) {
+    case HomeMenuItem::LIBRARY:
+      selectorIndex = menuRowOf(MenuRow::Kind::Library, 0);
+      break;
+    case HomeMenuItem::FILE_TRANSFER:
+      selectorIndex = menuRowOf(MenuRow::Kind::FileTransfer, 0);
+      break;
+    case HomeMenuItem::FILE_BROWSER:
+    case HomeMenuItem::SETTINGS_MENU:
+    case HomeMenuItem::OPDS_BROWSER:
+      selectorIndex = menuRowOf(MenuRow::Kind::Folder, 0);
+      break;
+    default:
+      if (const int folder = shelf::lastFolderOnHome(); folder >= 0) {
+        selectorIndex = menuRowOf(MenuRow::Kind::Folder, folder);
+      } else if (const int item = shelf::lastHomeItemOnHome(); item >= 0) {
+        selectorIndex = menuRowOf(MenuRow::Kind::HomeItem, item);
+      } else {
+        selectorIndex = 0;
+      }
+      break;
   }
 
   // fork-local seam: boot straight into a named app when the environment asks
-  // for one (the site's installer preview, CROSSPLAY_AUTOSTART=chess ./bin/sim).
+  // for one (the site's installer preview, CROSSPLAY_AUTOSTART=solitaire ./bin/sim).
   // Fires once per process; on hardware getenv finds nothing and this is free.
   // Safe from onEnter because replaceActivity defers to the end of the loop.
   shelf::autostartFromEnv(renderer, mappedInput);
@@ -210,33 +219,21 @@ void HomeActivity::loop() {
       return;
     }
     const int menuIndex = selectorIndex - static_cast<int>(recentBooks.size());
-    // Get Books moved into the APPS folder, so Home never draws its row.
-    // Upstream's helpers still take the flag; they stay byte-identical and
-    // merge cleanly, and false simply removes the row from their arithmetic.
-    switch (indexToMenuItem(menuIndex, /*hasOpdsUrl=*/false)) {
-      case HomeMenuItem::FILE_BROWSER:
-        onFileBrowserOpen();
-        break;
-      case HomeMenuItem::LIBRARY:
+    MenuRow rows[MAX_MENU_ROWS];
+    if (menuIndex < 0 || menuIndex >= menuRows(rows)) return;
+    switch (rows[menuIndex].kind) {
+      case MenuRow::Kind::Library:
         onLibraryOpen();
         break;
-      case HomeMenuItem::OPDS_BROWSER:
-        onOpdsBrowserOpen();
-        break;
-      case HomeMenuItem::FILE_TRANSFER:
+      case MenuRow::Kind::FileTransfer:
         onFileTransferOpen();
         break;
-      case HomeMenuItem::SETTINGS_MENU:
-        onSettingsOpen();
+      case MenuRow::Kind::HomeItem:
+        shelf::openHomeItem(rows[menuIndex].index, renderer, mappedInput);
         break;
-      default: {
-        // fork-local seam: anything past upstream's rows is a shelf folder.
-        const int shelfRow = menuIndex - upstreamMenuRows();
-        if (shelfRow >= 0 && shelfRow < shelf::folderCount()) {
-          shelf::openFolder(shelfRow, renderer, mappedInput);
-        }
+      case MenuRow::Kind::Folder:
+        shelf::openFolder(rows[menuIndex].index, renderer, mappedInput);
         break;
-      }
     }
   };
 
@@ -341,17 +338,35 @@ void HomeActivity::render(RenderLock&&) {
   GUI.drawHeader(renderer, Rect{0, metrics.topPadding, pageWidth, metrics.homeTopPadding - metrics.topPadding},
                  metrics.homeContinueReadingInMenu && !recentBooks.empty() ? recentBooks[0].title.c_str() : nullptr);
 
-  // Build menu items dynamically
-  std::vector<const char*> menuItems = {tr(STR_BROWSE_FILES), tr(STR_LIBRARY), tr(STR_FILE_TRANSFER),
-                                        tr(STR_SETTINGS_TITLE)};
-  std::vector<UIIcon> menuIcons = {Folder, Library, Transfer, Settings};
-
-  // fork-local seam: upstream draws an OPDS row here when servers are
-  // configured. The fork does not -- Get Books lives in the APPS folder, and
-  // both dispatch helpers below are called with hasOpdsUrl=false to match. A
-  // sync that takes upstream's insertion draws a row the dispatch does not
-  // know about, which shifts every shelf folder by one and opens the wrong
-  // game. Leave it out; see the comment on indexToMenuItem() below.
+  // fork-local seam: the rows come from menuRows(), which the dispatch in
+  // loop() walks too. Shelf titles are raw rather than tr(): routing them
+  // through i18n would mean editing lib/I18n/translations/*.yaml per app.
+  MenuRow menuRowList[MAX_MENU_ROWS];
+  const int rowCount = menuRows(menuRowList);
+  std::vector<const char*> menuItems;
+  std::vector<UIIcon> menuIcons;
+  menuItems.reserve(rowCount + 1);
+  menuIcons.reserve(rowCount + 1);
+  for (int i = 0; i < rowCount; ++i) {
+    switch (menuRowList[i].kind) {
+      case MenuRow::Kind::Library:
+        menuItems.push_back(tr(STR_LIBRARY));
+        menuIcons.push_back(Library);
+        break;
+      case MenuRow::Kind::FileTransfer:
+        menuItems.push_back(tr(STR_FILE_TRANSFER));
+        menuIcons.push_back(Transfer);
+        break;
+      case MenuRow::Kind::HomeItem:
+        menuItems.push_back(shelf::homeItems()[menuRowList[i].index].title);
+        menuIcons.push_back(shelf::homeItemIcon(menuRowList[i].index));
+        break;
+      case MenuRow::Kind::Folder:
+        menuItems.push_back(shelf::folders()[menuRowList[i].index].title);
+        menuIcons.push_back(shelf::folders()[menuRowList[i].index].icon);
+        break;
+    }
+  }
 
   if (metrics.homeContinueReadingInMenu && !recentBooks.empty()) {
     // Insert Continue Reading at the top if enabled in theme
@@ -359,21 +374,11 @@ void HomeActivity::render(RenderLock&&) {
     menuIcons.insert(menuIcons.begin(), Book);
   }
 
-  // fork-local seam: the shelf's folders, appended last so upstream's indices
-  // hold. Raw titles rather than tr(): routing them through i18n would mean
-  // editing lib/I18n/translations/*.yaml per folder.
-  for (int i = 0; i < shelf::folderCount(); ++i) {
-    menuItems.push_back(shelf::folders()[i].title);
-    menuIcons.push_back(shelf::folders()[i].icon);
-  }
-
   // --- fork-local seam ---------------------------------------------------
-  // The shelf's folders (GAMES, APPS) are appended to upstream's rows, and
   // RoundedRaff adds a Continue Reading row of its own once a book has been
   // opened. drawButtonMenu lays rows at a fixed pitch and ignores the rect
   // height, so a row that does not fit is drawn off-screen and simply is not
   // there -- and the home menu does not scroll, so it cannot be reached at all.
-  // APPS is the last row, which is how Get Books (inside it) would vanish.
   //
   // Only the row GAPS give. The cover tile keeps its full height: its art is
   // the point of it, and the gaps are generous enough to lose a few pixels

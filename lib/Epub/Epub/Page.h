@@ -81,8 +81,8 @@ class Page {
   std::vector<FootnoteEntry> footnotes;
   static constexpr uint16_t MAX_FOOTNOTES_PER_PAGE = 16;
   std::vector<PageLink> links;
-  // 96 rather than 32: a Wikipedia lead runs one link per five words, and a
-  // link past the cap silently becomes plain text. Serialized as a count, so
+  // 96 rather than 32: an encyclopedia-style lead runs one link per five
+  // words, and a link past the cap silently becomes plain text. Serialized as a count, so
   // caches written under the old cap still load.
   static constexpr uint16_t MAX_LINKS_PER_PAGE = 96;
 

@@ -21,7 +21,7 @@
 // the eyes. That is the entire reason this screen exists.
 // ---------------------------------------------------------------------------
 //
-// Freestanding in the ChessScreens mould: a model in, a drawn frame out, no
+// Freestanding: a model in, a drawn frame out, no
 // renderer and no Activity, so host-tests/ui/ can assert what it drew and what
 // it made tappable.
 
@@ -31,7 +31,7 @@ namespace playerui {
 
 namespace fui = freeink::ui;
 
-// Shared-screen ids, kept clear of every game's own (chess 1-4, shelf 1-2) and
+// Shared-screen ids, kept clear of every game's own (shelf 1-2) and
 // of the link screens' 200s.
 enum : fui::ActionId {
   // Carries the slot index as its value, so three targets cost one id and the
@@ -63,8 +63,7 @@ struct PlayerModel {
 // 240 was the safe number and it was wrong: it left ~430px of nothing between
 // the words and BACK, which on a screen that holds its image is the defect the
 // design language names outright. At 360 the slack collapses into one zone
-// above the footer, the same shape chess leaves for its capture strips, and the
-// face becomes the subject of the page instead of a thumbnail of one.
+// above the footer, and the face becomes the subject of the page instead of a thumbnail of one.
 constexpr int16_t kFaceSize = 360;
 
 void buildPlayer(toybox::Screen& screen, const PlayerModel& model);

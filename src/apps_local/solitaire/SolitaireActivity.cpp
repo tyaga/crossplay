@@ -29,8 +29,6 @@ constexpr int kMaxResults = 2048;
 // the SD card per tap, and a draw-one game runs well past a hundred taps, so a
 // single sitting was a hundred-odd writes -- on a card that would rather not
 // have them, through a filesystem that has to rewrite a whole block for each.
-// Chess and Connections never noticed this because they have an order of
-// magnitude fewer moves per session.
 //
 // The board is now written when you leave it, when the app exits, and every
 // kSaveEvery moves as a floor against a flat battery. The cost of that floor is
@@ -233,8 +231,8 @@ void SolitaireActivity::loop() {
     input.touchX = static_cast<int16_t>(tapX);
     input.touchY = static_cast<int16_t>(tapY);
   }
-  // Touch only, like the rest of this fork's games. See the note in
-  // ConnectionsActivity for why there is no cursor.
+  // Touch only, like the rest of this fork's games: Confirm is unassigned on
+  // this device, so a cursor would be a selection with no way to act on it.
   if (!input.touchReleased || !interactionsReady) return;
 
   const fui::ActionEvent action = interactions.route(input);

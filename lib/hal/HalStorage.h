@@ -58,10 +58,9 @@ class HalStorage {
   // Free bytes on the card. Returns false, leaving `out` untouched, when the
   // volume could not answer -- which is NOT the same as "no space".
   //
-  // Every app on this fork that writes to the card has written blind, because
-  // nothing above SDCardManager surfaced this. Trivia declined to ship a
-  // 6.21MB download onto the one card holding a live Anki collection for
-  // exactly that reason. Ask before a large write, and treat false as unknown
+  // A large download can land on the one card holding a live Anki collection,
+  // and nothing above SDCardManager surfaces this otherwise. Ask before a large
+  // write, and treat false as unknown
   // rather than as room: deriving it from sdTotalBytes() - sdUsedBytes()
   // reports a FAILED query as an almost-empty card.
   //

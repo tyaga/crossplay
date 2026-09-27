@@ -10,12 +10,11 @@
 // deferred to the end of the loop, so the board carrying the win was never on
 // the panel at all. Losing without seeing how is the worst version of losing.
 //
-// And a link match was never counted. Five of the nine games recorded their
-// result inside gameLoop() -- checkers, connect four, knucklebones and yahtzee
-// in an else-if arm after a guard that returns first in multiplayer, toy battle
-// in a block gameLoop() simply stops reaching -- so the tally, the final board
-// and the whole W/L/D record only ever existed for solo games. Nothing crashed
-// and nothing logged: the record was simply never written.
+// And a game that records its result inside gameLoop() -- in an arm after a
+// guard that returns first in multiplayer, or in a block gameLoop() stops
+// reaching -- never counts a link match: the tally, the final board and the
+// whole W/L/D record exist only for solo games. Nothing crashes and nothing
+// logs: the record is simply never written.
 //
 // Ask what a Nintendo DS would do. It shows the winning move, lets it sit long
 // enough to read, and only then offers another game -- and it counts the match

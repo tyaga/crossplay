@@ -176,8 +176,7 @@ const expect = (label, got, want) =>
   // x-forwarded-for is append-only, so the FIRST entry is whatever the caller
   // chose. Two requests that differ only in that prefix must land in the same
   // rate bucket, or anyone can pick their own and the ten-an-hour cap is a
-  // suggestion. api/trivia.js has asserted this since it was written; this
-  // file took the first hop until card #444.
+  // suggestion.
   {
     const bucketFor = async (xff) => {
       calls = [];

@@ -13,11 +13,10 @@
 #     right for layout tests and blind to this entirely.
 #
 #   * the corpora are COMPLETE and DERIVED, never sampled and never copied:
-#     corpus.py reads the linkplay titles out of the game Activities and the
-#     comic titles out of the pack on the card, and the test walks Forehead's,
-#     Toy Battle's and the dungeon's own tables and every date Connections can
-#     format. A corpus written into a test is a corpus that stops matching the
-#     app the day somebody adds a game.
+#     corpus.py reads the linkplay titles out of the game Activities, the
+#     headlines out of the emulator's canned front page and the comic titles
+#     out of the pack on the card. A corpus written into a test is a corpus
+#     that stops matching the app the day somebody adds a game.
 #
 # No PlatformIO and no device: the screen builders are freestanding C++17 and
 # EpdFont/Utf8 are too. If a builder ever reaches for GfxRenderer or the card,
@@ -39,37 +38,20 @@ python3 ./corpus.py "$BUILD_DIR/corpus.generated.h"
 # headers are GENERATED aggregates that stop at the last field fontconvert.py
 # has a value for, exactly as host-tests/typefold explains. -Wno-comment and
 # -Wno-format-truncation: the same two host-tests/ui silences, for the same
-# screen files -- without them GCC fails this build on a snprintf in
-# ConnectionsScreens.cpp that has nothing to do with fitting a title.
+# screen files.
 "${CXX:-c++}" -std=c++17 -O2 -Wall -Wextra -Werror -Wno-comment -Wno-format-truncation \
   -Wno-missing-field-initializers \
   -I"$BUILD_DIR" -I. \
   -I"$SDK/include" -I"$ICONS/include" \
   -I../../lib/Utf8 -I../../lib/EpdFont \
-  -I"$APPS/ui" -I"$APPS/connections" -I"$APPS/dungeon" -I"$APPS/forehead" \
-  -I"$APPS/link" -I"$APPS/toybattle" -I"$APPS/xkcd" -I"$APPS/player" \
-  -I"$APPS/hackernews" -I"$APPS/hearts" -I"$APPS/cards" \
+  -I"$APPS/ui" -I"$APPS/link" -I"$APPS/xkcd" -I"$APPS/player" -I"$APPS/hackernews" \
   "$SDK/src/FreeInkUI.cpp" \
   ../../lib/Utf8/Utf8.cpp \
   ../../lib/EpdFont/EpdFont.cpp \
-  "$APPS/connections/ConnectionsCore.cpp" \
-  "$APPS/connections/ConnectionsScreens.cpp" \
-  "$APPS/dungeon/DungeonCore.cpp" \
-  "$APPS/dungeon/DungeonScreens.cpp" \
-  "$APPS/forehead/ForeheadCore.cpp" \
   "$APPS/hackernews/HackerNewsScreens.cpp" \
-  "$APPS/cards/CardArt.cpp" \
-  "$APPS/hearts/HeartsCore.cpp" \
-  "$APPS/hearts/HeartsScreens.cpp" \
-  "$APPS/forehead/ForeheadScreens.cpp" \
   "$APPS/link/LinkScreens.cpp" \
   "$APPS/player/PlayerAvatar.cpp" \
   "$APPS/player/PlayerName.cpp" \
-  "$APPS/toybattle/ToyBattleCore.cpp" \
-  "$APPS/toybattle/ToyBattleFlow.cpp" \
-  "$APPS/toybattle/ToyBattleHowTo.cpp" \
-  "$APPS/toybattle/ToyBattleMenus.cpp" \
-  "$APPS/toybattle/ToyBattleScreens.cpp" \
   "$APPS/xkcd/XkcdScreens.cpp" \
   test_fittedtitle.cpp -o "$BUILD_DIR/test_fittedtitle"
 "$BUILD_DIR/test_fittedtitle"

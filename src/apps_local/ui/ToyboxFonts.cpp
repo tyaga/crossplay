@@ -5,9 +5,6 @@
 #include <Logging.h>
 
 #include "ToyboxTokens.h"
-#include "fonts/instrument_10.h"
-#include "fonts/instrument_13.h"
-#include "fonts/instrument_24.h"
 #include "fonts/reading_serif_11.h"
 #include "fonts/reading_serif_14.h"
 #include "fonts/reading_serif_bold_12.h"
@@ -54,9 +51,6 @@ EpdFont reading11(&reading_serif_11);
 EpdFont reading14(&reading_serif_14);
 EpdFont readingBold12(&reading_serif_bold_12);
 EpdFont readingBold16(&reading_serif_bold_16);
-EpdFont instrument10(&instrument_10);
-EpdFont instrument13(&instrument_13);
-EpdFont instrument24(&instrument_24);
 EpdFontFamily displayFamily(&display30);
 EpdFontFamily largeFamily(&large44);
 EpdFontFamily hugeFamily(&huge64);
@@ -67,9 +61,6 @@ EpdFontFamily readingSmallFamily(&reading11);
 EpdFontFamily readingFamily(&reading14);
 EpdFontFamily readingBoldSmallFamily(&readingBold12);
 EpdFontFamily readingBoldFamily(&readingBold16);
-EpdFontFamily serifTileFamily(&instrument13);
-EpdFontFamily serifSmallFamily(&instrument10);
-EpdFontFamily serifTitleFamily(&instrument24);
 
 bool registered = false;
 
@@ -135,9 +126,6 @@ void verifyCutMetrics() {
       {"toybox_30", &toybox_30, &displayFamily, &toybox::kDisplayCut},
       {"toybox_44", &toybox_44, &largeFamily, &toybox::kLargeCut},
       {"toybox_64", &toybox_64, &hugeFamily, &toybox::kHugeCut},
-      {"instrument_10", &instrument_10, &serifSmallFamily, &toybox::kSerifSmallCut},
-      {"instrument_13", &instrument_13, &serifTileFamily, &toybox::kSerifTileCut},
-      {"instrument_24", &instrument_24, &serifTitleFamily, &toybox::kSerifTitleCut},
       {"reading_serif_11", &reading_serif_11, &readingSmallFamily, &toybox::kReadingSmallCut},
       {"reading_serif_14", &reading_serif_14, &readingFamily, &toybox::kReadingCut},
       {"reading_serif_bold_12", &reading_serif_bold_12, &readingBoldSmallFamily, &toybox::kReadingBoldSmallCut},
@@ -172,9 +160,6 @@ void ensureFonts(GfxRenderer& renderer) {
   renderer.insertFont(kReadingSmallFontId, readingSmallFamily);
   renderer.insertFont(kReadingBoldSmallFontId, readingBoldSmallFamily);
   renderer.insertFont(kReadingBoldFontId, readingBoldFamily);
-  renderer.insertFont(kSerifTileFontId, serifTileFamily);
-  renderer.insertFont(kSerifSmallFontId, serifSmallFamily);
-  renderer.insertFont(kSerifTitleFontId, serifTitleFamily);
   registered = true;
 }
 

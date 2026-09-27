@@ -41,8 +41,8 @@ const char* startRowLabel(const StartRow row) {
     case StartRow::NewGame:
       return "NEW GAME";
     case StartRow::PlayNearby:
-      // The same words chess uses, and for the same reason: "tap where it says
-      // multiplayer" only works if something says it, and NEARBY is what it is.
+      // "Tap where it says multiplayer" only works if something says it, and
+      // NEARBY is what it is.
       return "PLAY NEARBY";
     default:
       return "";
@@ -159,8 +159,8 @@ fui::Rect buildBoardChrome(toybox::Screen& screen, const BoardModel& model) {
                                  : (model.canFire ? static_cast<fui::ActionId>(ActionFire) : fui::NO_ACTION);
   status.borderEdges = fui::EdgesNone;
   // While it is only reporting (TAP A TARGET) it is a status line, not a
-  // disabled control, so it keeps the solid capsule -- the same treatment
-  // chess's inert mid-game status takes from the default button style. It must
+  // disabled control, so it keeps the solid capsule the default button style
+  // gives it. It must
   // NOT borrow disabledButtonStyles() here: that dither is a sparse pattern of
   // black pixels, low-contrast to read and, being sparse, exactly what a
   // partial refresh leaves residue from, which ghosted the one control on the

@@ -1118,9 +1118,8 @@ void WallpapersActivity::drawGetSetTile(const wallpapersui::GridGeom& geom, cons
   // this renderer honours: it vanished and joined the words into "GET THE21".
   //
   // No plural: fmtwidth cannot bound a "%s" that switches word, and the count
-  // beside a fixed noun says the same thing (the trivia and add-screen
-  // precedent). The one-missing case was unreachable until the hold sheet could
-  // delete a built-in, and it read "GET THE 1 BUILT-INS".
+  // beside a fixed noun says the same thing (the add-screen precedent). The one-missing case was unreachable until the
+  // hold sheet could delete a built-in, and it read "GET THE 1 BUILT-INS".
   std::snprintf(label, sizeof(label), "GET %d MISSING", builtInsMissing_);
   const fui::Rect box =
       fui::makeRect(th.x + 6, static_cast<int16_t>(th.y + th.height / 2 - 30), static_cast<int16_t>(th.width - 12), 60);
@@ -2215,7 +2214,7 @@ void WallpapersActivity::onWifiChosen(const bool connected) {
 void WallpapersActivity::runSetDownload() {
   // exists() first: mkdir returns false for a directory that is already there,
   // and treating that as failure means every attempt after the first reports a
-  // full card. Trivia shipped exactly that bug.
+  // full card.
   if (!Storage.exists(wallpapers::kLibraryDir) && !Storage.mkdir(wallpapers::kLibraryDir)) {
     showNotice("NO ROOM", "Could not create the wallpapers folder on the card. Is the card in, and writable?",
                "TRY AGAIN", wallpapersui::ActionRetry);
@@ -2432,7 +2431,7 @@ void WallpapersActivity::loop() {
 
   // Started here rather than in the action handler: the fetch blocks for a
   // while and pumps input itself, which must not happen while a tap is still
-  // being routed (the Trivia precedent, and the whole of the #306 family).
+  // being routed (the whole of the #306 family).
   if (fetchQueued_) {
     fetchQueued_ = false;
     runSetDownload();
@@ -2919,7 +2918,7 @@ void WallpapersActivity::render(RenderLock&&) {
   // Faces per view, not per app. The grid is a menu and wants the Jersey cut it
   // shares with the shelf; the offer, the progress and the notices are
   // SENTENCES, and at the 20px UI cut a sentence runs off the panel and is cut
-  // with an ellipsis. Trivia carries the same split for the same reason.
+  // with an ellipsis.
   const bool prose = view_ == View::Offer || view_ == View::Fetching || view_ == View::Notice || view_ == View::Add ||
                      view_ == View::Sheet || view_ == View::Confirm || view_ == View::Phone || view_ == View::Live;
   // View::Add rebinds the SMALL slot to the bold reading cut so the address has
@@ -3152,7 +3151,7 @@ void WallpapersActivity::render(RenderLock&&) {
     wallpapersui::buildGridChrome(surface, model);
 
     // The chrome is a screen tree; the grid is the app's own surface, drawn
-    // after it into the body the same way chess draws its board.
+    // after it into the body.
     ensureThumbsForPage();
     drawGrid(geom);
   }

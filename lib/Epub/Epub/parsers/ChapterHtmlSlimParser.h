@@ -62,8 +62,8 @@ class ChapterHtmlSlimParser {
   std::string imageBasePath;
   int imageCounter = 0;
   // Every internal link is also recorded as a footnote entry for the reader's
-  // popup; a document with links but no footnote popup (a Wikipedia article)
-  // turns this off and keeps only the link rectangles.
+  // popup; a document with links but no footnote popup turns this off and
+  // keeps only the link rectangles.
   bool captureFootnotes = true;
 
   // Style tracking (replaces depth-based approach)

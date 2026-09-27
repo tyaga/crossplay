@@ -222,7 +222,7 @@ identified by its MAC immediately before anything is written to it.
 | name | MAC | notes |
 | --- | --- | --- |
 | device 1 | `B8:1F:3F:D4:83:24` | |
-| device 2 | `B8:1F:3F:D4:82:60` | serial `X4CB02EN26080301594`; the Wikipedia pack (49,715 articles, May 2026) is on its card |
+| device 2 | `B8:1F:3F:D4:82:60` | serial `X4CB02EN26080301594` |
 
 The numbers are what Mario says in chat; the MAC is what a number means. One
 command on his Mac turns a number into a port and an address, and a unit that
@@ -409,9 +409,8 @@ that reads it as ownership will miss every non-associating user of the radio.
   because the pattern deliberately excludes `WiFi.disconnect(`: a self-owned
   teardown is a legitimate use of it, and `ClockSyncActivity` is the example of
   doing that correctly (its flag is only set when Wi-Fi was NOT already up).
-  `ConnectionsActivity` and `KOReaderSyncActivity` had the same hole through
-  `esp_wifi_stop()`, which is unambiguous; both now ask `holdsRadio()` and the
-  check covers that call.
+  `KOReaderSyncActivity` reaches the same hole through `esp_wifi_stop()`, which
+  is unambiguous; it asks `holdsRadio()` and the check covers that call.
 
   **What the gate does NOT cover, stated plainly:** an ownership flag that is
   set unconditionally. `StudyActivity`'s pattern -- `WiFi.mode(WIFI_STA)` plus

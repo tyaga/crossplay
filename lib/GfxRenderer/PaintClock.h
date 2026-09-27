@@ -14,8 +14,8 @@
 // A counter rather than a timestamp on purpose. "Has the panel shown anything
 // since this table was built" is the actual question, and a count answers it
 // exactly, with no threshold to tune and nothing to get wrong when a refresh
-// runs long. Wavelength's kSettleMs = 1100 is the same idea with a guess in
-// place of the fact, and it is the only other thing in the tree that tries.
+// runs long. A settle delay in milliseconds would be the same idea with a
+// guess in place of the fact.
 //
 // Freestanding by design -- no Arduino, no renderer, nothing. The toybox
 // layer includes it by relative path so the screen builders stay host-testable

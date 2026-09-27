@@ -49,20 +49,6 @@ fi
 # --exclude-standard: ignores files in .gitignore
 # Additionally exclude files in 'lib/EpdFont/builtinFonts/' as they are script-generated.
 # Also exclude files in 'lib/Epub/Epub/hyphenation/generated/' as they are script-generated.
-# lib/decNumber/third_party/ is IBM's decNumber, byte for byte from the ICU
-# package. It is kept pristine so a version bump is a copy rather than a merge,
-# and reformatting it would also destroy the only thing that makes its published
-# errata legible against upstream's line numbers. The fork's own wrapper in
-# lib/decNumber/src/ IS formatted: it is our code.
-# lib/zstd/ is the vendored zstd single-file decoder (927 KB of upstream C);
-# formatting it takes longer than CI's step allows and would diverge it from
-# upstream for nothing.
-# src/apps_local/go/michi/ is vendored michi-c2, four thousand lines of somebody
-# else's engine in its own style. Reformatting it would make every future sync a
-# conflict, and the three fork changes in it are marked in comments rather than
-# found by diff. The fork-written files in that directory (MichiBridge, the shim)
-# are excluded with it deliberately: half a directory in a different brace style
-# reads as an accident.
 # Keep the no-match case non-fatal: grep returns 1 when no files match,
 # which is expected when there are no modified C/C++ files.
 set +o pipefail
@@ -72,11 +58,8 @@ git ls-files  --exclude-standard ${GIT_LS_FILES_FLAGS} \
     | grep -v -E '^lib/Epub/Epub/hyphenation/generated/' \
     | grep -v -E '^lib/uzlib/' \
     | grep -v -E '^lib/miniz/third_party/' \
-    | grep -v -E '^lib/decNumber/third_party/' \
-    | grep -v -E '^lib/zstd/' \
-    | grep -v -E '^src/apps_local/go/michi/' \
     | xargs -r "${CLANG_FORMAT_BIN}" -style=file "${CLANG_FORMAT_ACTION[@]}"
-CLANG_FORMAT_STATUS=${PIPESTATUS[7]}
+CLANG_FORMAT_STATUS=${PIPESTATUS[6]}
 # Restore strict pipeline failure handling for the rest of the script.
 set -o pipefail
 

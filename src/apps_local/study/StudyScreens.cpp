@@ -14,7 +14,7 @@ void chrome(toybox::Screen& screen, const char* title) {
   header.title = title;
   // header() takes these styles as given rather than resolving them against the
   // band, so an unset style renders black on black and simply is not there.
-  // Screen substitutes smallText, which is black. Same trap Connections hit.
+  // Screen substitutes smallText, which is black.
   header.subtitleText = fui::TextStyle{};
   header.subtitleText.font = toybox::kUiFont;
   header.subtitleText.color = fui::Color::White;
@@ -24,8 +24,8 @@ void chrome(toybox::Screen& screen, const char* title) {
   toybox::headerBand(screen, header);
 }
 
-// The same corner brackets the chess board and the Connections grid wear. Two
-// screens that share a bracket read as one device.
+// The same corner brackets the battleship grid and the player screen wear.
+// Screens that share a bracket read as one device.
 void brackets(toybox::Screen& screen, const fui::Rect& box, const int arm) {
   const fui::Paint ink = fui::Paint::solid(fui::Color::Black);
   const int w = toybox::kFrame;

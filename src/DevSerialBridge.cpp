@@ -262,7 +262,7 @@ void handleLine(const char* line) {
   }
 
   if (strcmp(cmd, "DATE") == 0) {
-    // Both clocks side by side: system time (what today()/Study/Connections
+    // Both clocks side by side: system time (what today()/Study
     // consume) and the hardware RTC (what the status bar reads).
     const time_t now = time(nullptr);
     struct tm t;

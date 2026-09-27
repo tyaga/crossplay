@@ -1,7 +1,7 @@
 // Reveal sweep: does the screen that REPLACES another put a different action
 // under the same pixels?
 //
-// The failure this measures is the one Wavelength shipped: a control produces a
+// The failure this measures: a control produces a
 // new screen, the new screen's control sits in the same rectangle, and the
 // finger already resting there (or a second tap arriving during the panel's
 // own 0.3-2s refresh) dismisses the thing it just asked for. The pixels are
@@ -17,15 +17,10 @@
 // between the two is reported as METRIC-DEPENDENT and must not be quoted as a
 // number.
 //
-// THIS IS A GATE, not a report. It was a report until 2026-09-05, and that is
-// the whole reason it is worth saying twice: main() printed what it found and
-// returned 0, there was no failure counter in the file, and it never emitted
-// the "N checks, M failed" line check.sh counts -- so check.sh printed
-// "revealsweep ok (0 sub-suite(s))" whatever the sweep discovered. A NEW
-// same-pixel collision, of exactly the kind Wavelength shipped, would have
-// scrolled past in a log nobody opens while the gate stayed green.
+// THIS IS A GATE, not a report: it counts failures and prints the "N checks,
+// M failed" line check.sh reads.
 //
-// What it fails on now, and why it is shaped this way. Every collision the
+// What it fails on, and why it is shaped this way. Every collision the
 // sweep can see today is already known: they are written down here, one line
 // each, next to what is known about them. The gate fails when reality stops
 // matching that list -- a collision that is not on it (a regression, or a new
@@ -35,12 +30,9 @@
 //
 // It also fails when a probe stops measuring what it says it measures. Each
 // probe names the control on the FROM screen that PRODUCES the TO screen --
-// the one rect a finger is provably on at the moment the panel changes. Three
-// of the ten named an action their own fixture never registered (minesweeper
-// and sudoku built an unfinished board and asked for the verdict capsule;
-// study named ActionSync where the SYNC door carries ActionStudy/2), so the
-// producer check silently did not run on any of them and printed nothing at
-// all. A probe whose producer is absent is now a failure, not a blank line.
+// the one rect a finger is provably on at the moment the panel changes. A
+// probe whose producer is absent from its own fixture is a failure, not a
+// blank line.
 
 #include <algorithm>
 #include <cstdio>
@@ -50,16 +42,9 @@
 #include <vector>
 
 #include "../../src/apps_local/battleship/BattleshipScreens.h"
-#include "../../src/apps_local/forehead/ForeheadScreens.h"
-#include "../../src/apps_local/insider/InsiderScreens.h"
-#include "../../src/apps_local/instapaper/InstapaperScreens.h"
 #include "../../src/apps_local/link/LinkScreens.h"
-#include "../../src/apps_local/minesweeper/MinesweeperScreens.h"
 #include "../../src/apps_local/study/StudyScreens.h"
-#include "../../src/apps_local/sudoku/SudokuScreens.h"
-#include "../../src/apps_local/trivia/TriviaScreens.h"
 #include "../../src/apps_local/ui/ToyboxScreen.h"
-#include "../../src/apps_local/wavelength/WavelengthScreens.h"
 
 namespace fui = freeink::ui;
 
@@ -390,56 +375,6 @@ void report(const Probe& probe) {
 
 // --- probes -----------------------------------------------------------------
 
-void wavelengthDial(Built& out) {
-  wavelengthui::DialModel model;
-  build(out, false, [&](toybox::Screen& s) { wavelengthui::renderDial(s, model); });
-}
-
-void wavelengthReveal(Built& out) {
-  wavelengthui::RevealModel model;
-  model.points = 3;
-  model.roundNumber = 2;
-  model.total = 7;
-  build(out, false, [&](toybox::Screen& s) { wavelengthui::renderReveal(s, model); });
-}
-
-void minesweeperBoardSettled(Built& out) {
-  mineui::BoardModel model;
-  minesweeper::start(model.game, 12345u);
-  model.showMines = true;
-  // SETTLED, which is the state this probe is named for. buildBoard draws the
-  // verdict capsule only under ms::over(game); with a Fresh game it drew the
-  // DIG/FLAG strip, so the probe measured the wrong screen and its producer
-  // (ActionSeeResult) was not on it.
-  model.game.status = minesweeper::Status::Won;
-  build(out, false, [&](toybox::Screen& s) { mineui::buildBoard(s, model); });
-}
-
-void minesweeperResult(Built& out) {
-  mineui::ResultModel model;
-  model.won = true;
-  model.revealed = 60;
-  model.flagsRight = 10;
-  build(out, false, [&](toybox::Screen& s) { mineui::buildResult(s, model); });
-}
-
-void sudokuBoard(Built& out) {
-  sudokuui::BoardModel model;
-  // Finished, for the same reason as minesweeper above: drawRail registers
-  // ActionSeeResult on the status capsule only once solvedFlag is set. An
-  // unsolved grid made this "BOARD -> RESULT" probe a transition that cannot
-  // happen, measured against the two controls that are not the door.
-  model.game.solvedFlag = 1;
-  build(out, false, [&](toybox::Screen& s) { sudokuui::buildBoard(s, model); });
-}
-
-void sudokuResult(Built& out) {
-  sudokuui::ResultModel model;
-  model.elapsedMs = 605000;
-  model.clues = 30;
-  build(out, false, [&](toybox::Screen& s) { sudokuui::buildResult(s, model); });
-}
-
 void battleshipGameOverBoard(Built& out) {
   bshipui::BoardModel model;
   model.report = "MARIO SANK YOUR CRUISER";
@@ -481,74 +416,9 @@ void studySyncVerdict(Built& out) {
   build(out, false, [&](toybox::Screen& s) { studyui::buildSyncFlow(s, model); });
 }
 
-void instapaperQueue(Built& out) {
-  instapaperui::QueueModel model;
-  model.count = 0;
-  build(out, false, [&](toybox::Screen& s) { instapaperui::buildQueue(s, model); });
-}
-
-void instapaperNotice(Built& out) {
-  instapaperui::NoticeModel model;
-  model.headline = "SYNCED";
-  model.message = "3 did not arrive; sync again.";
-  model.actionLabel = "BACK TO THE LIST";
-  build(out, false, [&](toybox::Screen& s) { instapaperui::buildNotice(s, model); });
-}
-
-void insiderQuestions(Built& out) {
-  insiderui::QuestionsModel model;
-  model.secondsLeft = 3;
-  build(out, false, [&](toybox::Screen& s) { insiderui::buildQuestions(s, model); });
-}
-
-void insiderReveal(Built& out) {
-  insiderui::RevealModel model;
-  model.outcome = insider::Outcome::OutOfTime;
-  model.insiderSeat = 2;
-  model.accused = insider::kNoInsider;
-  model.word = "LIGHTHOUSE";
-  build(out, false, [&](toybox::Screen& s) { insiderui::buildReveal(s, model); });
-}
-
-void insiderVote(Built& out) {
-  insiderui::VoteModel model;
-  model.chosen = 2;
-  build(out, false, [&](toybox::Screen& s) { insiderui::buildVote(s, model); });
-}
-
-void triviaClue(Built& out) {
-  triviaui::QuestionModel model;
-  model.clue = "THIS CITY HOSTED THE 1992 SUMMER OLYMPICS";
-  model.answer = nullptr;
-  model.difficulty = 3;
-  model.asked = 4;
-  build(out, false, [&](toybox::Screen& s) { triviaui::buildQuestion(s, model); });
-}
-
-void triviaAnswer(Built& out) {
-  triviaui::QuestionModel model;
-  model.clue = "THIS CITY HOSTED THE 1992 SUMMER OLYMPICS";
-  model.answer = "BARCELONA";
-  model.difficulty = 3;
-  model.asked = 4;
-  build(out, false, [&](toybox::Screen& s) { triviaui::buildQuestion(s, model); });
-}
-
-void foreheadReady(Built& out) {
-  foreheadui::ReadyModel model;
-  build(out, true, [&](toybox::Screen& s) { foreheadui::buildReady(s, model); });
-}
-
-void foreheadPlay(Built& out) {
-  foreheadui::PlayModel model;
-  model.word = "LIGHTHOUSE";
-  model.secondsLeft = 58;
-  build(out, true, [&](toybox::Screen& s) { foreheadui::buildPlay(s, model); });
-}
-
 void linkRematch(Built& out) {
   linkui::LinkModel model;
-  model.gameTitle = "TOY BATTLE";
+  model.gameTitle = "BATTLESHIP";
   model.headline = "YOU WIN";
   model.yourName = "YOU";
   model.yourFaceName = "BRAVE RED FOX";
@@ -575,44 +445,13 @@ void dumpOnly(const char* label, void (*builder)(Built&)) {
 // it says a person looked at this pair of controls and judged the collision
 // survivable, or tracked elsewhere. Removing one is what happens when the
 // collision is fixed.
-const char* const kNone[] = {nullptr};
-const char* const kMinesweeperKnown[] = {"9/0->7/0", nullptr};
-// Measured, not assumed. With the grid solved the SOLVED capsule itself is
-// clear of RESULT (0 of 9 points answer inside it), and the two controls
-// that do collide are UNDO and HINT, which are not the door the player
-// takes. Both were in every run this sweep ever printed.
-const char* const kSudokuKnown[] = {"4/0->8/0", "5/0->7/0", nullptr};
 const char* const kBattleshipKnown[] = {"5/0->201/0", nullptr};
-const char* const kInsiderQuestionsKnown[] = {"5/0->9/0", nullptr};
-const char* const kInsiderVoteKnown[] = {"6/-1->8/0", "7/0->9/0", nullptr};
-const char* const kForeheadKnown[] = {"13/0->7/0", "13/0->8/0", nullptr};
-const char* const kTriviaKnown[] = {"2/0->3/0", "2/0->4/0", nullptr};
 const char* const kStudyKnown[] = {"1/2->7/1", nullptr};
-const char* const kInstapaperKnown[] = {"321/0->325/0", nullptr};
 
 const Probe kProbes[] = {
-    {"wavelength: DIAL (hold to lock) -> REVEAL (the score)", false, wavelengthDial, wavelengthReveal,
-     wavelengthui::ActionLock, kAnyValue, 0, kNone,
-     "clean since v1.12.9 -- LOCK is a plain button guarded by geometry, and the reveal puts nothing under it"},
-    {"minesweeper: settled BOARD (verdict capsule) -> RESULT", false, minesweeperBoardSettled, minesweeperResult,
-     mineui::ActionSeeResult, kAnyValue, kProducerProbePoints, kMinesweeperKnown,
-     "the verdict capsule and RESULT's own button are the same bottom pill; open, unowned"},
-    {"sudoku: BOARD -> RESULT", false, sudokuBoard, sudokuResult, sudokuui::ActionSeeResult, kAnyValue, 0, kSudokuKnown,
-     "the door itself is clear; UNDO and HINT land on RESULT's DONE and AGAIN. Open, unowned"},
     {"battleship: game-over BOARD (PLAY AGAIN capsule) -> shared LINK screen", false, battleshipGameOverBoard,
      linkRematchScreen, bshipui::ActionPlayAgain, kAnyValue, kProducerProbePoints, kBattleshipKnown,
      "closed by S1 (PaintClock/RevealedInteractions, v1.12.10): the rects still coincide, the timing window is gone"},
-    {"insider: QUESTIONS (WE SAID THE WORD) -> REVEAL, on the 300s clock expiring", false, insiderQuestions,
-     insiderReveal, insiderui::ActionFoundWord, kAnyValue, kProducerProbePoints, kInsiderQuestionsKnown,
-     "genuine same-rect overlap, still open per REVEAL-FINDINGS.md"},
-    {"insider: VOTE (confirm the accusation) -> REVEAL", false, insiderVote, insiderReveal,
-     insiderui::ActionConfirmVote, kAnyValue, kProducerProbePoints, kInsiderVoteKnown,
-     "genuine same-rect overlap, still open per REVEAL-FINDINGS.md"},
-    {"forehead: READY (tap to start) -> PLAY (GOT / MISSED bands), landscape", true, foreheadReady, foreheadPlay,
-     foreheadui::ActionStart, kAnyValue, 3, kForeheadKnown,
-     "READY is the whole panel and PLAY splits it into two bands, so a third of it is unavoidably live"},
-    {"trivia: CLUE (REVEAL) -> ANSWER (NEXT / HIDE)", false, triviaClue, triviaAnswer, triviaui::ActionReveal,
-     kAnyValue, kProducerProbePoints, kTriviaKnown, "genuine same-rect overlap, still open per REVEAL-FINDINGS.md"},
     // The SYNC door is a list row: ActionStudy carrying value 2. The table
     // named ActionSync, which no screen registers, so this probe's producer
     // check printed nothing for its whole life.
@@ -631,9 +470,6 @@ const Probe kProbes[] = {
     // question.
     {"study: DECK (SYNC door) -> SYNC VERDICT", false, studyDeck, studySyncVerdict, studyui::ActionStudy, 2,
      kProducerProbePoints, kStudyKnown, "genuine same-rect overlap, still open per REVEAL-FINDINGS.md"},
-    {"instapaper: QUEUE (SYNC) -> NOTICE (the sync verdict)", false, instapaperQueue, instapaperNotice,
-     instapaperui::ActionSync, kAnyValue, kProducerProbePoints, kInstapaperKnown,
-     "genuine same-rect overlap, still open per REVEAL-FINDINGS.md"},
 };
 
 }  // namespace

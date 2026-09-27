@@ -46,14 +46,12 @@ constexpr int kWasteFan = 36;
 
 int columnX(const int column) { return kSideMargin + column * kPitch; }
 
-// THE CARD ITSELF NOW LIVES IN cards/CardArt.cpp.
+// THE CARD ITSELF LIVES IN cards/CardArt.cpp.
 //
-// It was written here, and it stayed here until Hearts became the second game
-// in this fork to deal from a standard deck. Two copies of a card face is two
-// places for the index bug this one already had -- a covered card that never
-// showed its suit, found by a tester and by no test -- so the drawing moved to
-// the deck and these four forwarders keep every call site in this file exactly
-// where it was.
+// Two copies of a card face would be two places for the index bug a covered
+// card once had -- it never showed its suit, found by a tester and by no test
+// -- so the drawing belongs to the deck and these four forwarders keep every
+// call site in this file short.
 void drawPip(toybox::Screen& screen, const fui::Rect& box, const uint8_t card) {
   cardart::drawSuit(screen, box, suitOf(card), isRed(card));
 }
@@ -478,9 +476,7 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
 
   // The ornament, and it is made of solitaire rather than borrowed.
   //
-  // It was a 4x4 grid of rounded squares, which is Connections' mark: sixteen
-  // cells because a Connections board is sixteen cells. Solitaire has no such
-  // shape. What it has is cards, so the record is a fanned hand of sixteen --
+  // Solitaire's material is cards, so the record is a fanned hand of sixteen --
   // face up for a deal you cleared, face down for one you walked away from, an
   // empty outline for one you have not played yet. Same three states, told in
   // this game's own material.

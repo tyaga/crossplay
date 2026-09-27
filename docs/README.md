@@ -53,17 +53,15 @@ failure rather than something the next reader has to notice.
 **The fork's cross-cutting docs also live at the root**: how to build an app
 (`building-apps.md`), how it should look (`design-language.md`), what the
 project is (`identity.md`), the shelf contract (`shelf.md`), the two real
-buttons (`buttons.md`), what scale does to games (`games-at-scale.md`), how to
+buttons (`buttons.md`), how to
 reflash and inspect a device over Wi-Fi with no cable
-(`developer-mode.md`), how the two open bridges are attacked and defended
+(`developer-mode.md`), how the open bridge is attacked and defended
 (`bridge-security.md`), and what is knowingly unfinished (`open-items.md`).
 
-Four more are narrower but no less load-bearing, and this paragraph did not
-name any of them until the suite started asking: what the glass hides
+Three more are narrower but no less load-bearing: what the glass hides
 (`bezel-insets.md`), the unbounded build cache that fails builds by filling
-the disk (`build-cache.md`), the pixel budget an unwrapped string has in 32
-languages (`i18n-overflow.md`), and where Trivia's questions come from
-(`trivia-curation.md`).
+the disk (`build-cache.md`), and the pixel budget an unwrapped string has in 32
+languages (`i18n-overflow.md`).
 
 **Two files, and only one of them is published.** `release-body.md` is what a
 tag publishes, and it is deliberately tiny: one line of links, then this
@@ -128,8 +126,7 @@ fork doc rather than a section in upstream's `webserver-*.md` because those stay
 untouched so merges from CrossPoint stay cheap.
 
 **Everything about one app lives in [apps/](apps/)**, named after its
-directory in `src/apps_local/` (`dungeon.md` for the app the shelf calls
-D&Diagrams, `connectfour.md`, `chess.md`). Auxiliary records keep a
+directory in `src/apps_local/` (`study.md`). Auxiliary records keep a
 qualifying suffix (`study-deck-format.md`, `xkcd-viewing-plan.md`). Not every
 app has a doc; one earns a doc when something about it would be rediscovered
 the hard way otherwise.
@@ -142,7 +139,7 @@ these docs assume rather than state.
 
 **Who found what, everywhere in `docs/`.** A **critic**, a **critic agent** or a
 **cold agent** is an LLM session with no builder context, not a person.
-`games-at-scale.md` defines that loop. Where a person found something the docs
+Where a person found something the docs
 say a person, and `open-items.md` is the record of what people found. These
 files are also written _to_ Mario rather than _by_ him, which is why they say
 "Mario's rule" and not "my rule": a decision credited to him is one he made.

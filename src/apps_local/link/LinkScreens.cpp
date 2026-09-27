@@ -27,8 +27,7 @@ void drawSeatFace(toybox::Screen& screen, const fui::Rect& row, const char* name
                      name == nullptr ? "" : name, player::AvatarSize::Row);
 }
 
-// Same doubled rule the other apps draw. Local rather than shared because
-// ChessScreens and ConnectionsScreens each keep their own; a fourth copy is
+// Same doubled rule the other apps draw. Local rather than shared: a copy is
 // cheaper than a header dependency between apps.
 void toyboxChrome(toybox::Screen& screen, const char* title) {
   fui::HeaderProps header;
@@ -90,16 +89,14 @@ fui::Rect buildLink(toybox::Screen& screen, const LinkModel& model) {
   // WHICH pill gets the bottom band is not a style choice. y=732 (the panel
   // height less the margin and one pill) is where this fork puts a screen's
   // primary action, and it is where every link game's board puts the status
-  // capsule that becomes PLAY AGAIN at game over -- chess (16,732,448,52),
-  // battleship (76,732,388,52), sea salt, jaipur, toy battle. The link screen
-  // REPLACES that board, unannounced, in the same pass that ends the game, so
-  // whatever lands at 732 is what the thumb already on its way there will hit.
-  // LEAVE used to be that control, which turned a rematch into killing the
-  // radio. PLAY AGAIN takes the band and BACK sits above it.
+  // capsule that becomes PLAY AGAIN at game over -- battleship's is
+  // (76,732,388,52). The link screen REPLACES that board, unannounced, in the
+  // same pass that ends the game, so whatever lands at 732 is what the thumb
+  // already on its way there will hit. LEAVE there would turn a rematch into
+  // killing the radio, so PLAY AGAIN takes the band and BACK sits above it.
   //
-  // Above it is measured, not assumed: the 668 band is empty on every board
-  // this screen replaces (chess, battleship, connect four, checkers, sea salt,
-  // toy battle -- host-tests/ui asserts the ones it can build). The solo
+  // Above it is measured, not assumed: the 668 band is empty on the boards
+  // this screen replaces (host-tests/ui asserts it). The solo
   // Result screens that DO use 668 for PLAY AGAIN are never on the panel in a
   // match: driveLink() takes the pass before gameLoop() runs.
   fui::ButtonProps leave;

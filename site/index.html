@@ -72,7 +72,6 @@
     <a href="#shelf">The shelf</a>
     <a href="#nearby">Play nearby</a>
     <a href="/study/">Anki decks</a>
-    <a href="/wikipedia/">Wikipedia</a>
     <a href="/live/">Live</a>
     <a href="#get">Install</a>
     <a class="topnav-out" href="https://github.com/ma-r-s/crossplay">
@@ -90,7 +89,7 @@
       <p class="eyebrow">Xteink X4 Pro <span class="eyebrow-sep">&middot;</span> Seeed reTerminal Sticky</p>
       <h1>E-ink is good at waiting.</h1>
       <p class="lede">
-        So is a chess position, a flashcard, a puzzle you are halfway through.
+        So is a flashcard, a hand of solitaire, a comic you are halfway through.
         The Xteink X4 Pro and the Seeed reTerminal Sticky are cheap e-ink
         devices, and <a href="https://crosspointreader.com/">CrossPoint</a>
         already makes them good at reading. CrossPlay is firmware that adds
@@ -117,7 +116,7 @@
         <button type="button" data-players="2" aria-pressed="false">2 players</button>
       </div>
       <p class="players-hint" id="playersHint" hidden>
-        On each one: <b>Games</b>, then <b>Chess</b>, then <b>Play nearby</b>. They
+        On each one: <b>Apps &amp; Games</b>, then <b>Battleship</b>, then <b>Play nearby</b>. They
         find each other from there.
       </p>
       <div class="device-row" id="deviceRow">
@@ -128,7 +127,7 @@
                  nicer screen from further in. The poster is swapped for the
                  live canvas on the first real frame, so any other picture here
                  makes the panel jump the moment it boots -- and the two-player
-                 hint above already tells you to start from Games in this menu. -->
+                 hint above already tells you to start from Apps &amp; Games in this menu. -->
             <img class="shot" src="assets/shots/home.png" width="480" height="800"
                  alt="The device Home screen, which is where the firmware starts: the cover of Alice's Adventures in Wonderland at the top, then menu rows reading Browse Files, Recent Books, File Transfer, Settings, Games and Apps.">
           </button>
@@ -170,8 +169,7 @@
     <p class="eyebrow">What a still screen is good at</p>
     <p class="hed">Reading was never the whole of it.</p>
     <p>
-      E-ink holds a page at no power for as long as you need it. So does a chess
-      position, a flashcard, a logic grid, an article you saved to finish. The
+      E-ink holds a page at no power for as long as you need it. So does a flashcard, a hand of solitaire, an article you saved to finish. The
       screen puts up a situation, you think, you decide. A panel that cannot
       animate is the right one for that, and so far it has been spent on books.
     </p>
@@ -180,143 +178,10 @@
   <div class="shelf">
 
     <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/chess.png" width="480" height="800" loading="lazy" decoding="async" alt="A chess board a few moves in, knight and pawns developed, with the move list below and a BLACK TO MOVE status bar."></div>
-      <span class="tag">Game · plays nearby</span>
-      <h3>Chess</h3>
-      <p>A full engine on the device, or a board between two of them. Pick up exactly where the position was left.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/connections.png" width="480" height="800" loading="lazy" decoding="async" alt="A Connections board part-solved: two solid black bands read HOUSE STYLES with CAPE COD, MISSION, RANCH, TUDOR and JEANS BRANDS with DIESEL, GAP, LUCKY, WRANGLER. Eight word tiles remain below, with STEER selected, and all four mistake dots still unused."></div>
-      <span class="tag">Game · daily</span>
-      <h3>Connections</h3>
-      <p>The daily word grid, set in a serif of its own, with an archive of past boards for when today's is done.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/dd.png" width="480" height="800" loading="lazy" decoding="async" alt="A D&amp;Diagrams nonogram called THE TOMB OF THE SUMMER, most of the way solved: black wall cells form corridors around white floor, birds and a treasure gem sit in rooms, and the row and column clue numbers that are already satisfied are shown inverted."></div>
-      <span class="tag">Game · 64 puzzles</span>
-      <h3>D&amp;Diagrams</h3>
-      <p>A nonogram whose clues are a dungeon. 64 of them, plus a tutorial that is a lesson rather than a level.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/murdle.png" width="480" height="800" loading="lazy" decoding="async" alt="A Murdle deduction grid partway through a case: dashes mark eliminated pairings and filled squares mark confirmed ones across the suspect, weapon, place and motive blocks. A key at the foot reads F=FELIX, G=GRETA, U=UMA, K=KARL and so on, above an ACCUSE button."></div>
-      <span class="tag">Game · generated</span>
-      <h3>Murdle</h3>
-      <p>A logic grid you can always finish from the clues alone. Every case is built through the solver, so you never have to guess.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/seasalt.png" width="480" height="800" loading="lazy" decoding="async" alt="A Sea Salt &amp; Paper hand of ten cards, each showing its colour mark, what its group currently scores, its face, its name and how many exist in the deck. The deck and two discard piles sit above, a selected crab is ringed, and a dashed line reads PAIRS WITH ANOTHER CRAB, THE PAIR DIGS ANY CARD OUT OF A PILE."></div>
-      <span class="tag">Game &middot; plays nearby</span>
-      <h3>Sea Salt</h3>
-      <p>Collect duos and bet on the round&rsquo;s end. Tap any card and it tells you what it does, so nobody has to remember fourteen rules.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/yahtzee.png" width="480" height="800" loading="lazy" decoding="async" alt="A Yahtzee turn in progress: five dice above a scorecard listing all thirteen boxes for both players, the score each box would take pencilled into the empty ones, a bonus line reading 63 MORE, and a capsule reading ROLL AGAIN, 2 LEFT."></div>
-      <span class="tag">Game · plays nearby</span>
-      <h3>Yahtzee</h3>
-      <p>Every box shows what it would score before you commit to it. Including the Joker rules, which most versions quietly drop.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/connectfour.png" width="480" height="800" loading="lazy" decoding="async" alt="A Connect Four board part-way through a game: a dithered slab with forty-two holes, outlined and solid discs stacked in the columns, a row of waiting discs above marking every column that will still take one, and each player's remaining discs counted below -- 18 beside a row of solid dots, 18 beside outlined ones -- above a status bar reading YOUR DROP."></div>
-      <span class="tag">Game · plays nearby</span>
-      <h3>Connect Four</h3>
-      <p>Seven columns, one tap each, four in a line to win. The opponent looks seven moves ahead and will not hand you the game.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/checkers.png" width="480" height="800" loading="lazy" decoding="async" alt="A game of Checkers a few moves in: dark's men advanced across the dithered squares, corner marks singling out every light piece with a legal move, and two labelled strips under the board -- THEM with twelve solid discs, YOU with twelve outlined -- above a status bar reading YOUR MOVE."></div>
-      <span class="tag">Game · plays nearby</span>
-      <h3>Checkers</h3>
-      <p>English draughts, where taking is compulsory. The board marks every piece that can move, so the rule shows itself instead of leaving you tapping men that will not lift.</p>
-    </article>
-
-    <article class="card wide">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/forehead.png" width="800" height="480" loading="lazy" decoding="async" alt="A round of FOREHEAD in landscape: the word PORCUPINE across the middle of the panel in very large letters, a black bar along the top edge reading PASS and another along the bottom reading GOT IT, and under the top bar an eight-segment timer bar with four segments filled and four still outlined. A small 5 in the corner is the score so far."></div>
-      <span class="tag">Game · party</span>
-      <h3>Forehead</h3>
-      <p>Hold it against your head, screen out, and everyone else shouts clues. The bottom key is got it, the top key gives up, and the two page keys are the only controls because you cannot see the screen. Seventeen word lists, 2722 of them.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/trivia.png" width="480" height="800" loading="lazy" decoding="async" alt="A revealed TRIVIA question in portrait: a black bar across the top reading TRIVIA on the left and ANSWER on the right, five small difficulty pips below it with the first filled, then the clue set large in a reading serif across four centred lines -- the letter in Hawthorne&#39;s The Scarlet Letter was this one, initially standing for the wearer&#39;s perceived sin. Under a hairline near the foot sits the answer, a single large A, and along the bottom a wide black NEXT button beside a narrower outlined FLAG."></div>
-      <span class="tag">Game &middot; party</span>
-      <h3>Trivia</h3>
-      <p>Fifty thousand questions off forty-two years of Jeopardy. One goes on the panel and nothing else: read it out, let the table argue, turn it over. Solo play is scored.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/wavelength.png" width="480" height="800" loading="lazy" decoding="async" alt="A round of WAVELENGTH in portrait: the words POINTY ANIMAL across the top and ROUND ANIMAL across the bottom, and between them a vertical strip of twenty rungs with every fifth one longer and numbered 20, 15, 10 and 5. A heavy black bar lies across the strip just below 15, and to its right a very large 12 is labelled YOUR GUESS, with TAP ABOVE OR BELOW under a rule beneath it. A black bar along the bottom edge reads HOLD TO LOCK."></div>
-      <span class="tag">Game · party</span>
-      <h3>Wavelength</h3>
-      <p>One of you sees a hidden number on the strip and says a single clue that sits exactly there. Everyone else argues and moves the marker, then calls which side they missed on. The device lies flat and anyone can touch it, because the board belongs to the table and only the target is secret.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/knucklebones.png" width="480" height="800" loading="lazy" decoding="async" alt="A Knucklebones match in progress: two three-by-three grids of dice facing each other, the opponent's on a dotted grey ground above with column scores of 2 and 1 beneath it, the player's below with corner brackets marking the three columns a die can go in and a 6 already banked. Between them sits the die just rolled, showing a three, flanked by the named totals THEM 3 and YOU 6. A black bar along the bottom reads YOUR ROLL."></div>
-      <span class="tag">Game · plays nearby</span>
-      <h3>Knucklebones</h3>
-      <p>Roll a die, drop it in a column. Matching dice multiply, and every die you place destroys its twins in the column facing it.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/go.png" width="480" height="800" loading="lazy" decoding="async" alt="A nine-by-nine game of Go part way through: a ruled board inside a heavy border, black and white stones on the line crossings, a small ring marking the stone just played. One crossing near the middle holds a dithered grey stone inside four corner brackets, aimed but not yet placed. Above the board an outlined band reads THEM and WHITE 1 TAKEN; below it a black band reads YOU and BLACK 0 TAKEN, filled because it is that side&rsquo;s turn. A PASS button runs along the bottom."></div>
-      <span class="tag">Game &middot; plays nearby</span>
-      <h3>Go</h3>
-      <p>Nine by nine, which is the size that finishes on one train journey, or thirteen by thirteen when you have longer. A stone is aimed before it is placed, so the board can warn you before you fill your own eye. Two passes and it counts for you, and you settle which stones are dead by tapping them.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/minesweeper.png" width="480" height="800" loading="lazy" decoding="async" alt="A Minesweeper board part way through: an eight-by-ten field running the full width of the panel, bounded by black bars above and below, dug cells white with counts of one and two, undug cells a dotted grey. Below the field a line reads 10 OF 10 beside a flag mark, and a DIG button says what a tap will do."></div>
-      <span class="tag">Game</span>
-      <h3>Minesweeper</h3>
-      <p>Tap to dig, hold to flag. Your first dig is always safe and always opens a space, because the mines are laid after it.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/sudoku.png" width="480" height="800" loading="lazy" decoding="async" alt="An Easy Sudoku just dealt: a nine-by-nine grid whose twenty-eight given digits sit on dithered grey squares and whose empty cells are white, box borders drawn heavier than cell borders, and the cursor's corner brackets on one given. Below the grid a three-by-three number pad with 1 selected, and beside it 53 LEFT, an UNDO button and a HINT button."></div>
-      <span class="tag">Game</span>
-      <h3>Sudoku</h3>
-      <p>Four difficulties, and the difficulty is measured rather than guessed: every puzzle is graded by the techniques a human needs to finish it, so Hard is hard for the same reason you would say so.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/picross.png" width="480" height="800" loading="lazy" decoding="async" alt="A Picross board part way through a ten-by-ten: run-length clues stacked above the columns and beside the rows, the finished lines' numbers struck through. Filled cells are solid black, a few white cells wear a thin X where the player has ruled them out, and a few others carry a small asterisk on plain white, each one a wrong fill the game has recorded. Below the board a line reads MISTAKES 12 and a FILL / MARK toggle says what a tap will do."></div>
-      <span class="tag">Game</span>
-      <h3>Picross</h3>
-      <p>Fill the cells the row and column clues describe and a picture appears. Every puzzle has exactly one answer and is solvable by reasoning a line at a time, never a guess; a wrong fill locks in as a mistake, the classic rule.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/toybattle.png" width="480" height="800" loading="lazy" decoding="async" alt="A Toy Battle board at the start of a game: fifteen bases drawn as grey rounded squares joined by black paths, an H.Q. marked H at the bottom and E at the top, four bases wearing a small badge to mark a special rule. Small black dots between the paths are the medals each enclosed region pays. Below the board a rack holds the three troops you were dealt, and a DRAW 2 button sits beside both players' counts."></div>
-      <span class="tag">Game &middot; plays nearby</span>
-      <h3>Toy Battle</h3>
-      <p>Nine boards of bases joined by paths. Hold the ones that fence a region and it pays you its medals, but every troop has to trace back to your H.Q. Solo or against someone opposite you.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/jaipur.png" width="480" height="800" loading="lazy" decoding="async" alt="A Jaipur hand in progress: a line reading THEY TOOK A SILVER above the score SEALS 0-0, YOU 5, THEM 0, DECK 34. The market shows five goods, the token rows their values, and the player holds a diamond and five camels against their opponent's six cards."></div>
-      <span class="tag">Game · plays nearby</span>
-      <h3>Jaipur</h3>
-      <p>The two-player trading game, against an opponent that only ever sees what you see, or against someone sitting opposite you.</p>
-    </article>
-
-    <article class="card">
       <div class="shot-wrap"><img class="shot" src="assets/shots/battleship.png" width="480" height="800" loading="lazy" decoding="async" alt="A Battleship game in progress: a line reading THEY MISSED AT H9, the opponent's grid marked with five misses and one solid hit, your own fleet on a small map below showing where they have fired, and a TAP A TARGET prompt."></div>
       <span class="tag">Game · plays nearby</span>
       <h3>Battleship</h3>
       <p>Lay out a fleet, then hunt someone else's. The game PLAY NEARBY was built for, and the reason the layer exists.</p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/insider.png" width="480" height="800" loading="lazy" decoding="async" alt="An Insider role handed to one player: a header reading PASS IT ON, 1 OF 8, a scroll icon, the role MASTER, the line THE WORD IS BUFFALO, the instruction ANSWER YES OR NO. NOTHING ELSE, and a PASS TO PLAYER 2 button."></div>
-      <span class="tag">Game · one device, a table</span>
-      <h3>Insider</h3>
-      <p>A party game for up to eight people and a single device that goes round the table. No second device needed, and no phones.</p>
     </article>
 
     <article class="card wide">
@@ -324,13 +189,6 @@
       <span class="tag">Game · landscape</span>
       <h3>Solitaire</h3>
       <p>Klondike, turned sideways because that is the shape of a tableau. Your last sixteen deals are drawn from your own record.</p>
-    </article>
-
-    <article class="card wide">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/hearts.png" width="800" height="480" loading="lazy" decoding="async" alt="A Hearts trick in landscape: a rail of four seats down the left with YOU on 14 and a +14 badge, the queen of spades framed as the winning card in a diamond of four played cards, the line YOU TAKE IT, 14 POINTS, the state HEARTS BROKEN and QUEEN SEEN, and nine cards fanned along the bottom."></div>
-      <span class="tag">Game &middot; landscape</span>
-      <h3>Hearts</h3>
-      <p>Duck the tricks. Every heart you take costs one and the queen of spades costs thirteen, so the lowest score wins. Three opponents who count what has gone, read who is void, and will shoot the moon if you let them. A card the rules will not take is greyed before you touch it.</p>
     </article>
 
     <article class="card">
@@ -362,13 +220,6 @@
     </article>
 
     <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/instapaper.png" width="480" height="800" loading="lazy" decoding="async" alt="The Instapaper queue on the device: four saved articles, each with its title on one line and its reading time and source below -- Notes on building a compiler at 8 min from jamiebrandon.net selected on a black band, then The case for reading on paper at 4 min from newyorker.com marked DONE, The long slow death of the RSS reader at 14 min from arstechnica.com marked 42 per cent, and How the ESP32-S3 draws to an e-ink panel at 6 min from hackaday.com. A SYNC button sits across the bottom."></div>
-      <span class="tag">App &middot; read later</span>
-      <h3>Instapaper</h3>
-      <p>Your unread queue, as text on the card, so it reads with the radio off. Where you got to syncs back, and ARCHIVE puts an article away everywhere. It cannot delete anything: that endpoint is not wired up at all.</p>
-    </article>
-
-    <article class="card">
       <div class="shot-wrap"><img class="shot" src="assets/shots/wallpapers.png" width="480" height="800" loading="lazy" decoding="async" alt="The Wallpapers gallery on the device: a banner reading WALLPAPERS 1 / 6 with a CHOOSE button, the line Tap one to set your sleep screen, and a grid of four tiles -- an Add wallpaper placeholder marked with a plus, then Bauhaus, Bulge and Celestial Chart drawn as one-bit patterns -- above six page dots."></div>
       <span class="tag">App &middot; sleep screen</span>
       <h3>Wallpapers</h3>
@@ -380,20 +231,6 @@
       <span class="tag">App &middot; a note from anywhere</span>
       <h3>Live</h3>
       <p>Leave a handwritten note on a reader sitting on somebody&rsquo;s fridge, from your phone, from anywhere. It shows six digits once; read them down the telephone and whoever has them can draw, write or send a picture to that screen. The reader sleeps the rest of the time and wakes on its own schedule to look, so a message you send tonight is there in the morning. <a href="/live/">Send one &rsaquo;</a></p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/wikipedia.png" width="480" height="800" loading="lazy" decoding="async" alt="A Wikipedia article on the device: a black bar with a back arrow, the title Mir Sayyid Ali and a contents button, then the article set in a reading serif with links underlined, a Family heading partway down, and a footer reading Family, 1 of 15, above a progress bar."></div>
-      <span class="tag">App &middot; the whole encyclopedia</span>
-      <h3>Wikipedia</h3>
-      <p>English Wikipedia on the SD card, read with the radio off. Seven million articles if you fill the card from a computer, or a smaller essentials pack over the cable. Search it, or open a random one and see where it goes. <a href="/wikipedia/">Put it on the card &rsaquo;</a></p>
-    </article>
-
-    <article class="card">
-      <div class="shot-wrap"><img class="shot" src="assets/shots/calculator.png" width="480" height="800" loading="lazy" decoding="async" alt="The Calculator on the device: an inked banner reading CALCULATOR, the result 546.875 set large above a rule, then twenty square keys four across -- AC, DEL, per cent and divide along the top, the digits below them, and the operator column down the right in a heavier outline with a filled equals key in the corner."></div>
-      <span class="tag">App &middot; arithmetic</span>
-      <h3>Calculator</h3>
-      <p>Keys the size of a thumb, and arithmetic that is actually decimal: 0.1 + 0.2 &minus; 0.3 is zero here, the way it is on a Casio and is not on most phones. Ten digits, with hidden guard digits so a third times three comes back as one.</p>
     </article>
 
   </div>
@@ -469,8 +306,7 @@
       person opposite you is <em>Bald</em> rather than a MAC address.
     </p>
     <p>
-      Nine games use it today, from Chess to Battleship to Toy Battle. It is a
-      layer rather than a feature, so the next game gets it for free.
+      Battleship uses it today. It is a layer rather than a feature, so the next game gets it for free.
     </p>
   </div>
 
@@ -617,11 +453,11 @@
     <div class="foot-fine">
       <h4>Credits</h4>
       <div class="foot-fine-cols">
-        <p>xkcd comics by Randall Munroe, <a href="https://xkcd.com/license.html">CC BY-NC 2.5</a>, fetched by the device from <a href="https://xkcd.com">xkcd.com</a>. Connections puzzles are the New York Times'; CrossPlay ships none of them and fetches the archive, when you ask it to, from the community mirror at <a href="https://github.com/Eyefyre/NYT-Connections-Answers">Eyefyre/NYT-Connections-Answers</a>.</p>
+        <p>xkcd comics by Randall Munroe, <a href="https://xkcd.com/license.html">CC BY-NC 2.5</a>, fetched by the device from <a href="https://xkcd.com">xkcd.com</a>. </p>
         <p>Hacker News comes from the public <a href="https://hn.algolia.com/api">Algolia API</a>, and opening an article sends its URL through <a href="https://r.jina.ai">r.jina.ai</a> to get readable text back, which means that third party learns what you are reading.</p>
         <p>Reading positions sync to CrossPoint's own server by default, which is upstream's infrastructure rather than ours. The address is a setting and can be pointed anywhere that speaks KOSync.</p>
         <p>CrossPlay's own services are told an anonymous device id, the version and board it is running, and any crash it just recovered from. Nothing else calls home, and <strong>Settings &rarr; System</strong> turns it off.</p>
-        <p>Where a game on the shelf carries the name of a published game, that name is its owner's trademark and is used to say what the thing is; game mechanics are not copyrightable. D&amp;Diagrams owes its puzzle form to Zachtronics' Dungeons &amp; Diagrams, and Trivia is built from a community transcription of aired Jeopardy! clues. CrossPlay implements the games; it is not affiliated with, endorsed by or sponsored by any of their owners. Every notice is in <a href="https://github.com/ma-r-s/crossplay/blob/xteink/THIRD-PARTY-NOTICES.md">THIRD-PARTY-NOTICES.md</a>.</p>
+        <p>Where a game on the shelf carries the name of a published game, that name is its owner's trademark and is used to say what the thing is; game mechanics are not copyrightable.  CrossPlay implements the games; it is not affiliated with, endorsed by or sponsored by any of their owners. Every notice is in <a href="https://github.com/ma-r-s/crossplay/blob/xteink/THIRD-PARTY-NOTICES.md">THIRD-PARTY-NOTICES.md</a>.</p>
         <p>Type is Jersey 25 and Instrument Serif, both SIL OFL.</p>
       </div>
     </div>

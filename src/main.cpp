@@ -196,11 +196,7 @@ constexpr uint32_t SILENT_REBOOT_MAGIC = 0xC1EAB007;
 constexpr uint32_t SILENT_REBOOT_TARGET_HOME = 0;
 constexpr uint32_t SILENT_REBOOT_TARGET_READER = 1;
 constexpr uint32_t SILENT_REBOOT_TARGET_SETTINGS = 2;
-// The shelf app that was open. Numbered AFTER upstream's targets, never among
-// them: upstream took 2 for Settings in 1.6.5 and a fork value sitting on an
-// upstream number would resume the wrong screen the next time they add one.
-constexpr uint32_t SILENT_REBOOT_TARGET_APP = 3;
-constexpr uint32_t SILENT_REBOOT_TARGET_MAX = SILENT_REBOOT_TARGET_APP;
+constexpr uint32_t SILENT_REBOOT_TARGET_MAX = SILENT_REBOOT_TARGET_SETTINGS;
 constexpr uint32_t SILENT_REBOOT_LIGHT_ON = 1U << 0;
 
 // How the device is coming back to life, resolved once at boot. Both resume
@@ -281,16 +277,6 @@ void restartToHomeAfterStorageHandoff() {
   if (deepSleepInProgress) return;  // sleeping supersedes the storage handoff reboot
   armSilentReboot(SILENT_REBOOT_TARGET_HOME);
   LOG_DBG("MAIN", "Restart after storage handoff (target=home)");
-  GUI.drawPopup(renderer, tr(STR_LOADING_POPUP));
-  delay(50);
-  handoffUsbOtgToSerialJtag();
-  ESP.restart();
-}
-
-void restartToAppAfterStorageHandoff() {
-  if (deepSleepInProgress) return;  // sleeping supersedes the storage handoff reboot
-  armSilentReboot(SILENT_REBOOT_TARGET_APP);
-  LOG_DBG("MAIN", "Restart after storage handoff (target=app)");
   GUI.drawPopup(renderer, tr(STR_LOADING_POPUP));
   delay(50);
   handoffUsbOtgToSerialJtag();
@@ -873,10 +859,6 @@ void setup() {
   } else if (resume == BootResume::Silent && snapshotTarget == SILENT_REBOOT_TARGET_READER &&
              !APP_STATE.openEpubPath.empty()) {
     activityManager.goToReader(APP_STATE.openEpubPath);
-  } else if (resume == BootResume::Silent && snapshotTarget == SILENT_REBOOT_TARGET_APP &&
-             shelf::resumeFromWake(renderer, mappedInputManager)) {
-    // Back into the shelf app that handed its card to a USB host (Wikipedia's
-    // install screen), now that the host has let go.
   } else if (resume == BootResume::Silent && snapshotTarget == SILENT_REBOOT_TARGET_SETTINGS) {
     // Back out of the WiFi rows and the user is where they left off, not on Home.
     activityManager.goToSettings();

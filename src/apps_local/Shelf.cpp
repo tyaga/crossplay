@@ -2,6 +2,7 @@
 
 #include <HalStorage.h>
 #include <Logging.h>
+#include <Memory.h>
 #include <strings.h>
 
 #include <cstdio>
@@ -13,89 +14,59 @@
 #include "ShelfHidden.h"
 #include "ShelfState.h"
 #include "activities/browser/OpdsBookBrowserActivity.h"
+#include "activities/home/FileBrowserActivity.h"
+#include "activities/settings/SettingsActivity.h"
 #include "battleship/BattleshipActivity.h"
-#include "calculator/CalculatorActivity.h"
-#include "checkers/CheckersActivity.h"
-#include "chess/ChessActivity.h"
-#include "connectfour/ConnectFourActivity.h"
-#include "connections/ConnectionsActivity.h"
-#include "dungeon/DungeonActivity.h"
-#include "forehead/ForeheadActivity.h"
-#include "go/GoActivity.h"
 #include "hackernews/HackerNewsActivity.h"
-#include "hearts/HeartsActivity.h"
-#include "insider/InsiderActivity.h"
-#include "instapaper/InstapaperActivity.h"
-#include "jaipur/JaipurActivity.h"
-#include "knucklebones/KnucklebonesActivity.h"
-#include "minesweeper/MinesweeperActivity.h"
-#include "murdle/MurdleActivity.h"
-#include "notes/NotesActivity.h"
-#include "picross/PicrossActivity.h"
 #include "player/PlayerActivity.h"
-#include "seasalt/SeaSaltActivity.h"
 #include "solitaire/SolitaireActivity.h"
 #include "study/StudyActivity.h"
-#include "sudoku/SudokuActivity.h"
-#include "toybattle/ToyBattleActivity.h"
-#include "trivia/TriviaActivity.h"
 #include "ui/ToyboxIcons.h"
 #include "wallpapers/WallpapersActivity.h"
-#include "wavelength/WavelengthActivity.h"
-#include "wikipedia/WikipediaActivity.h"
 #include "xkcd/XkcdActivity.h"
-#include "yahtzee/YahtzeeActivity.h"
 
 namespace {
 
-// Icons come from tools_local/toybox/icons.txt via Lucide. Picked for silhouette
-// rather than literalness: a crown, a hull, a grid and a card suit share no
-// shape, so a row is scannable before the label is read.
-constexpr shelf::Item kGames[] = {
-    {"CHESS", &icon_chess_32, &ChessActivity::create},
-    {"BATTLESHIP", &icon_battleship_32, &BattleshipActivity::create},
-    {"CONNECTIONS", &icon_connections_32, &ConnectionsActivity::create},
-    {"SOLITAIRE", &icon_solitaire_32, &SolitaireActivity::create},
-    {"HEARTS", &icon_hearts_32, &HeartsActivity::create},
-    {"D&DIAGRAMS", &icon_dungeon_32, &DungeonActivity::create},
-    {"INSIDER", &icon_insider_32, &InsiderActivity::create},
-    {"JAIPUR", &icon_jaipur_32, &JaipurActivity::create},
-    {"SEA SALT", &icon_seasalt_32, &SeaSaltActivity::create},
-    {"MURDLE", &icon_murdle_32, &MurdleActivity::create},
-    {"CHECKERS", &icon_checkers_32, &CheckersActivity::create},
-    {"CONNECT FOUR", &icon_connectfour_32, &ConnectFourActivity::create},
-    {"YAHTZEE", &icon_yahtzee_32, &YahtzeeActivity::create},
-    {"KNUCKLEBONES", &icon_knucklebones_32, &KnucklebonesActivity::create},
-    {"MINESWEEPER", &icon_minesweeper_32, &MinesweeperActivity::create},
-    {"SUDOKU", &icon_sudoku_32, &SudokuActivity::create},
-    {"PICROSS", &icon_picross_32, &PicrossActivity::create},
-    {"TOY BATTLE", &icon_toybattle_32, &ToyBattleActivity::create},
-    {"FOREHEAD", &icon_forehead_32, &ForeheadActivity::create},
-    {"TRIVIA", &icon_trivia_32, &TriviaActivity::create},
-    {"WAVELENGTH", &icon_wavelength_32, &WavelengthActivity::create},
-    {"GO", &icon_go_32, &GoActivity::create},
-};
-constexpr shelf::Item kApps[] = {
-    {"STUDY", &icon_study_32, &StudyActivity::create},
+// Upstream's two screens, as shelf items. They leave through goHome(), which
+// hands them back to the folder; see shelf::leaveToFolder().
+std::unique_ptr<Activity> createFileBrowser(GfxRenderer& renderer, MappedInputManager& mappedInput) {
+  return makeUniqueNoThrow<FileBrowserActivity>(renderer, mappedInput, "/");
+}
+
+std::unique_ptr<Activity> createSettings(GfxRenderer& renderer, MappedInputManager& mappedInput) {
+  return makeUniqueNoThrow<SettingsActivity>(renderer, mappedInput);
+}
+
+// Icons come from tools_local/toybox/icons.txt via Lucide.
+constexpr shelf::Item kAppsAndGames[] = {
+    {"BROWSE FILES", &icon_browse_32, &createFileBrowser},
+    {"SETTINGS", &icon_settings_32, &createSettings},
     {"HACKER NEWS", &icon_hackernews_32, &HackerNewsActivity::create},
     {"XKCD", &icon_xkcd_32, &XkcdActivity::create},
     {"GET BOOKS", &icon_getbooks_32, &OpdsBookBrowserActivity::create},
-    {"INSTAPAPER", &icon_instapaper_32, &InstapaperActivity::create},
     {"WALLPAPERS", &icon_wallpapers_32, &WallpapersActivity::create},
-    {"WIKIPEDIA", &icon_wikipedia_32, &WikipediaActivity::create},
-    {"CALCULATOR", &icon_calculator_32, &CalculatorActivity::create},
-    // Card #516. The icon is the Lucide list mark borrowed from Murdle while
-    // the screens are being chosen; a Notes mark comes with the real app.
-    {"NOTES", &icon_murdle_face_clues_32, &NotesActivity::create},
+    {"SOLITAIRE", &icon_solitaire_32, &SolitaireActivity::create},
+    {"BATTLESHIP", &icon_battleship_32, &BattleshipActivity::create},
 };
 
-// The two rows Home grows, in reading order. Titles are Title Case because
-// these sit in upstream's Home list and have to look like it; the folder screen
-// shouts its own header, which is our side of the line. A third folder is one row here and
-// nothing else: the Home hook counts this table rather than knowing its length.
+// Apps Home launches directly, without a folder in between. Title Case because
+// they sit in upstream's Home list and have to look like it.
+constexpr shelf::Item kHomeItems[] = {
+    {"Study", &icon_study_32, &StudyActivity::create},
+};
+
+constexpr int kHomeItemCount = static_cast<int>(sizeof(kHomeItems) / sizeof(kHomeItems[0]));
+// Home draws upstream's icon palette, not the item's own icon.
+constexpr UIIcon kHomeItemIcons[] = {UIIcon::Study};
+static_assert(sizeof(kHomeItemIcons) / sizeof(kHomeItemIcons[0]) == kHomeItemCount,
+              "every Home item needs a UIIcon for Home's list");
+
+// The folder rows Home grows after its own. The footer shows the device name
+// because Battleship is played against somebody in the room and that bar is
+// the only way into PLAYER.
 constexpr shelf::Folder kFolders[] = {
-    {"Games", UIIcon::Games, &icon_games_32, kGames, static_cast<int>(sizeof(kGames) / sizeof(shelf::Item)), true},
-    {"Apps", UIIcon::Apps, &icon_apps_32, kApps, static_cast<int>(sizeof(kApps) / sizeof(shelf::Item)), false},
+    {"Apps & Games", UIIcon::Apps, &icon_apps_32, kAppsAndGames,
+     static_cast<int>(sizeof(kAppsAndGames) / sizeof(shelf::Item)), true},
 };
 
 constexpr int kFolderCount = static_cast<int>(sizeof(kFolders) / sizeof(kFolders[0]));
@@ -108,6 +79,9 @@ constexpr bool everyItemHasAnIcon() {
     for (int i = 0; i < folder.count; ++i) {
       if (folder.items[i].icon == nullptr) return false;
     }
+  }
+  for (const auto& item : kHomeItems) {
+    if (item.icon == nullptr) return false;
   }
   return true;
 }
@@ -138,12 +112,16 @@ constexpr char kHiddenPath[] = "/.crosspoint/shelf-hidden.cfg";
 // -1 means "nothing is open below Home", which is what a folder itself sees.
 int openFolderIndex = -1;
 
+// The Home item last opened, for Home's cursor on the way back. RAM only: wake
+// resumes the item itself, and a cold boot starts at the top anyway.
+int lastHomeItem = -1;
+
 // The remembered position, mirroring /.crosspoint/shelf.cfg:
 //
 // - `lastFolder`: which shelf row Home should land on when you come back out.
 //   CrossPoint restores Home's selection by matching the departing activity's
 //   name against its own HomeMenuItem list, which cannot know about ours, so
-//   without this you leave GAMES and the cursor is sitting on Browse Files.
+//   without this you leave a folder and the cursor is sitting on the top row.
 // - `resumeRow`: per folder, the row it reopens on. The row of the item last
 //   opened from it, or -- when you paged and then walked out without opening
 //   anything -- the first row of the page you were looking at. It is the page
@@ -187,6 +165,9 @@ constexpr bool everyTitleFitsTheStateFile() {
       if (shelf::constexprLength(folder.items[i].title) > shelf::MAX_ITEM_TITLE) return false;
     }
   }
+  for (const auto& item : kHomeItems) {
+    if (shelf::constexprLength(item.title) > shelf::MAX_ITEM_TITLE) return false;
+  }
   return true;
 }
 static_assert(everyTitleFitsTheStateFile(), "shelf item titles must fit shelf::MAX_ITEM_TITLE; see ShelfState.h");
@@ -201,8 +182,15 @@ const int* itemLimits() {
 
 // The folder and row of the item with this title, case-insensitively. The one
 // place a title is turned back into a row, shared by wake and by the
-// autostart environment variable.
+// autostart environment variable. A Home item answers with folder -1.
 bool findItemByTitle(const char* title, int& folder, int& item) {
+  for (int i = 0; i < kHomeItemCount; ++i) {
+    if (strcasecmp(kHomeItems[i].title, title) == 0) {
+      folder = -1;
+      item = i;
+      return true;
+    }
+  }
   for (int f = 0; f < kFolderCount; ++f) {
     for (int i = 0; i < kFolders[f].count; ++i) {
       if (strcasecmp(kFolders[f].items[i].title, title) == 0) {
@@ -334,6 +322,7 @@ void openFolder(const int index, GfxRenderer& renderer, MappedInputManager& mapp
   // rather than in leave() keeps the fact true even when a folder is reached by
   // some route that did not go through leave().
   openFolderIndex = -1;
+  lastHomeItem = -1;
   ensureLoaded();
   saveIfChanged(index, state.resumeRow[index]);
   setOpenTitle(nullptr);
@@ -363,6 +352,38 @@ bool openItem(const int folder, const int item, GfxRenderer& renderer, MappedInp
   }
   return true;
 }
+
+const Item* homeItems() { return kHomeItems; }
+
+int homeItemCount() { return kHomeItemCount; }
+
+UIIcon homeItemIcon(const int index) { return kHomeItemIcons[index]; }
+
+bool openHomeItem(const int index, GfxRenderer& renderer, MappedInputManager& mappedInput) {
+  if (index < 0 || index >= kHomeItemCount) {
+    LOG_ERR("SHELF", "Bad home item index: %d", index);
+    return false;
+  }
+  openFolderIndex = -1;
+  lastHomeItem = index;
+  saveIfChanged(-1, 0);
+  setOpenTitle(kHomeItems[index].title);
+  if (!replaceWith(kHomeItems[index].create(renderer, mappedInput), kHomeItems[index].title)) {
+    setOpenTitle(nullptr);
+    return false;
+  }
+  return true;
+}
+
+int lastHomeItemOnHome() { return lastHomeItem; }
+
+bool leaveToFolder(const char* activityName, GfxRenderer& renderer, MappedInputManager& mappedInput) {
+  if (openFolderIndex < 0 || activityName == nullptr || openActivityName != activityName) return false;
+  openFolder(openFolderIndex, renderer, mappedInput);
+  return true;
+}
+
+void forgetOpenFolder() { openFolderIndex = -1; }
 
 // A folder's titles, by row, for the conversions in ShelfHidden.h.
 auto titlesOf(const int folder) {
@@ -430,6 +451,11 @@ void autostartFromEnv(GfxRenderer& renderer, MappedInputManager& mappedInput) {
     LOG_ERR("SHELF", "Autostart: no item titled '%s'", wanted);
     return;
   }
+  if (folder < 0) {
+    LOG_INF("SHELF", "Autostart into %s", kHomeItems[item].title);
+    openHomeItem(item, renderer, mappedInput);
+    return;
+  }
   LOG_INF("SHELF", "Autostart into %s", kFolders[folder].items[item].title);
   openItem(folder, item, renderer, mappedInput);
 }
@@ -461,6 +487,10 @@ bool resumeFromWake(GfxRenderer& renderer, MappedInputManager& mappedInput) {
     return false;
   }
 
+  if (folder < 0) {
+    LOG_INF("SHELF", "Wake: resuming %s", kHomeItems[item].title);
+    return openHomeItem(item, renderer, mappedInput);
+  }
   LOG_INF("SHELF", "Wake: resuming %s", kFolders[folder].items[item].title);
   return openItem(folder, item, renderer, mappedInput);
 }

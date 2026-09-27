@@ -99,7 +99,7 @@ beside the reservation: card 248 moved `headerBand()` from reserving the band
 alone to reserving band + gap + rule, and a body top written as its own sum
 would have kept the old row while every component-laid screen moved seven
 pixels down, with nothing going red. `testTheHandRolledBodyTopMatchesTheReservedOne`
-pins the two paths to each other; the shelf, hacker news, instapaper, xkcd and wallpapers all
+pins the two paths to each other; the shelf, hacker news, xkcd and wallpapers all
 name it now instead of each keeping a private copy.
 
 The reason nothing caught it for as long as either app existed: `host-tests/ui`
@@ -115,24 +115,22 @@ That is the second half of the same rule and it was missing until
 stayed paper. A covered row is not an invisible row. It is invisible
 HEAD-ON: the glass sits above the panel, so an eye below the device sees
 past the bezel's edge and reads a white strip above every black header in
-the fork. Mario reported it looking up at APPS and GAMES; it was on all 41
+the fork. Mario reported it looking up at the shelf's headers; it was on all 41
 toybox band call sites across 27 files, and no gate could see it because the sim renders the same
 strip and nobody had looked at the top ten rows.
 
 Two consequences worth keeping straight when touching that helper:
 
 - **Paint may bleed under the bezel, ink may not.** The band, the rule
-  under it and Forehead's key bands are paint. The title is ink. A fix that
+  under it are paint. The title is ink. A fix that
   fills to row 0 and then centres the title over the whole band buries the
   title's air in rows nobody can see; `host-tests/ui` pins the ink centring
   against exactly that.
 - **`headerBand()` is now the ONLY way a toybox screen draws its band.**
-  Eleven screens (the checkers, connect four, knucklebones, minesweeper and
-  yahtzee boards and results, plus xkcd's `chrome()`) called
-  `screen.header(props)` straight and were missed by the flip: their band
-  came off the safe rect, inset on three sides, so it had a white strip
-  above it AND a white column down each side, and its bottom edge sat 10px
-  below their own menus'.
+  A screen that calls `screen.header(props)` straight (xkcd's `chrome()` did)
+  is missed by the flip: its band comes off the safe rect, inset on three sides, so it has a white strip
+  above it AND a white column down each side, and its bottom edge sits 10px
+  below the app's own menus'.
 
   **CLOSED by card 248.** `headerBand()` now calls `absoluteChrome()` itself,
   unconditionally, so no screen can lack it: the bottom-edge difference this
@@ -189,8 +187,8 @@ traps were found:
 2. **The divider rule** under header bands is drawn by `toybox::headerBand()`
    itself (ToyboxScreen.h), `kBandRuleGap` below the band it just painted.
    It used to be a separate opt-in `headerRule(screen)` call, and 12 of the
-   fork's 41 band sites never made it -- the Yahtzee card among them, which is
-   how Mario came to open a screen with no line under its header. `headerRule`
+   fork's 41 band sites never made it, which is how Mario came to open a
+   screen with no line under its header. `headerRule`
    survives as a no-op so a branch written before the change keeps compiling;
    the fork's own 25 calls are gone and `host-tests/chromeguard` refuses a new
    one. Solitaire's three hand-rolled fills at `kHeader + 4` are gone with
@@ -216,9 +214,8 @@ traps were found:
    functions an Activity shares with its builder for hit-testing) the answer is
    `toybox::kChromeHeight`, or `toybox::chromeBelow(band)` for Solitaire's
    raised band.
-3. **Decorations riding the header band** (the shelf's folder mark, toy
-   battle's medal tally, murdle's face doors, connections' and murdle's
-   header-door hit rects) ASK for the band rather than rebuilding it:
+3. **Decorations riding the header band** (the shelf's folder mark and its
+   header-door hit rect) ASK for the band rather than rebuilding it:
    `toybox::headerBandRect(screen)` for the whole painted band, and
    `toybox::headerInkRect(screen)` for the rows an eye can read, which is
    what a label drawn by hand wants. Four apps used to reconstruct it as
@@ -226,19 +223,16 @@ traps were found:
    and nothing else, and all four broke together the moment it stopped.
    Vertical centring on the band is `toybox::bandCenterY(screen, h)`, or
    `toybox::bandCenterY(renderer, h)` (ToyboxTheme.h) for an Activity drawing
-   straight to the renderer -- `ChessActivity` open-coded that arithmetic and
-   is the reason the renderer-side twin exists. Two more were missed and fixed
-   on 2026-09-03 with the paint: trivia's hand-drawn right label boxed itself
-   over the whole band, and chess's gear centred on
-   `(kHeaderHeight - size) / 2`. Both centred partly in covered rows and rode
-   about 5px above the title beside them.
+   straight to the renderer. A hand-drawn label centred on
+   `(kHeaderHeight - size) / 2` centres partly in covered rows and rides about
+   5px above the title beside it.
 4. **Deliberate full-bleed stays full-bleed**: band fills and rules span the
    panel width AND reach its top row (paint may run under the bezel; content
    may not -- and a band that stopped short of that row is the bug the
    section above describes), the XKCD
-   reader bar and its map stay on the true bottom edge, Connections'
-   tap-anywhere hit rect covers the whole panel (the digitizer works over
-   the covered strip). The BEZEL ruler app was the other exception, drawing
+   reader bar and its map stay on the true bottom edge, and a tap-anywhere hit
+   rect may cover the whole panel (the digitizer works over the covered
+   strip). The BEZEL ruler app was the other exception, drawing
    edge-to-edge because measuring the bezel was its whole job; it has since
    been removed.
 5. **Solitaire's absolute landscape layout is untouched**: rotated into
@@ -263,7 +257,7 @@ or it is asserting about a device that does not exist.
 ## Measuring another unit
 
 The ruler is not on the shelf any more. It was a two-file app that existed to
-fill in the table above, and a permanent row on APPS is a poor home for an
+fill in the table above, and a permanent row on Apps & Games is a poor home for an
 instrument used twice. It is not lost, though, and restoring it is a checkout
 plus the one row it needs:
 
@@ -272,8 +266,8 @@ git log --all --diff-filter=D -1 --format=%H -- src/apps_local/bezel   # the com
 git checkout <that commit>^ -- src/apps_local/bezel
 ```
 
-Then re-add its include and its `kApps` row in `src/apps_local/Shelf.cpp`, and
-build. On the device: Apps > BEZEL, look straight on, and for each edge the
+Then re-add its include and its `kAppsAndGames` row in `src/apps_local/Shelf.cpp`, and
+build. On the device: Apps & Games > BEZEL, look straight on, and for each edge the
 smallest number whose tick you can still see is that edge's hidden pixel count.
 The screen also prints what the firmware is currently configured with
 (`SET T.. R.. B.. L..`), so a measurement and the value it should replace are

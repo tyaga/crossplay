@@ -87,21 +87,6 @@ def pack_format_version():
     return int(m.group(1))
 
 
-def table_titles(path, opener, pattern):
-    """Titles out of a constexpr table, so a test need not read them off the panel.
-
-    Two corpora used to take their expected string from the run the header had
-    just drawn -- which is the fitted string, so `drawn == expected` held no
-    matter how badly the title had been cut. A cold review proved it by
-    truncating every title to five characters and watching both stay green.
-    Read from the table, they cannot be circular.
-    """
-    src = (REPO / path).read_text(encoding="utf-8", errors="replace")
-    block = src[src.index(opener):]
-    block = block[: block.index("\n};")]
-    return re.findall(pattern, block)
-
-
 def xkcd_pack():
     """-> (label, [titles]). Empty list when no pack is reachable."""
     candidates = []
@@ -203,16 +188,6 @@ def main():
     out = pathlib.Path(sys.argv[1])
     link = link_titles()
     headlines = hn_headlines()
-    guide = table_titles(
-        "src/apps_local/dungeon/DungeonScreens.cpp",
-        "constexpr GuidePage kGuide[] = {",
-        r'\{\s*"([^"]+)",\s*\n?\s*"',
-    )[::2]
-    walk = table_titles(
-        "src/apps_local/toybattle/ToyBattleHowTo.cpp",
-        "kWalkPages[] = {",
-        r'\{"([^"]+)",\s*(?:true|false),',
-    )
     label, xkcd = xkcd_pack()
     ids, faces, values = bindings()
 
@@ -246,20 +221,6 @@ def main():
         '    "",  // never empty, so the array is well formed with no capture',
         "};",
         "inline constexpr int kHnHeadlineCount = %d;" % len(headlines),
-        "",
-        "inline constexpr const char* kDungeonGuideTitles[] = {",
-    ]
-    lines += ["    %s," % c_string(t) for t in guide]
-    lines += [
-        "};",
-        "inline constexpr int kDungeonGuideTitleCount = %d;" % len(guide),
-        "",
-        "inline constexpr const char* kToyBattleHowToTitles[] = {",
-    ]
-    lines += ["    %s," % c_string(t) for t in walk]
-    lines += [
-        "};",
-        "inline constexpr int kToyBattleHowToTitleCount = %d;" % len(walk),
         "",
         "inline constexpr const char* kXkcdPackLabel = %s;" % c_string(label),
         "inline constexpr const char* kXkcdTitles[] = {",
@@ -308,9 +269,8 @@ def main():
     ]
     out.write_text("\n".join(lines), encoding="utf-8")
     print(
-        "corpus: %d link game titles, %d HN headlines, %d dungeon guide pages, %d how-to pages, %d xkcd titles from %s;"
-        " %d font ids, %d face sets"
-        % (len(link), len(headlines), len(guide), len(walk), len(xkcd), label, len(ids), len(faces)),
+        "corpus: %d link game titles, %d HN headlines, %d xkcd titles from %s; %d font ids, %d face sets"
+        % (len(link), len(headlines), len(xkcd), label, len(ids), len(faces)),
         file=sys.stderr,
     )
 

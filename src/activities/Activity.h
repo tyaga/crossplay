@@ -58,13 +58,13 @@ class Activity {
 
   // ---- The play-surface reveal gate. See lib/GfxRenderer/RevealedInteractions.h.
   //
-  // An activity that hit-tests a play surface against GEOMETRY (an 80-cell
+  // An activity that hit-tests a play surface against GEOMETRY (a 100-cell
   // board does not fit a 24-slot interaction table) never reaches route(), so
   // toybox::Interactions cannot see those taps. What such a tap MEANS is not
-  // in the table either: Minesweeper's FLAG capsule is registered with an
-  // identical rect, action, value and inputMask and flips only StateSelected,
-  // which the digest ignores as paint -- while the mode bit it sets is what
-  // decides whether a grid tap digs or flags.
+  // in the table either: a mode toggle registered with an identical rect,
+  // action, value and inputMask flips only StateSelected, which the digest
+  // ignores as paint -- while the mode bit it sets decides what a grid tap
+  // does.
   //
   // An activity opts in by overriding surfaceMeaning() and guarding its
   // hit-test with surfaceRevealed(). Both call surfaceMeaning(), so there is
@@ -82,10 +82,9 @@ class Activity {
   // THE TRAP, and it fails silently in the open direction: surfaceMeaning() is
   // evaluated just BEFORE render() runs, so it must be derived only from state
   // that loop() has already settled -- a mode flag, a screen enum, a seat, a
-  // turn. Never from something render() itself writes. Four apps cache the
-  // pixel-to-cell layout in a member during render (MurdleActivity::gridLayout,
-  // murdleui's clue layout, DungeonActivity::layout and pickerLayout,
-  // solitaire's): hashing one of those reads the PREVIOUS frame's layout at
+  // turn. Never from something render() itself writes. An app that caches the
+  // pixel-to-cell layout in a member during render (solitaire does): hashing
+  // that member reads the PREVIOUS frame's layout at
   // stamp time and the new one at tap time, so the gate compares against a
   // frame that was never on the panel. Hash what DETERMINES the layout instead
   // -- the view, the puzzle index -- which loop() owns and render() only reads.
@@ -102,22 +101,21 @@ class Activity {
   //      show up: an opponent's move arriving over the link, a generator
   //      finishing, an auto-transition to a result screen.
   //   2. The pixel-to-cell map -- anything the coordinate arithmetic ITSELF
-  //      reads. Chess's whiteAtBottom() turns the board 180 degrees on every
-  //      half-move in Pass-and-Play; checkers' seat flips it; battleship's two
-  //      grids have different cell sizes.
-  //   3. Mode bits that reinterpret EVERY cell at once. Minesweeper's flagMode
-  //      is the whole worked example.
+  //      reads. A board that turns 180 degrees for the seat in Pass-and-Play;
+  //      battleship's two grids, which have different cell sizes.
+  //   3. Mode bits that reinterpret EVERY cell at once, such as a toggle that
+  //      makes every grid tap mark instead of act.
   //
   // Leave OUT the surface's contents and the user's transient selection, and
   // leave them out for the same reason rather than by a causality argument:
   // neither moves which cell a pixel is, and the handler consulting them is
   // the category the table digest already ignores. The separating test is
-  // uniform versus local. flagMode reinterprets all eighty cells under a
-  // finger resting anywhere; a selected square reinterprets exactly the one
-  // cell the player just deliberately touched. Fold a selection in and you
-  // gate the second half of select-then-move, which is every move in chess and
-  // checkers, and aim-then-fire, which is how battleship shoots. Fold the
-  // contents in and you gate every consecutive dig, entry and mark.
+  // uniform versus local. A mode bit reinterprets every cell under a finger
+  // resting anywhere; a selected square reinterprets exactly the one cell the
+  // player just deliberately touched. Fold a selection in and you gate the
+  // second half of select-then-move, which is every move in solitaire, and
+  // aim-then-fire, which is how battleship shoots. Fold the contents in and
+  // you gate every consecutive entry and mark.
   virtual uint32_t surfaceMeaning() const { return 0; }
 
   // Is a tap on the play surface safe to act on? Guard every geometry

@@ -14,9 +14,7 @@
 // whose MEANING changed underneath a stationary finger. BattleshipScreens.cpp
 // registers one capsule as `gameOver ? ActionPlayAgain : (canFire ? ActionFire
 // : NO_ACTION)`: FIRE is tapped dozens of times a game and becomes PLAY AGAIN
-// the instant the last shot lands, while the panel still reads FIRE.
-// SeaSaltScreens.cpp and JaipurScreens.cpp share the shape and are worse,
-// because their button was live and benign every round beforehand, so the
+// the instant the last shot lands, while the panel still reads FIRE, and the
 // player is trained onto that exact pixel.
 //
 // The rule, and why it is this rule. A tap routes unless what it would act on
@@ -30,8 +28,8 @@
 //     so nothing is gated. Suppressing the contact outright -- the obvious fix
 //     -- would have been far worse than eating a release, because
 //     InputManager::suppressTouchContact() also gates isTouchTapCandidate,
-//     isTouchHeldAt and wasSwipe, so it would cancel Minesweeper's
-//     hold-to-flag and Wavelength's hold-to-peek WHILE the finger is down.
+//     isTouchHeldAt and wasSwipe, so it would cancel every hold gesture
+//     WHILE the finger is down.
 //   * the gate is held by a CHANGE, not by a timer, and it opens on the very
 //     next completed paint. There is no threshold to tune and no path where a
 //     slow refresh leaves input dead longer than the refresh itself.
@@ -126,7 +124,7 @@ class RevealedInteractions {
   // must know BEFORE routing. route() reports a suppressed tap as a
   // default-constructed event, which is the same thing it reports for a tap
   // that landed on nothing -- so any caller with a do-something-on-nothing
-  // branch (OptionPopup dismisses, MurdleActivity strikes a clue) has to ask
+  // branch (OptionPopup dismisses on it) has to ask
   // here first or the gate turns a swallowed tap into a wrong action.
   bool routable() const { return shown(buffer_.data(), buffer_.count()); }
   bool publishedRoutable() const { return shown(buffer_.publishedData(), buffer_.publishedCount()); }
@@ -153,11 +151,10 @@ class RevealedInteractions {
       mix(static_cast<uint32_t>(static_cast<uint16_t>(slot.value)) | (static_cast<uint32_t>(slot.inputMask) << 16));
       // StateDisabled and ONLY StateDisabled. It looks like a cosmetic bit and
       // is not one: InteractionBuffer::findTouch skips disabled entries
-      // outright, so flipping it changes what a tap DOES. DungeonScreens.cpp
-      // registers its NEXT button with an identical rect, action, value and
-      // inputMask and flips only this bit on model.moreToPlay, so a dead
-      // control becoming live would otherwise slip through the digest
-      // unchanged. The focus/active/flash bits stay excluded, because those
+      // outright, so flipping it changes what a tap DOES. A button registered
+      // with an identical rect, action, value and inputMask that flips only
+      // this bit is a dead control becoming live, and would otherwise slip
+      // through the digest unchanged. The focus/active/flash bits stay excluded, because those
       // really are only how a row draws.
       mix(static_cast<uint32_t>(slot.state & freeink::ui::StateDisabled));
     }
@@ -180,16 +177,16 @@ class RevealedInteractions {
 
 // The same rule for a play surface that is hit-tested against GEOMETRY.
 //
-// Eight apps compute a cell from raw x/y rather than routing -- an 80-cell
+// Board games compute a cell from raw x/y rather than routing -- a 100-cell
 // board does not fit an interaction table -- so those taps never reach
 // route() and RevealedInteractions cannot see them. What a tap on the board
-// MEANS is not in the table either: Minesweeper's FLAG capsule is registered
-// with an identical rect, action, value and inputMask and flips only
-// StateSelected, which the digest deliberately ignores as paint. The mode bit
-// it sets is what decides whether a grid tap digs or flags.
+// MEANS is not in the table either: a mode toggle registered with an
+// identical rect, action, value and inputMask flips only StateSelected, which
+// the digest deliberately ignores as paint, yet the mode bit it sets decides
+// what a grid tap does.
 //
 // So the app supplies the meaning, as one number. Both calls must derive it
-// from the SAME expression -- an app that hashes flagMode in render() and a
+// from the SAME expression -- an app that hashes a mode bit in render() and a
 // stale copy of it in loop() has a gate that is silently always open, which
 // looks exactly like a gate that works. Activity::surfaceMeaning() exists so
 // there is one definition to call twice rather than two to keep in step.

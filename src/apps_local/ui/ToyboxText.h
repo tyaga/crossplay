@@ -8,8 +8,7 @@
 // too long for its rows is simply chopped -- the Hacker News front page read
 // "Show HN: Simple algorithm and colo" and "I am retiring from fulltime
 // writing (" until this existed. A word broken in half looks like a rendering
-// fault, which is the one thing Mario rejected on sight when the same question
-// came up for Connections tiles.
+// fault, which is the one thing Mario rejects on sight.
 //
 // Header-only so that adopting it costs no build-file edit in any of the
 // twelve places that compile screens.
@@ -88,11 +87,10 @@ inline std::string fitLines(const freeink::ui::DrawTarget& target, const char* t
   // word-boundary rule has nothing to work with there, and returning what it
   // computed means returning the ellipsis and NOTHING ELSE.
   //
-  // That is not hypothetical. The Instapaper pairing screen draws the account
-  // name it is asking you to recognise, at the display cut, and it rendered as
-  // "..." -- a confirmation screen showing no account. Found by looking at the
-  // render; it cannot fail a build and it cannot fail a suite that only ever
-  // passes it sentences.
+  // A pairing screen that draws the account name it is asking you to
+  // recognise, at the display cut, would render "..." -- a confirmation screen
+  // showing no account. That cannot fail a build and it cannot fail a suite
+  // that only ever passes it sentences.
   //
   // So: fall back to cutting mid-token. A word broken in half normally reads
   // as a rendering fault, which is why it is the fallback and not the rule --
@@ -122,17 +120,14 @@ inline std::string fitLines(const freeink::ui::DrawTarget& target, const char* t
   return kept + kEllipsis;
 }
 
-// The fork's own type ladder, in one place at last.
+// The fork's own type ladder, in one place.
 //
-// ToyboxFonts.h has stated the rule in prose since the reading cuts were added:
+// ToyboxFonts.h states the rule in prose:
 // "pick the largest cut it fits in, walking the available cuts down, and only
-// break a word when the smallest still overflows." There was no function that
-// did it. SIX apps wrote their own -- toybattle's fittedHeaderTitle, insider's
-// fitted, the dungeon's fitLabel, connections' chooseTileCut, forehead's
-// layOutCard and the xkcd bar's fitLabel -- and every screen that wrote none
-// handed its title straight to a component that cuts rather than shrinks. That
-// is how "CURSED CEMETERY" reached a panel as "CURSED CEMETER": not a wrapped
-// line and not an ellipsis, a name with its last letter gone.
+// break a word when the smallest still overflows." This is that function. A
+// screen without it hands its title straight to a component that cuts rather
+// than shrinks, and "CURSED CEMETERY" reaches a panel as "CURSED CEMETER": not
+// a wrapped line and not an ellipsis, a name with its last letter gone.
 //
 // THE RUNGS ARE ORDERED BY WHAT THE FACE MEASURES, never by what the slot is
 // called, and that is the bug all six hand-rolled ladders share. Each of them
@@ -192,8 +187,7 @@ inline std::string fittedTitle(const freeink::ui::DrawTarget& target, const char
   // may wrap is not the same question as "is it narrower than the box". The
   // measured width answers the one-line case directly and cheaply; anything
   // wider is put through the same wrap that will draw it, and fits only if the
-  // wrap gave everything back. The fit test IS the layout, which is the rule
-  // the Connections tiles arrived at independently.
+  // wrap gave everything back. The fit test IS the layout.
   const int lines = style.maxLines > 0 ? style.maxLines : 1;
   fui::TextStyle probe = style;
   for (int i = 0; i < count; ++i) {

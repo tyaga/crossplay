@@ -136,7 +136,8 @@ void BattleshipActivity::drawGridLattice(const GridGeometry& grid, const bool he
   if (heavyFrame) {
     const int weight = toybox::kFrame;
     renderer.drawRect(grid.originX - weight, grid.originY - weight, side + 2 * weight, side + 2 * weight, weight, true);
-    // The same brackets the chess board wears, so two games read as one device.
+    // The same brackets the other framed surfaces wear, so the apps read as one
+    // device.
     toybox::cornerMarks(renderer,
                         Rect{grid.originX - toybox::kBoardFrame, grid.originY - toybox::kBoardFrame,
                              side + 2 * toybox::kBoardFrame, side + 2 * toybox::kBoardFrame},

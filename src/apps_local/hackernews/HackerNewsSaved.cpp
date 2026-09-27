@@ -10,10 +10,10 @@ namespace hn {
 namespace {
 
 constexpr char kMagic[] = "hnsaved";
-// 2 dropped the two Instapaper columns that version 1 carried.
+// Version 2 has no bookmark-id and text-on-device columns; version 1 did.
 //
 // Bumping is not optional and this is why: read with the version-2 field order,
-// a version-1 row hands back its `instapaperId` as the title and its
+// a version-1 row hands back its bookmark id as the title and its
 // `textOnDevice` flag as the URL. Every saved article then displays as "0",
 // and because the URL no longer matches, the reader believes nothing is saved
 // and saves a second copy on every tap. One unbumped number, two bugs, and
@@ -140,7 +140,7 @@ bool parseSavedIndex(const std::string_view text, std::vector<SavedArticle>& out
     SavedArticle article;
     article.id = field(row, cursor);
     article.savedAt = toUint(field(row, cursor));
-    // Version 1 SOMETIMES carried an Instapaper bookmark id and a
+    // Version 1 SOMETIMES carried a bookmark id and a
     // have-we-got-the-text flag here, and sometimes did not: Mario's own
     // library, written 2026-08-05 by the build this feature shipped in, is
     // version 1 with four columns. Deciding from the version alone read his

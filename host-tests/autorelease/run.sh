@@ -213,7 +213,7 @@ SHA47="$(land app/guardpipe 'Merge pull request #47 from ma-r-s/app/guardpipe' \
 SHA46="$(land app/onedispatch 'Merge pull request #46 from ma-r-s/app/onedispatch' \
   .github/workflows/crossplay-autorelease.yml .github/workflows/crossplay-release.yml host-tests/release/run.sh)"
 SHA45="$(land app/instalist 'Merge pull request #45 from ma-r-s/app/instalist' \
-  server/read-bridge/bridge/app.py server/read-bridge/scripts/deploy.sh)"
+  server/study-bridge/bridge/app.py server/study-bridge/deploy/deploy.sh)"
 SHA44="$(land app/relwatch 'Merge pull request #44 from ma-r-s/app/relwatch' \
   docs/workflow/events.md host-tests/relwatch/run.sh server/board/supabase/migrations/20260904001200_release_watch.sql)"
 SHA50="$(land app/cijobs 'Merge pull request #50 from ma-r-s/app/cijobs' \

@@ -209,8 +209,8 @@ jobs:
   # relwatch runs a real postgres in docker, and it gets its OWN runner.
   #
   # It shared the build job until 2026-09-04, where it failed four pull
-  # requests whose diffs could not touch a database -- a Forehead word list, a
-  # worktree script, a trivia pack and a docs change. Two timeout bumps (60 ->
+  # requests whose diffs could not touch a database -- a word list, a
+  # worktree script, a content pack and a docs change. Two timeout bumps (60 ->
   # 180 -> 420) and a pre-pull of the image all failed, because none of them
   # was the problem: the container's own log showed it had not begun
   # INITIALISING seven minutes after `docker run` returned, with the image

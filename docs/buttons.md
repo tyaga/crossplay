@@ -61,15 +61,13 @@ every `mappedInput.wasReleased(Button::Back)` in `apps_local` resolves through
 the gesture on this device. The physical half of that call has been dead since
 the X4 Pro was targeted and nothing depended on it.
 
-> **This section used to end "and every game is exitable", and that was not
-> true.** Card #250, September 2026: Trivia could not be left by swiping. The
-> mechanism above is correct and the conclusion drawn from it was not, because
-> reading the button is not the same as reading it where a swipe can arrive.
-> Trivia's only `Button::Back` was inside its download progress callback, a path
-> that exists only while a multi-minute fetch has blocked the loop; its `loop()`
-> returned early unless a tap had arrived, and a swipe is not a tap. **The
-> button count in the table below counted that read**, which is why the number
-> looked complete while one app had no exit at all.
+> **Reading the button is not the same as reading it where a swipe can
+> arrive.** An app whose only `Button::Back` sits inside a download progress
+> callback -- a path that exists only while a multi-minute fetch has blocked the
+> loop -- and whose `loop()` returns early unless a tap has arrived cannot be
+> left by swiping, because a swipe is not a tap. **The button count in the table
+> below counts such a read**, so the number can look complete while an app has
+> no exit at all.
 >
 > Two things follow, and both are worth carrying to the next app:
 >
@@ -77,12 +75,12 @@ the X4 Pro was targeted and nothing depended on it.
 >    `gameLoop()` or its `route*()` handlers -- and **above** any "nothing to do
 >    unless a tap arrived" return. Below that line the read is on the frame path
 >    in name only.
-> 2. `host-tests/backgesture/` now enforces exactly that, and also refuses a
+> 2. `host-tests/backgesture/` enforces exactly that, and also refuses a
 >    second Back hand-rolled out of a horizontal `wasSwipe()`. Counting reads per
 >    file cannot see either failure; that suite looks at which function the read
 >    is in and where in it.
 >
-> A related misreading the same card produced: `wasSwipe()` is consulted by only
+> A related misreading: `wasSwipe()` is consulted by only
 > a few things in `apps_local`, which looks like most apps ignoring the back
 > gesture. It is not. `wasSwipe()` is the four-direction **paging** swipe, every
 > live comparison against it is `Up` or `Down`, and Back never goes through it.
@@ -91,10 +89,10 @@ the X4 Pro was targeted and nothing depended on it.
 
 Counted across `src/apps_local/`, excluding the shared modules that are not apps
 (`link`, `player`, `sample`, `ui`, `bridge`). **That scope is not the shelf.**
-GET BOOKS is on the shelf and its activity is upstream's
-`src/activities/browser/OpdsBookBrowserActivity.cpp`, outside `apps_local`
-entirely; it reads Back, Confirm and Left, so the shelf's real Confirm and
-Left/Right figures are each one higher than the table below. The table counts
+BROWSE FILES, SETTINGS and GET BOOKS are on the shelf and their activities are
+upstream's, outside `apps_local` entirely; GET BOOKS
+(`src/activities/browser/OpdsBookBrowserActivity.cpp`) alone reads Back,
+Confirm and Left, so the shelf's real figures are higher than the table below. The table counts
 the directories this fork owns, which is the question this section asks.
 
 `host-tests/docsclaims/` walks the same directories and fails when these numbers
@@ -106,45 +104,29 @@ grep -rl "Button::Up\|Button::Down" src/apps_local/*/ | cut -d/ -f3 | sort -u
 
 | Button       | Apps that read it | Exists on X4 Pro |
 | ------------ | ----------------- | ---------------- |
-| Back         | 30                | as a swipe       |
-| Confirm      | 2                 | **no**           |
-| Left / Right | 1                 | **no**           |
-| Up / Down    | 14                | **yes**          |
+| Back         | 6                 | as a swipe       |
+| Confirm      | 1                 | **no**           |
+| Left / Right | 0                 | **no**           |
+| Up / Down    | 3                 | **yes**          |
 
-Eighteen of the thirty-six directories use Back and nothing else.
+Battleship and Solitaire use Back and nothing else; `cards`, `live` and
+`powerprobe` read no button at all.
 
-> **The finding below was true when it was written, in August 2026, and it is
-> not true any more.** It said the two real keys were unused by every game we
-> had built, and that the only apps touching them were the reader-shaped ones.
-> Twelve apps read Up/Down today and eight of them are games: Checkers, Connect
-> Four, Forehead, Picross, Sea Salt, Toy Battle, Wavelength and Yahtzee,
-> alongside Hacker News, Instapaper, Wallpapers and xkcd. The rule in section 4
-> is what survived and is still the thing to apply; the census that motivated it
-> has been overtaken, which is the outcome it was arguing for.
+The two real keys are page keys, and the apps that read them are the
+reader-shaped ones: Hacker News, Wallpapers and xkcd. The rule in section 4 is
+what to apply to the next one.
 
-That was the whole finding. Not "we should use the buttons more" as a matter of
-taste -- the device shipped with two physical keys, they were page keys, and our
-games ignored them.
+### The one shape a button is for
 
-### The first game that did not, and the exception that proved the rule
+A game where the player cannot see the screen -- the panel held against a
+forehead, say -- has no "where" to point at, so its answers can be the two keys.
+That satisfies section 4 exactly rather than making an exception to it. "Never
+only a button" still holds: the touch targets are bands across the middle of
+each half, because fingers curled over the long edges to reach the keys would
+otherwise answer their own card.
 
-FOREHEAD (2026-08-28) is the first game here where the two keys are the primary
-input rather than a page turn, and it earns that by satisfying section 4 exactly
-rather than by making an exception to it. The player holds the panel against
-their own forehead and **cannot see the screen**, so there is no "where" to
-point at: GOT IT and PASS are answers, not positions. That is the one shape a
-button is for, and it is why the game has no cursor either.
-
-It also shows what the rule's second half costs when taken seriously. "Never
-only a button" still holds and the two halves of the round screen are tappable
--- but not as halves, because the guesser's fingers curl over the long edges to
-reach the keys and would answer their own card. The touch targets are bands
-across the middle of each half instead. See [apps/forehead.md](apps/forehead.md).
-
-Its landscape key mapping -- `Button::Up` is the BOTTOM key and `Button::Down`
-the TOP one, once the panel is turned counter-clockwise -- was **confirmed on
-hardware on 2026-08-30**. Reuse it rather than re-deriving it: it is the same
-rotation for any app that turns the panel this way.
+In a panel turned counter-clockwise, `Button::Up` is the BOTTOM key and
+`Button::Down` the TOP one (confirmed on hardware on 2026-08-30).
 
 Worth knowing before writing another landscape app: `ScreenUp` / `ScreenDown`
 look like exactly the right API for a rotated screen and are a trap here. In
@@ -163,8 +145,7 @@ arithmetic yourself.
 
 - **Pointing** -- which cell, column, card, category. The answer is a position,
   the finger names it exactly, and a button can only express it by inventing a
-  cursor. design-language.md removed cursors from Chess and Connections for
-  cause and that stays removed.
+  cursor. design-language.md explains why there are no cursors.
 - **Stepping** -- next page, previous page. No position at all. Drawing a
   control for these is drawing a place for something that does not live
   anywhere, which is why the shelf's page marks felt wrong as buttons.

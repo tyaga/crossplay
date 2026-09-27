@@ -12,7 +12,7 @@
 // Three decisions carry the whole design.
 //
 // 1. THE PAYLOAD IS THE WHOLE SHARED STATE, NOT THE MOVE.
-//    A chess position is ~40 bytes and a connect-four grid is 11, so the entire
+//    A battleship game is 52 bytes against a 192-byte packet, so the entire
 //    game fits in one packet with room to spare. Once you send whole states,
 //    the two devices cannot disagree: there is no move log to replay, no
 //    ordering to get right, and a lost packet is a stale frame that the next
@@ -165,8 +165,8 @@ class Session {
   // This device's coin toss, fixed for one trip through the SEARCHING screen and
   // rolled again on the next. Lower toss moves first, ties broken by address.
   //
-  // Without it, "lower address moves first" over two fixed MACs meant the same
-  // device played White in every game of chess ever played on the pair. The DS
+  // Without it, "lower address moves first" over two fixed MACs would have the
+  // same device move first in every game ever played on the pair. The DS
   // never had that problem because its host was whoever tapped first, and a coin
   // toss is the same answer with nothing for the user to do.
   uint8_t toss_ = 0;

@@ -1,7 +1,7 @@
 #pragma once
 
-// The Hacker News screens. Freestanding builders in the ChessScreens mould: a
-// model in, a drawn frame out, no renderer and no Activity, so host-tests/ui/
+// The Hacker News screens. Freestanding builders: a model in, a drawn frame
+// out, no renderer and no Activity, so host-tests/ui/
 // can assert what they drew and what they made tappable.
 //
 // ---------------------------------------------------------------------------
@@ -30,7 +30,7 @@ namespace hnui {
 
 namespace fui = freeink::ui;
 
-// Chess uses 1-4 and the link layer owns the 200s; these stay in the 300s.
+// The link layer owns the 200s; these stay in the 300s.
 enum : fui::ActionId {
   ActionOpenStory = 300,
   ActionPagePrev = 301,
@@ -122,8 +122,8 @@ fui::TextStyle listCountStyle(const fui::ThemeTokens& tokens);
 // This exists because the component clips: a headline too long for its rows is
 // simply chopped, so the front page read "Show HN: Simple algorithm and colo"
 // and "I am retiring from fulltime writing (". A word broken in half looks like
-// a rendering fault, which is the one thing Mario rejected on sight when the
-// same question came up for Connections tiles. Shrink to fit, break on a space,
+// a rendering fault, which is the one thing Mario rejects on sight. Shrink to
+// fit, break on a space,
 // and say that something was dropped.
 std::string fitLines(const fui::DrawTarget& target, const char* text, int16_t width, int lines,
                      const fui::TextStyle& style);
@@ -132,7 +132,8 @@ std::string fitLines(const fui::DrawTarget& target, const char* text, int16_t wi
 
 // The reader's body: the words, the cut they are set in, and the wrap that
 // counts AND draws them. One object rather than three arguments that must
-// agree; see the twin in InstapaperScreens.h for what disagreeing costs.
+// agree: when they disagree, the page label and the forward control are
+// computed from a different count than the one drawn.
 struct ReaderBody {
   const char* text = "";
   fui::TextStyle style{};
@@ -170,10 +171,9 @@ struct ReaderModel {
   const char* saveNotice = nullptr;
 };
 
-// The body is a required argument for the same reason as Instapaper's: a
-// nullable one with a fall-back to re-wrapping the whole document is the bug
-// this removes, and it would come back the first time somebody added a call
-// site without noticing. See ToyboxWrappedText.h.
+// The body is a required argument because a nullable one with a fall-back to
+// re-wrapping the whole document would bring back the per-paint re-wrap the
+// first time somebody added a call site without noticing. See ToyboxWrappedText.h.
 // RETURNS THE LINE COUNT THE PANEL WAS ACTUALLY DRAWN FROM, which is not
 // necessarily the one readerLineCount() gave a moment ago: drawing is where a
 // wrap that no longer describes this panel is caught and rebuilt. Returned

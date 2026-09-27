@@ -65,25 +65,6 @@ TASKS = [
         "::render(RenderLock&&)",
     ),
     (
-        # Go's opponent. michi-c2 descends tree_search -> tree_descend ->
-        # expand and, from the playout policy, into a ladder reader that
-        # recurses into itself once per ply -- so it does not fit the Arduino
-        # loop task's 8KB and gets a task of its own. The recursion is what
-        # this tool cannot bound; michi.c caps it at MICHI_LADDER_MAX plies so
-        # that the part it CAN see is the part that matters.
-        "go_search",
-        "GO_SEARCH_TASK_STACK",
-        "src/apps_local/go/GoActivity.cpp",
-        # The return type is part of the needle deliberately. `match()` is a
-        # substring test over the readable signature, and the lambda this
-        # function hands the engine as a clock is spelled
-        # "...GoActivity::searchLoop()::<lambda()>::_FUN()" -- which contains
-        # the bare name, has the same 32-byte frame, and sorted first. The
-        # tool then reported 64 bytes for a task whose real path is thousands.
-        "void GoActivity::searchLoop()",
-        None,
-    ),
-    (
         "fi_input",
         4096,
         "freeink-sdk/libs/hardware/InputManager/src/InputManager.cpp:175",

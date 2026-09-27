@@ -39,10 +39,10 @@ the service posts anyway (a sync) then carries the device, its board and
 version and the three health numbers; Client.report() posts the crash and the
 update attempt the device is carrying as firmware events of their own.
 
-Byte-identical twin of the other bridge's bridge/events.py (study-bridge and
-read-bridge). Neither Dockerfile can COPY a file from outside its own
-directory without a build change, so the module is duplicated rather than
-shared; each service's tests/test_events.py checks the twin still matches.
+Byte-identical in every bridge that reports (study-bridge, fridge-bridge).
+Neither Dockerfile can COPY a file from outside its own directory without a
+build change, so the module is duplicated rather than shared; each service's
+tests/test_events.py checks the copies still match.
 """
 
 import hashlib

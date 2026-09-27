@@ -82,8 +82,8 @@ crash or an OTA attempt the report carries (`events.Client.report`).
 `bridge/events.py` sends from its own thread with a 3 s timeout and drops
 the event after one log line if the board does not take it, so a board
 outage cannot slow or fail a sync (`tests/test_api.py` proves both, and the
-header bodies). The module is a byte-identical twin of
-`read-bridge/bridge/events.py`; `tests/test_events.py` fails if the two
+header bodies). The module is byte-identical to
+`fridge-bridge/bridge/events.py`; `tests/test_events.py` fails if the two
 drift.
 
 Where to post comes from two more `.env` keys, both optional:
@@ -112,13 +112,11 @@ exclude is load-bearing) and never pasted into commands, where it would land
 in shell history and `ps` output. Edit it in place on the pi.
 
 **`BRIDGE_ALLOWLIST` is this service's gate and it fails closed: unset means
-nobody may sign in, `*` opens it.** The twin at `/srv/readbridge` calls the
-same idea `READ_ALLOWLIST`, and writing one name into the other's `.env` is
-completely silent -- no warning, no log line, and the same
-"This bridge is invitation-only for now." a stranger already saw. Verify a
-change from outside with `server/verify_open.sh`, never with `printenv` or a
-200 on `/healthz`. See `server/read-bridge/scripts/DEPLOY-RUNBOOK.md` step 6
-and `docs/bridge-security.md`.
+nobody may sign in, `*` opens it.** A misspelt variable is completely silent
+-- no warning, no log line, and the same "This bridge is invitation-only for
+now." a stranger already saw. Verify a change from outside with
+`server/verify_open.sh`, never with `printenv` or a 200 on `/healthz`. See
+`docs/bridge-security.md`.
 
 ## The pages people see
 

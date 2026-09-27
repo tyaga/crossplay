@@ -9,7 +9,7 @@
 // `toybox::Screen` rather than calling FreeInkUI components directly.
 //
 // The card face is deliberately NOT here: it is the app's own surface, drawn by
-// hand into the body rect, in the same sense that a chess board is.
+// hand into the body rect, in the same sense that a battleship grid is.
 
 #include "../ui/ToyboxScreen.h"
 

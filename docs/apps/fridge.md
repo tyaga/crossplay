@@ -209,14 +209,13 @@ nobody cares, and the design deliberately does not try to correct it.
 
 **Do not assume the board has a battery-backed clock.** An earlier draft of
 this document claimed the BM8563 at 0x51 is battery-backed; the cited lines say
-nothing of the kind, the only such string in the tree belongs to a different
-board, and `WavelengthSave.h:138` states the opposite outright. The RTC is only
-ever set by an NTP sync over Wi-Fi.
+nothing of the kind, and the only such string in the tree belongs to a
+different board. The RTC is only ever set by an NTP sync over Wi-Fi.
 
 ### Verified TLS
 
 `bridge::Endpoint` + `bridge::streamToFile` (`src/apps_local/bridge/`), the
-client Study and Instapaper already use: verified against the baked root
+client Wallpapers and Live use: verified against the baked root
 bundle, an SD-card root override so a CA rotation is a file copy, the heap
 floor enforced before any TLS attempt, device-identity headers attached free.
 Not `HttpDownloader`, which calls `setInsecure()` on every device build.
@@ -235,7 +234,7 @@ roughly 50 mAh/day and kills the device in three weeks.
 
 **The page is `crossplay.ma-r-s.com/live/`** (`site/live/`), built out of the
 site's own `styles.css`, its top bar and its two faces, exactly as
-`site/wallpapers/` and `site/wikipedia/` are. **The service is
+`site/wallpapers/` is. **The service is
 `fridge.ma-r-s.com` and answers `/api/` only.**
 
 It was one piece for a while: the service served both the API and a standalone
@@ -438,8 +437,8 @@ Three cases that are deliberately NOT pending:
 
 ## The service
 
-**`fridge.ma-r-s.com` on the Orange Pi**, Cloudflare Tunnel, copying
-`server/read-bridge/` wholesale including `bridge/ratelimit.py`. Mario's call,
+**`fridge.ma-r-s.com` on the Orange Pi**, Cloudflare Tunnel, shaped after
+`server/study-bridge/` including `bridge/ratelimit.py`. Mario's call,
 made knowing card #548: the box hard-reboots uncleanly every day or two and
 took all three bridges down 14 times in 17 days. He is fixing that separately.
 

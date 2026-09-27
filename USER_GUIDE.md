@@ -12,7 +12,7 @@ Welcome to the **CrossPlay** firmware, a fork of CrossPoint for the Xteink X4 Pr
     - [First Launch](#first-launch)
   - [3. Screens](#3-screens)
     - [3.1 Home Screen](#31-home-screen)
-      - [3.1.1 Games and Apps (CrossPlay)](#311-games-and-apps-crossplay)
+      - [3.1.1 Study and Apps & Games (CrossPlay)](#311-study-and-apps--games-crossplay)
     - [3.2 Reading Mode](#32-reading-mode)
     - [3.3 Browse Files Screen](#33-browse-files-screen)
     - [3.4 Library Screen](#34-library-screen)
@@ -121,18 +121,22 @@ Upon turning the device on for the first time, you will be placed on the **[Home
 
 ### 3.1 Home Screen
 
-The Home screen is the main entry point to the firmware. From here you can navigate to **[Reading Mode](#4-reading-mode)** with the most recently read book, **[Browse Files](#33-browse-files-screen)**, the **[Library](#34-library-screen)**, **[File Transfer](#35-file-transfer-screen)**, **[Settings](#36-settings)**, or the two CrossPlay adds: **Games** and **Apps**.
+The Home screen is the main entry point to the firmware. It shows the covers of the most recently read books (one, or two with the **Lyra Extended** theme); tap one to open it in **[Reading Mode](#4-reading-mode)**. Below them are the **[Library](#34-library-screen)**, **[File Transfer](#35-file-transfer-screen)**, and the two rows CrossPlay adds: **Study** and **Apps & Games**. **[Browse Files](#33-browse-files-screen)** and **[Settings](#36-settings)** are the first two rows of Apps & Games.
 
-### 3.1.1 Games and Apps (CrossPlay)
+### 3.1.1 Study and Apps & Games (CrossPlay)
 
-**Games** and **Apps** on the Home screen open the shelf, which pages
-vertically: swipe up for the next page, down for the previous, and the header
-says which page you are on. A row opens that game or app; Back (the
-left-to-right swipe) closes it and returns you here.
+**Study** opens the flashcard app straight from Home; Back returns you here.
 
-Several of the games also play between two devices over **PLAY NEARBY**, with
-no pairing screen and nothing to type. Put two devices next to each other and
-they find one another. The [README](README.md) says which ones.
+**Apps & Games** opens the shelf: Browse Files, Settings, Hacker News, xkcd,
+Get Books, Wallpapers, Solitaire and Battleship. A folder that does not fit
+pages vertically: swipe up for the next page, down for the previous, and the
+header says which page you are on. A row opens that app; Back (the
+left-to-right swipe) closes it and returns you to the folder, and Back from the
+folder returns you here.
+
+Battleship also plays between two devices over **PLAY NEARBY**, with no pairing
+screen and nothing to type. Put two devices next to each other and they find
+one another.
 
 What is on the shelf and how each thing works is per-app: the list is in the
 [README](README.md), and the rules, state machines and design decisions behind
@@ -282,7 +286,7 @@ The Settings screen allows you to configure the device's behavior. There are a f
   
   - "Classic" - The original Crosspoint theme
   - "Lyra" - The new theme for Crosspoint featuring rounded elements and menu icons
-  - "Lyra Extended" - Lyra, but displays 3 books instead of 1 on the **[Home Screen](#31-home-screen)**
+  - "Lyra Extended" - Lyra, but displays 2 larger book covers instead of 1 on the **[Home Screen](#31-home-screen)**
   - "RoundedRaff" - A rounded theme with additional visual styling
 
 - **Sunlight Fading Fix**: Configure whether to enable a software-fix for the issue where white X4 models may fade when used in direct sunlight:
@@ -381,7 +385,7 @@ The Settings screen allows you to configure the device's behavior. There are a f
 
 #### 3.6.5 Get Books (OPDS Catalogs)
 
-**Get Books** lives in **Apps** on the Home screen, and downloads books
+**Get Books** lives in **Apps & Games** on the Home screen, and downloads books
 straight to the device from an OPDS catalog. Two catalogs are set up on first run, so it works
 without any configuration:
 

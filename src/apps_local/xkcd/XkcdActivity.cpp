@@ -370,8 +370,8 @@ void XkcdActivity::openComicAt(const int position) {
 void XkcdActivity::showNotice(const char* headline, const char* detail, const char* actionLabel,
                               const fui::ActionId action) {
   snprintf(noticeHead_, sizeof(noticeHead_), "%s", headline);
-  // See TriviaActivity::showNotice: passing the current body back in is an
-  // overlapping self-copy, and aliasing means "keep it".
+  // Passing the current body back in is an overlapping self-copy, and
+  // aliasing means "keep it".
   if (detail != noticeBody_) {
     snprintf(noticeBody_, sizeof(noticeBody_), "%s", detail);
   }

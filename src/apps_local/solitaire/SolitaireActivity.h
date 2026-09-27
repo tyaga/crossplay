@@ -45,8 +45,7 @@ class SolitaireActivity final : public Activity {
   bool loadGame();
   void clearSave() const;
 
-  // One byte per finished game, appended: 1 abandoned, 2 won. Same shape as
-  // Connections' results file and for the same reason -- it is the cheapest
+  // One byte per finished game, appended: 1 abandoned, 2 won. The cheapest
   // thing that can answer "how have I been doing".
   void recordResult(bool won) const;
   void fillStats(solitaireui::MenuModel& model) const;

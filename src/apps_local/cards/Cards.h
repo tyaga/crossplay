@@ -2,11 +2,9 @@
 
 // A standard 52-card deck, as one byte per card.
 //
-// Lifted verbatim out of SolitaireCore.h when Hearts became the second game to
-// need it. The encoding was already right and already soaked by a thousand
-// Klondike deals; what was wrong was that it lived inside one game's rules
-// header, so the second game either included Klondike to get a card's suit or
-// wrote the same five shifts again. Neither of those is a deck.
+// Kept out of SolitaireCore.h so a second card game gets a card's suit without
+// including Klondike's rules or writing the same five shifts again. The
+// encoding is soaked by a thousand Klondike deals.
 //
 //   bits 0-3   rank, 0 = ace .. 12 = king
 //   bits 4-5   suit
@@ -15,17 +13,15 @@
 // kNoCard is 0xFF, which cannot collide because rank 15 does not exist.
 //
 // THE NUMBERING IS ACE-LOW AND IT IS NOT A TRICK-TAKING ORDER.
-// Klondike builds foundations ace-first, so it numbered the ace 0, and it never
-// compares two cards for height so it never had to care. Hearts does nothing
-// else: every trick is won by the highest card of a suit, and under this
-// numbering the ace is the LOWEST number in the deck. `a > b` on a raw rank is
-// therefore silently wrong in the one place that game turns on.
+// Klondike builds foundations ace-first, so it numbers the ace 0, and it never
+// compares two cards for height. A trick-taking game does nothing else, and
+// under this numbering the ace is the LOWEST number in the deck, so `a > b` on
+// a raw rank is silently wrong there.
 //
-// The fix is deliberately NOT to renumber the deck. Klondike is shipped, its
-// rank arithmetic is soaked by 536,697 assertions, and bending a working game's
-// core encoding to suit a new one is how both end up wrong. Hearts converts
-// instead, once, in `hearts::trickRank()`, which is one line with a test that
-// fails without it. Any future game that ranks cards does the same.
+// Such a game converts, once, in a trick-rank function of its own, rather than
+// renumbering the deck: Klondike's rank arithmetic is soaked by 536,697
+// assertions, and bending a working game's core encoding to suit a new one is
+// how both end up wrong.
 
 #include <cstdint>
 

@@ -120,7 +120,7 @@ struct ThemeMetrics {
   int capsuleRadius;
 };
 
-// fork-local seam: Games and Apps are appended last, so every value above keeps
+// fork-local seam: Apps and Study are appended last, so every value above keeps
 // its number and this merges as an addition rather than a renumbering. Their
 // bitmaps are in src/apps_local/ui/ToyboxIcons.h; see LOCAL_SCOPE.md.
 enum UIIcon {
@@ -141,8 +141,8 @@ enum UIIcon {
   Blocks,
   // FORK: appended after every upstream value, so adding one upstream never
   // renumbers theirs. See LOCAL_SCOPE.md.
-  Games,
-  Apps
+  Apps,
+  Study
 };
 
 // Default theme implementation (Classic Theme)

@@ -173,10 +173,9 @@ dirty_count() {
 }
 
 # check.sh verifies the WORKING DIRECTORY, and that is a real hazard, not a
-# footnote. Uncommitted work masks a broken commit: Dungeon, Insider and Hacker
-# News all shipped depending on Toybox symbols that were never committed, every
-# check ran green because they sat unstaged, and xteink HEAD did not compile for
-# three commits. --committed is the answer; this banner is so you know to reach
+# footnote. Uncommitted work masks a broken commit: an app that depends on
+# Toybox symbols sitting unstaged checks green here while HEAD does not
+# compile. --committed is the answer; this banner is so you know to reach
 # for it.
 # --committed ANYWHERE in the arguments, not only as $1.
 #
@@ -766,7 +765,7 @@ done
 # the step never ran it. A list of one is a list that stops being right without
 # anyone editing it.
 #
-# Note what this still cannot see: ui, dungeon and revealsweep each pass
+# Note what this still cannot see: ui and revealsweep each pass
 # -Wno-format-truncation, so the whole truncation class is invisible in them
 # under GCC as well as clang. Removing that flag today surfaces 19 real
 # too-small buffers across eleven apps; card #256 carries them. tilefit does not
@@ -783,8 +782,8 @@ echo "cross-compiler"
 # qualifies when its run.sh compiles src/ or lib/ with -Werror; one that does
 # but ignores CXX would run clang here and read as GCC-green, so that shape is
 # a failure rather than a silent omission. Measured on 2026-09-05 with g++-16:
-# thirty-five suites qualify and cost 114s together (murdle 21s, toybattle
-# 17s, fittedtitle 14s, link 10s, the rest a few seconds each), so every gate
+# the qualifying suites cost under two minutes together (fittedtitle 14s,
+# link 10s, the rest a few seconds each), so every gate
 # runs all of them rather than a guessed subset; a subset chosen by "what
 # this branch touched" would miss a header change that reaches a suite
 # through an include, which is the class this stage exists to catch.
@@ -802,14 +801,12 @@ for gcc_dir in host-tests/*/; do
   # An app source is src/ or lib/ by path, or through the variables the
   # suites use for them ($LIB, $SRC) and the SDK's own sources ($SDK).
   #
-  # The separator class includes '=' and the variables need no trailing slash,
-  # and both of those were missing. host-tests/calculator assigns
-  # `SRC=../../src/apps_local/calculator` at the start of a line and compiles
-  # with `-I$SRC`: an app source under -Werror, honouring CXX, and this detector
-  # classified it as neither. It skipped GCC entirely and went red on CI with a
-  # -Wformat-truncation clang does not emit, after a local gate that printed
-  # "gcc ok (40 suite(s))". A detector that silently drops a suite reports the
-  # same way as one that has nothing to drop.
+  # The separator class includes '=' and the variables need no trailing slash:
+  # a suite that assigns `SRC=../../src/apps_local/<app>` at the start of a
+  # line and compiles with `-I$SRC` is an app source under -Werror, and without
+  # both it would skip GCC and meet -Wformat-truncation, which clang does not
+  # emit, only on CI. A detector that silently drops a suite reports the same
+  # way as one that has nothing to drop.
   printf '%s\n' "$gcc_body" | grep -qE '(^|[ "=])((\.\./\.\./|\$ROOT/|\$REPO/)?(src|lib)/|\$\{?(LIB|SRC|SDK)\}?/?)' || continue
   if grep -q 'CXX' "$gcc_run"; then
     gcc_suites="$gcc_suites $(basename "$gcc_dir")"
@@ -926,79 +923,6 @@ else
   FAILED=1
 fi
 
-# The trivia option-picker. Standard library only, so it never skips: the pack
-# it guards is a published release asset, and the last regression in it (option
-# sets that told you the answer without the question) shipped and stayed
-# shipped because nothing ran between the edit and the upload.
-if (cd "$REPO" && python3 tools_local/trivia/test_distractors.py) \
-    > "$LOGS/trivia-distractors.log" 2>&1; then
-  printf "  %-12s ok\n" "trivia"
-else
-  printf "  %-12s FAILED\n" "trivia"
-  tail -8 "$LOGS/trivia-distractors.log" | sed 's/^/      /'
-  FAILED=1
-fi
-
-# The pack id, its manifest, and pack.meta. The guard that matters here reads
-# as a no-op when it breaks: read_meta() returning a STALE id instead of None
-# means the device reports (pack id, index) against a pack it no longer holds,
-# and the service resolves those indices through the wrong build's index map.
-# Questions nobody reported are then deleted and the pack just comes out
-# smaller, which is why every case below is constructed rather than sampled.
-if (cd "$REPO" && python3 tools_local/trivia/test_manifest.py) \
-    > "$LOGS/trivia-manifest.log" 2>&1; then
-  printf "  %-12s ok\n" "manifest"
-else
-  printf "  %-12s FAILED\n" "manifest"
-  tail -12 "$LOGS/trivia-manifest.log" | sed 's/^/      /'
-  FAILED=1
-fi
-
-# Reading flags back off a card. Every check in this tool is a REFUSAL, and a
-# refusal that stops refusing looks exactly like a tool that found nothing to
-# do: the run prints "0 flagged" and exits 0. The damage is downstream and
-# silent -- build_pack.py applies a verdict without review, so a wrong id
-# deletes a question nobody reported and the pack just comes out a row smaller.
-if (cd "$REPO" && python3 tools_local/trivia/test_collect_flags.py) \
-    > "$LOGS/trivia-collect.log" 2>&1; then
-  printf "  %-12s ok\n" "collect"
-else
-  printf "  %-12s FAILED\n" "collect"
-  tail -12 "$LOGS/trivia-collect.log" | sed 's/^/      /'
-  FAILED=1
-fi
-
-# The rating-fed assembler. Same argument as above, plus one of its own: three
-# of its rules fail SILENTLY when undone -- a dropped rating, a short option
-# set and a refitted difficulty level all produce a pack that builds, ships and
-# reads fine, so only a test says the rule is still there.
-if (cd "$REPO" && python3 tools_local/trivia/test_assemble.py) \
-    > "$LOGS/trivia-assemble.log" 2>&1; then
-  printf "  %-12s ok\n" "assemble"
-else
-  printf "  %-12s FAILED\n" "assemble"
-  tail -10 "$LOGS/trivia-assemble.log" | sed 's/^/      /'
-  FAILED=1
-fi
-
-# The Wikipedia pack tool: the fold (Python and the device header compiled
-# on the host over the same 300 vectors), the row-to-XHTML converter, the
-# pack writer and reader round-tripping a build, and build_pack.py end to
-# end. Standard library plus the zstd CLI and a C++ compiler, so it never
-# skips. The failures it exists for are silent ones: a fold that differs by
-# one code point between the two sides puts an article where no lookup finds
-# it, and a frame that decodes to the wrong bytes reads fine until a device
-# opens that block. The 3,000-row research sample is used when this machine
-# has it and the log says when it did not.
-if (cd "$REPO" && python3 -m unittest discover -s tools_local/wikipedia/tests -p 'test_*.py') \
-    > "$LOGS/wikipedia-tools.log" 2>&1; then
-  printf "  %-12s ok\n" "wikipedia"
-else
-  printf "  %-12s FAILED\n" "wikipedia"
-  tail -14 "$LOGS/wikipedia-tools.log" | sed 's/^/      /'
-  FAILED=1
-fi
-
 # The sync bridge server suites. Their venvs are not committed; uv rebuilds them
 # in a --committed trial worktree (warm uv cache makes that cheap). A missing
 # toolchain FAILS rather than skips: a bridge change riding a green gate whose
@@ -1007,13 +931,11 @@ fi
 # Two services now, so this is a loop rather than a block. Each entry is
 #   <directory> <label> <port offset within the tree's slice> <suites...>
 # and the offsets are picked apart from each other AND from the link suite,
-# which owns LINKPLAY_BASE_PORT+0..7 (LinkRadio.cpp, kSlots). readbridge takes
-# 8..11 because its harness derives a fake-service port from the base; study
-# takes 12; fridgebridge takes 13. Sharing an offset would only bite when two
+# which owns LINKPLAY_BASE_PORT+0..7 (LinkRadio.cpp, kSlots). Study takes 12;
+# fridgebridge takes 13. Sharing an offset would only bite when two
 # trees gate at once, which is exactly when nobody is looking.
 for entry in \
   "server/study-bridge:bridge:12:tests/test_engine.py tests/test_api.py tests/test_window.py tests/test_events.py tests/test_pages.py" \
-  "server/read-bridge:readbridge:8:tests/test_oauth.py tests/test_article.py tests/test_listing.py tests/test_window.py tests/test_lockout.py tests/test_engine.py tests/test_api.py tests/test_events.py tests/test_pages.py" \
   "server/fridge-bridge:fridgebridge:13:tests/test_events.py tests/test_live_events.py"
 do
   BRIDGE_DIR="$REPO/${entry%%:*}"

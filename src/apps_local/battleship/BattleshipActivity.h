@@ -201,7 +201,7 @@ class BattleshipActivity final : public linkplay::LinkActivity {
   // Playing.
   int aimCell = -1;
   // The computer owes a shot. Deferred by one loop pass so the repaint showing
-  // your own shot lands before it thinks, exactly as the chess engine is.
+  // your own shot lands before it thinks.
   bool computerThinking = false;
   // What just happened, in the player's words. One line, and it is the only
   // narration this game has. It doubles as the instruction line while you are

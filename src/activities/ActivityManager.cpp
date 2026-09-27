@@ -10,6 +10,7 @@
 
 #include <algorithm>
 
+#include "../apps_local/Shelf.h"  // fork-local seam
 #include "CrossPointSettings.h"
 #include "OpdsServerStore.h"
 #include "boot_sleep/BootActivity.h"
@@ -197,6 +198,7 @@ void ActivityManager::loop() {
       if (currentActivity->handleHomeGesture()) {
         return;
       }
+      shelf::forgetOpenFolder();  // fork-local seam: the gesture means Home, not the folder
       goHome();
       return;
     }
@@ -423,6 +425,12 @@ void ActivityManager::goToFullScreenMessage(std::string message, EpdFontFamily::
 }
 
 void ActivityManager::goHome(HomeMenuItem initialMenuItem, bool cleanInitialRefresh) {
+  // fork-local seam: upstream's screens opened from a shelf folder (Browse
+  // Files, Settings, Get Books) leave by goHome(); send them back to the folder.
+  if (initialMenuItem == HomeMenuItem::NONE && currentActivity &&
+      shelf::leaveToFolder(currentActivity->name.c_str(), renderer, mappedInput)) {
+    return;
+  }
   if (initialMenuItem == HomeMenuItem::NONE && currentActivity) {
     const auto& activityName = currentActivity->name;
     if (activityName == "FileBrowser") {

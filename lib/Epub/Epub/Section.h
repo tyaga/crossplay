@@ -96,8 +96,8 @@ class Section {
   // A standalone document: htmlPath is an existing XHTML file, cacheDir receives
   // sections/<index>.bin, and every id in sectionAnchors starts a fresh page.
   // No zip, no CSS, no images (the section forces that in the spec it uses),
-  // and no footnote entries unless captureFootnotes. The Wikipedia app lays out an
-  // article this way; nothing else about the section changes.
+  // and no footnote entries unless captureFootnotes. Nothing else about the
+  // section changes. No caller in the tree uses it at present.
   Section(std::string htmlPath, std::string cacheDir, int index, GfxRenderer& renderer,
           std::vector<std::string> sectionAnchors, bool captureFootnotes);
   ~Section();

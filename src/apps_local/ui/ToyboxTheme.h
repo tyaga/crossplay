@@ -29,26 +29,8 @@ struct Faces {
   int title = kDisplayFontId;
 };
 
-// Jersey throughout: the fork's default, used by the Games menu and Chess.
+// Jersey throughout: the fork's default, used by the shelf and the games.
 inline Faces toyboxFaces() { return Faces{}; }
-
-// Connections speaks Instrument Serif -- chosen because it is the only elegant
-// face also condensed enough to set a long word inside a square tile: Lora,
-// Fraunces and Young Serif all need more than the tile's whole width for
-// "ACTUALLY" at their smallest usable size, while this fits it at a 20px cap.
-//
-// The header band stays Jersey in every game. The top bar is the fork's chrome,
-// not the game's voice, and a shared one is what makes two apps feel like one
-// device.
-//
-// The board starts with Jersey in the body slot so its buttons and status read
-// like every other app's, then the activity rebinds that slot to the smaller
-// serif cut before drawing tiles. Rebinding costs one assignment, so the
-// adapter's three slots are a working set, not a limit on how many faces a
-// screen may use: GfxRenderer itself holds a map with no cap, and this fork
-// already registers about fifteen.
-inline Faces serifBoardFaces() { return Faces{kSerifTileFontId, kUiFontId, kDisplayFontId}; }
-inline Faces serifMenuFaces() { return Faces{kSerifSmallFontId, kSerifTileFontId, kDisplayFontId}; }
 
 // For an app whose own surface is a page of prose. The body slot steps down to
 // the reading cut so a screenful is a screenful rather than a paragraph; the
@@ -139,8 +121,8 @@ inline void reportOverflow(const Interactions& interactions, const char* screenN
 // Vertical top for an element of height h centred in the VISIBLE part of the
 // header band, for an Activity drawing straight to the renderer. The twin of
 // toybox::bandCenterY(Screen&, int16_t), and it exists so the band's height is
-// named in exactly one place: chess open-coded this arithmetic, which is one
-// more copy of the chrome's geometry living in an app file. See
+// named in exactly one place: open-coding this arithmetic would be one more
+// copy of the chrome's geometry living in an app file. See
 // host-tests/chromeguard.
 inline int bandCenterY(const GfxRenderer& renderer, const int elementH) {
   int viewTop = 0, viewRight = 0, viewBottom = 0, viewLeft = 0;

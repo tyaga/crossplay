@@ -3,7 +3,7 @@
 #
 #   server/fridge-bridge/scripts/deploy.sh
 #
-# Shaped after read-bridge's. Two things it does that are not obvious:
+# Shaped after study-bridge's. Two things it does that are not obvious:
 #
 #   * chowns the bind mount through a THROWAWAY CONTAINER rather than with a
 #     local chown. The deploying user is not root on the box, so a plain chown

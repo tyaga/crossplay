@@ -9,12 +9,9 @@
 # the ability to regenerate -- and, when the inputs carried a LICENSE, the
 # notice the fork is obliged to ship.
 #
-# Both halves of that happened. Chess's ChessPieces.h said its MIT licence
-# "travels with the SVGs in assets_local/pieces/celtic/", a directory that was
-# never on this branch; tools_local/chess/gen_chess_pieces.py read its inputs
-# from the same missing path. Solitaire's SolitaireSuits.h named a generator at
-# tools/gen_suit_icons.sh that does not exist, and -- having outlived the art it
-# described -- credited the one candidate set that was rejected.
+# Each check guards one half of that: a header that names inputs or a
+# generator that are not in the tree, and vendored art whose licence does not
+# ship.
 #
 # Nothing here is a list to keep up to date. Each check DISCOVERS its subjects:
 # every generator under tools_local/, every licence file beside vendored art,

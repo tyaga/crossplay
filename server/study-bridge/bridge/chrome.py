@@ -17,9 +17,8 @@ what they are asking for. Words are the second explanation, not the first.
 
 from fastapi.responses import HTMLResponse
 
-# The service, in the two forms the chrome needs it. Its twin at
-# ../../read-bridge/bridge/chrome.py is the same file with these three lines
-# changed; keeping them at the top is what makes that legible.
+# The service, in the forms the chrome needs it. Kept at the top so the rest of
+# the file names no service.
 SERVICE = "Anki sync"
 ACCOUNT = "AnkiWeb"
 CARGO = "cards"

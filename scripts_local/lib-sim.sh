@@ -129,12 +129,9 @@ build() {
 # CAPTURES AT 2x: 960x1600 portrait, 1600x960 landscape. site/index.html
 # declares the 1x numbers, so a straight `cp` ships four times the pixels at
 # exactly the right aspect ratio -- which looks perfect on the page and is
-# invisible to everything except host-tests/site/page_structure.py. trivia,
-# wavelength, toybattle and forehead all shipped that way on 2026-09-01.
+# invisible to everything except host-tests/site/page_structure.py.
 # LANCZOS rather than NEAREST because it is what the committed shots were made
-# with: NEAREST keeps the capture's 12 tones and matches 70% of toybattle.png,
-# LANCZOS produces its 190 and matches 83%, the remainder being the rack the
-# recipe already documents as nondeterministic.
+# with, so a regenerated shot matches the committed one far more closely.
 write_site_shot() {
   local src="$1" dest="$2"
   [ -f "$src" ] || { echo "no capture at $src" >&2; return 1; }
