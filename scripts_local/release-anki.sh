@@ -2,8 +2,13 @@
 # Publish a release of this fork's reader build on tyaga/crossplay, where the
 # x4pro_anki updater looks (CROSSPLAY_RELEASE_REPO in platformio.ini).
 #
-#   ./scripts_local/release-anki.sh            # build, check, publish v<version>
-#   ./scripts_local/release-anki.sh --dry-run  # build and check, publish nothing
+#   ./scripts_local/release-anki.sh -m "Что нового"       # build, check, publish v<version>
+#   ./scripts_local/release-anki.sh -F notes.md          # the same, notes from a file
+#   ./scripts_local/release-anki.sh --dry-run -m "..."   # build and check, publish nothing
+#
+# The notes are what the release page says is new, a line or two in plain
+# words; a publish without them is refused. The build line naming the version
+# and commit is appended to them.
 #
 # The version is [anki] version in platformio.ini, committed before this runs:
 # the image compiles it in, and a release whose image reports a different
@@ -14,13 +19,23 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 REPO=tyaga/crossplay
 DRY=0
-[ "${1:-}" = "--dry-run" ] && DRY=1
+NOTES=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run) DRY=1 ;;
+    -m) NOTES="${2:?-m needs the notes}"; shift ;;
+    -F) NOTES="$(cat "${2:?-F needs a file}")"; shift ;;
+    *) echo "unknown argument: $1"; exit 1 ;;
+  esac
+  shift
+done
 
 VERSION="$(awk '/^\[anki\]/{f=1;next} /^\[/{f=0} f&&/^version *=/{print $3; exit}' platformio.ini)"
 [ -n "$VERSION" ] || { echo "no [anki] version in platformio.ini"; exit 1; }
 TAG="v$VERSION"
 
 if [ "$DRY" = 0 ]; then
+  [ -n "$NOTES" ] || { echo "no release notes: say what is new with -m \"...\" or -F file"; exit 1; }
   [ -z "$(git status --porcelain)" ] || { echo "uncommitted changes: commit the release first"; exit 1; }
   if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
     echo "$TAG is already released on $REPO: bump [anki] version first"
@@ -51,7 +66,12 @@ if problems:
 print(f"image ok: {len(image)} bytes, ESP32-S3, {version}-anki")
 PY
 
+BODY="$NOTES
+
+Reader build $VERSION-anki from $(git rev-parse --short HEAD)."
+
 if [ "$DRY" = 1 ]; then
+  printf 'release notes would be:\n%s\n' "$BODY"
   echo "dry run: $TAG not published"
   exit 0
 fi
@@ -60,5 +80,5 @@ STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 cp "$IMAGE" "$STAGE/firmware.bin"
 gh release create "$TAG" "$STAGE/firmware.bin" --repo "$REPO" --target "$(git rev-parse HEAD)" \
-  --title "$TAG" --notes "Reader build $VERSION-anki from $(git rev-parse --short HEAD)."
+  --title "$TAG" --notes "$BODY"
 echo "published $TAG on $REPO"
