@@ -89,7 +89,7 @@ void Lyra3CoversTheme::drawRecentBookCover(GfxRenderer& renderer, Rect rect, con
 
       const int maxLineWidth = tileWidth - 2 * hPaddingInSelection;
 
-      auto titleLines = renderer.wrappedText(SMALL_FONT_ID, recentBooks[i].title.c_str(), maxLineWidth, 3);
+      auto titleLines = renderer.wrappedText(SMALL_FONT_ID, recentBooks[i].title.c_str(), maxLineWidth, 2);
 
       const int titleLineHeight = renderer.getLineHeight(SMALL_FONT_ID);
       const int dynamicBlockHeight = static_cast<int>(titleLines.size()) * titleLineHeight;

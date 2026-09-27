@@ -89,8 +89,8 @@ the X4 Pro was targeted and nothing depended on it.
 
 Counted across `src/apps_local/`, excluding the shared modules that are not apps
 (`link`, `player`, `sample`, `ui`, `bridge`). **That scope is not the shelf.**
-BROWSE FILES, SETTINGS and GET BOOKS are on the shelf and their activities are
-upstream's, outside `apps_local` entirely; GET BOOKS
+Browse, File Transfer and Get Books are on the shelf and their activities are
+upstream's, outside `apps_local` entirely; Get Books
 (`src/activities/browser/OpdsBookBrowserActivity.cpp`) alone reads Back,
 Confirm and Left, so the shelf's real figures are higher than the table below. The table counts
 the directories this fork owns, which is the question this section asks.
@@ -148,17 +148,16 @@ arithmetic yourself.
   cursor. design-language.md explains why there are no cursors.
 - **Stepping** -- next page, previous page. No position at all. Drawing a
   control for these is drawing a place for something that does not live
-  anywhere, which is why the shelf's page marks felt wrong as buttons.
+  anywhere, which is why page marks feel wrong as buttons.
 
 On this hardware the rule is almost self-executing, because the only two buttons
 are page keys. **Up and Down page. Nothing else is a button, because nothing
 else is a button.**
 
-**And paging by button is never the only route.** The page marks stay tappable,
-and a swipe steps a page too -- it is the first thing every hand reaches for on
-a touch panel showing a page indicator or a scrollbar. Three cold agents tried
-it on the shelf before anything else, and a fourth tried it on Hacker News's
-story list and reported the list broken when nothing moved. Not because touch
+**And paging by button is never the only route.** A swipe steps a page too --
+it is the first thing every hand reaches for on a touch panel showing a page
+indicator or a scrollbar. A cold tester tried it on Hacker News's story list and
+reported the list broken when nothing moved. Not because touch
 is better, but because the
 moment a button is the only way to reach something we have two input models
 again, and the invisible one wins arguments it should not.

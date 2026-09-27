@@ -23,14 +23,7 @@
 // would silently resume into a different game.
 //
 // The resume value is an index and not a title for the opposite reason: it
-// stands for a PAGE rather than for a game, and a page is a position in a list.
-// See shelfui::rowForPage().
-//
-// It is the ITEM's index, not the row's, and the two stopped being the same
-// number when a folder gained the ability to hide things: a row counts only
-// what the folder is showing, and what it shows now is not what it showed when
-// the file was written. shelf::resumeRowIn() converts on the way out and
-// shelf::rememberRowIn() on the way in, so this file holds exactly one unit.
+// stands for a position in a list rather than for a game.
 
 #include <cstddef>
 
@@ -40,7 +33,7 @@ namespace shelf {
 // build.
 constexpr size_t MAX_ITEM_TITLE = 24;
 
-// One folder today (APPS & GAMES). A fifth needs only this raised.
+// One folder today (Apps). A fifth needs only this raised.
 constexpr int MAX_FOLDERS = 4;
 
 struct State {
@@ -68,10 +61,9 @@ constexpr size_t constexprLength(const char* s) {
 // defaults rather than half of them. `itemLimits[i]` is the highest valid row
 // of folder i as the registry stands NOW, not as it stood when the file was
 // written: a game removed since then would otherwise select a row that no
-// longer exists. Pinning to the last row rather than to the first is the same
-// choice shelfui::resumeRowFor() makes and for the same reason -- a folder that
-// has shrunk under you reopens on its last page, which is nearer where you were
-// than the top is. A title too long to hold is dropped rather than truncated --
+// longer exists. Pinning to the last row rather than to the first is
+// deliberate: a folder that has shrunk under you reopens at its end, which is
+// nearer where you were than the top is. A title too long to hold is dropped rather than truncated --
 // a truncated title matches no item, and dropping says so.
 bool parseState(const char* text, int folderCount, const int* itemLimits, State& out);
 

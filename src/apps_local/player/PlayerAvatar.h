@@ -53,8 +53,8 @@ const char* artWord(int slot, uint8_t index);
 // in register whatever `where` is; a non-square rect letterboxes the whole face
 // rather than sliding the mouth off the chin.
 //
-// `ink` because the face has to be knocked out white on the shelf's black
-// footer bar and drawn black everywhere else. A 1-bpp mask painted in the
+// `ink` because the face has to be knocked out white on a black ground and
+// drawn black everywhere else. A 1-bpp mask painted in the
 // colour behind it is invisible and nothing warns you -- the multiplayer mark
 // went black-on-black and then white-on-white before anyone looked.
 void drawAvatar(freeink::ui::DrawTarget& target, const freeink::ui::Rect& where, const char* name, AvatarSize size,

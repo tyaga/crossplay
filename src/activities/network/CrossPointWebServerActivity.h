@@ -55,14 +55,20 @@ class CrossPointWebServerActivity final : public Activity {
   void renderServerRunning() const;
   void renderWifiIndicator(int subHeaderTop) const;
 
+  const bool joinNetworkOnly;
+
   void onNetworkModeSelected(NetworkMode mode);
   void onWifiSelectionComplete(bool connected);
   void startAccessPoint();
   void startWebServer();
 
  public:
-  explicit CrossPointWebServerActivity(GfxRenderer& renderer, MappedInputManager& mappedInput)
-      : Activity("CrossPointWebServer", renderer, mappedInput) {}
+  // fork-local seam: `joinNetworkOnly` skips the mode choice and goes straight
+  // to joining Wi-Fi, for Home's Wi-Fi entry; leaving the network list then
+  // leaves the screen.
+  explicit CrossPointWebServerActivity(GfxRenderer& renderer, MappedInputManager& mappedInput,
+                                       const bool joinNetworkOnly = false)
+      : Activity("CrossPointWebServer", renderer, mappedInput), joinNetworkOnly(joinNetworkOnly) {}
   void onEnter() override;
   void onExit() override;
   void loop() override;

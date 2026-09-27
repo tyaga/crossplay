@@ -119,9 +119,8 @@ void rowsAreClampedToTheRegistryAsItStandsNow() {
   bool ok = false;
   // Written when GAMES had more rows than it has now.
   const shelf::State s = parsed("0 99 99\n", ok);
-  // The LAST row, not the first: the row stands for the page the folder was left
-  // on, and a folder that shrank under you is nearer its end than its top. Same
-  // rule as shelfui::resumeRowFor, which is what turns this row into that page.
+  // The LAST row, not the first: a folder that shrank under you is nearer its
+  // end than its top.
   checkEqual(s.resumeRow[0], 16, "a row past the end of GAMES clamps to its last row");
   checkEqual(s.resumeRow[1], 3, "a row past the end of APPS clamps to its last row");
 

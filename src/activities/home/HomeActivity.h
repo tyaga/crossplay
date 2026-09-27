@@ -19,11 +19,6 @@ class HomeActivity final : public Activity {
   bool recentsLoading = false;
   bool recentsLoaded = false;
   bool firstRenderDone = false;
-  // --- fork-local seam ---------------------------------------------------
-  // Upstream hides this row until a catalog is configured, which means a fresh
-  // install shows no entry point at all: the only way in is Settings -> OPDS
-  // Drawn row spacing, so the touch grid hit-tests the same pitch it drew.
-  int menuSpacingRendered = 0;
   bool coverRendered = false;      // Track if cover has been rendered once
   bool coverBufferStored = false;  // Track if cover buffer is stored
   uint8_t* coverBuffer = nullptr;  // HomeActivity's own buffer for cover image
@@ -35,12 +30,6 @@ class HomeActivity final : public Activity {
   int coverRectY = 0;
   int coverRectW = 0;
   int coverRectH = 0;
-  // Menu top as actually drawn. render() may shrink the cover tile to fit the
-  // menu, which moves the menu up; the touch grid must follow the drawn rows,
-  // not the metrics table. 0 until the first render (touch falls back to the
-  // static formula, which is also what render uses when nothing shrank).
-  int menuTopRendered = 0;
-  // Row gap actually drawn; the touch grid must use the same one.
   std::vector<RecentBook> recentBooks;
   const HomeMenuItem initialMenuItem;
   const bool cleanInitialRefresh;
@@ -79,15 +68,28 @@ class HomeActivity final : public Activity {
 
   int getMenuItemCount() const;
   // --- fork-local seam ---------------------------------------------------
-  // The rows below the covers. Browse Files and Settings live in the shelf's
-  // Apps & Games folder, so Home draws its own list instead of upstream's.
+  // The entries below the covers. Browse and File Transfer live in the shelf's
+  // Apps folder, so Home draws its own menu instead of upstream's list.
   struct MenuRow {
-    enum class Kind : uint8_t { Library, FileTransfer, HomeItem, Folder, Settings } kind;
+    enum class Kind : uint8_t { Library, HomeItem, Folder, Settings, Wifi } kind;
     int index;  // into shelf::homeItems() or shelf::folders(); unused otherwise
   };
   static constexpr int MAX_MENU_ROWS = 8;
   int menuRows(MenuRow* rows) const;
   int menuRowOf(MenuRow::Kind kind, int index) const;
+  // Where each menu entry was drawn, in selector order after the covers: the
+  // touch test walks the same rectangles render() painted.
+  struct Cell {
+    int x;
+    int y;
+    int w;
+    int h;
+    int selector;
+  };
+  Cell cells[MAX_MENU_ROWS + 1]{};
+  int cellCount = 0;
+  void layoutMenu(int top, int bottom, int entries, int fullWidthEntries);
+  void onWifiOpen();
   bool storeCoverBuffer();    // Store frame buffer for cover image
   bool restoreCoverBuffer();  // Restore frame buffer from stored cover
   void freeCoverBuffer();     // Free the stored cover buffer

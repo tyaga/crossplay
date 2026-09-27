@@ -75,9 +75,9 @@ def shelf_table(name):
     return re.findall(r'\{\s*"([^"]+)"', m.group(1))
 
 
-folder = shelf_table("kAppsAndGames")
+folder = shelf_table("kApps")
 home = shelf_table("kHomeItems")
-check(bool(folder), "Shelf.cpp kAppsAndGames table not found -- every count below is unmeasured")
+check(bool(folder), "Shelf.cpp kApps table not found -- every count below is unmeasured")
 check(bool(home), "Shelf.cpp kHomeItems table not found -- every count below is unmeasured")
 if not folder or not home:
     print(f"{checks} checks, {failed} failed")
@@ -100,7 +100,7 @@ def bold_rows(text):
 
 
 for heading, table, label in (("On Home", home, "kHomeItems"),
-                              ("Apps & Games", folder, "kAppsAndGames")):
+                              ("Apps", folder, "kApps")):
     listed = bold_rows(readme_section(heading))
     want = [key(t) for t in table]
     check(bool(listed), f"README.md '### {heading}' table has no rows")

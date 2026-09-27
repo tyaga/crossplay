@@ -8,6 +8,8 @@
 #include <HalDisplay.h>
 #include <HalStorage.h>
 #include <I18n.h>
+#include <Logging.h>
+#include <Memory.h>
 #include <Utf8.h>
 #include <Xtc.h>
 
@@ -16,6 +18,7 @@
 #include <vector>
 
 #include "../../apps_local/Shelf.h"  // fork-local seam
+#include "../network/CrossPointWebServerActivity.h"
 #include "CrossPointSettings.h"
 #include "CrossPointState.h"
 #include "MappedInputManager.h"
@@ -25,14 +28,50 @@
 #include "fontIds.h"
 
 // --- fork-local seam ---------------------------------------------------
+// Library spans the width; everything after it sits two to a row, in this
+// order: Study, Apps / Settings, Wi-Fi.
 int HomeActivity::menuRows(MenuRow* rows) const {
   int n = 0;
   rows[n++] = {MenuRow::Kind::Library, 0};
-  rows[n++] = {MenuRow::Kind::FileTransfer, 0};
   for (int i = 0; i < shelf::homeItemCount() && n < MAX_MENU_ROWS; ++i) rows[n++] = {MenuRow::Kind::HomeItem, i};
   for (int i = 0; i < shelf::folderCount() && n < MAX_MENU_ROWS; ++i) rows[n++] = {MenuRow::Kind::Folder, i};
   if (n < MAX_MENU_ROWS) rows[n++] = {MenuRow::Kind::Settings, 0};
+  if (n < MAX_MENU_ROWS) rows[n++] = {MenuRow::Kind::Wifi, 0};
   return n;
+}
+
+// Rows from `top` to `bottom` with equal gaps between them: the first row
+// right under the covers, the last on the bottom edge. The first
+// `fullWidthEntries` take a row each, the rest share rows two by two.
+void HomeActivity::layoutMenu(const int top, const int bottom, const int entries, const int fullWidthEntries) {
+  const auto& metrics = UITheme::getInstance().getMetrics();
+  const int pageWidth = renderer.getScreenWidth();
+  const int rowHeight = GUI.getMenuRowHeight(renderer);
+  const int gridEntries = std::max(0, entries - fullWidthEntries);
+  const int bands = std::max(1, fullWidthEntries + (gridEntries + 1) / 2);
+  const int pitch = bands > 1 ? std::max(rowHeight, (bottom - top - rowHeight) / (bands - 1)) : 0;
+  // drawButtonMenu insets its tile by the side padding on both edges; halving
+  // that between the columns keeps the gap equal to the outer margins.
+  const int half = metrics.contentSidePadding / 2;
+  cellCount = 0;
+  for (int e = 0; e < entries && cellCount < static_cast<int>(sizeof(cells) / sizeof(cells[0])); ++e) {
+    Cell cell{};
+    int band;
+    if (e < fullWidthEntries) {
+      band = e;
+      cell.x = 0;
+      cell.w = pageWidth;
+    } else {
+      const int g = e - fullWidthEntries;
+      band = fullWidthEntries + g / 2;
+      const bool left = g % 2 == 0;
+      cell.x = left ? 0 : pageWidth / 2 - half;
+      cell.w = pageWidth / 2 + half;
+    }
+    cell.y = top + band * pitch;
+    cell.h = rowHeight;
+    cells[cellCount++] = cell;
+  }
 }
 
 // The selector index of a row, counting the recent books ahead of the menu.
@@ -141,7 +180,7 @@ void HomeActivity::onEnter() {
       selectorIndex = menuRowOf(MenuRow::Kind::Library, 0);
       break;
     case HomeMenuItem::FILE_TRANSFER:
-      selectorIndex = menuRowOf(MenuRow::Kind::FileTransfer, 0);
+      selectorIndex = menuRowOf(MenuRow::Kind::Wifi, 0);
       break;
     case HomeMenuItem::SETTINGS_MENU:
       selectorIndex = menuRowOf(MenuRow::Kind::Settings, 0);
@@ -230,8 +269,8 @@ void HomeActivity::loop() {
       case MenuRow::Kind::Library:
         onLibraryOpen();
         break;
-      case MenuRow::Kind::FileTransfer:
-        onFileTransferOpen();
+      case MenuRow::Kind::Wifi:
+        onWifiOpen();
         break;
       case MenuRow::Kind::HomeItem:
         shelf::openHomeItem(rows[menuIndex].index, renderer, mappedInput);
@@ -275,18 +314,18 @@ void HomeActivity::loop() {
     return;
   }
 
-  // Hit areas follow the DRAWN geometry, not the metrics table: render() may
-  // shrink the cover tile to fit the menu, which moves everything below it up
-  // by the shrink. Before the first render (menuTopRendered == 0) fall back to
-  // the static formula, which is what render() uses when nothing shrank.
-  const int coverBottomDrawn =
-      menuTopRendered > 0 ? coverRectY + coverRectH : metrics.homeTopPadding + metrics.homeCoverTileHeight;
+  // Hit areas follow the DRAWN geometry: the cover tile and the menu cells
+  // render() recorded.
   const int coverColumnCount = std::max(1, metrics.homeRecentBooksCount);
   const int recentCount = std::min(static_cast<int>(recentBooks.size()), coverColumnCount);
   const int coverColumnWidth = (renderer.getScreenWidth() - 2 * metrics.contentSidePadding) / coverColumnCount;
+  const int coverBottom = coverRectH > 0 ? coverRectY + coverRectH : metrics.homeTopPadding;
   int touchedBook = -1;
-  const auto coverTouch = mappedInput.colTouch(touchedBook, metrics.contentSidePadding, coverColumnWidth, recentCount,
-                                               metrics.homeTopPadding, coverBottomDrawn, coverColumnWidth);
+  const auto coverTouch =
+      metrics.homeContinueReadingInMenu
+          ? MappedInputManager::RowTouch::None
+          : mappedInput.colTouch(touchedBook, metrics.contentSidePadding, coverColumnWidth, recentCount,
+                                 metrics.homeTopPadding, coverBottom, coverColumnWidth);
   if (coverTouch != MappedInputManager::RowTouch::None) {
     if (coverTouch == MappedInputManager::RowTouch::Down) {
       if (selectorIndex != touchedBook) {
@@ -300,28 +339,19 @@ void HomeActivity::loop() {
     return;
   }
 
-  const int menuTop = menuTopRendered > 0
-                          ? menuTopRendered
-                          : metrics.homeTopPadding + metrics.homeCoverTileHeight + metrics.homeMenuTopOffset;
-  const int renderedMenuCount =
-      menuCount - (metrics.homeContinueReadingInMenu ? 0 : static_cast<int>(recentBooks.size()));
-  int menuRow = -1;
-  // Row height from the theme, not the metrics table: RoundedRaff draws
-  // font-derived rows and the touch grid must match the visuals exactly.
-  const int menuRowHeight = GUI.getMenuRowHeight(renderer);
-  const int rowSpacing = menuSpacingRendered > 0 ? menuSpacingRendered : metrics.menuSpacing;
-  const auto menuTouch = mappedInput.rowTouch(menuRow, menuTop, menuRowHeight + rowSpacing, renderedMenuCount, 0,
-                                              INT32_MAX, menuRowHeight);
-  if (menuTouch != MappedInputManager::RowTouch::None) {
-    const int touchedIndex =
-        metrics.homeContinueReadingInMenu ? menuRow : menuRow + static_cast<int>(recentBooks.size());
-    if (menuTouch == MappedInputManager::RowTouch::Down) {
-      if (selectorIndex != touchedIndex) {
-        selectorIndex = touchedIndex;
+  for (int c = 0; c < cellCount; ++c) {
+    const Cell& cell = cells[c];
+    int row = -1;
+    const auto touch = mappedInput.rowTouch(row, cell.y, cell.h, 1, cell.x + metrics.contentSidePadding,
+                                            cell.x + cell.w - metrics.contentSidePadding, cell.h);
+    if (touch == MappedInputManager::RowTouch::None) continue;
+    if (touch == MappedInputManager::RowTouch::Down) {
+      if (selectorIndex != cell.selector) {
+        selectorIndex = cell.selector;
         requestUpdate();
       }
     } else {
-      selectorIndex = touchedIndex;
+      selectorIndex = cell.selector;
       activateSelection();
     }
     return;
@@ -346,103 +376,81 @@ void HomeActivity::render(RenderLock&&) {
   GUI.drawHeader(renderer, Rect{0, metrics.topPadding, pageWidth, metrics.homeTopPadding - metrics.topPadding},
                  metrics.homeContinueReadingInMenu && !recentBooks.empty() ? recentBooks[0].title.c_str() : nullptr);
 
-  // fork-local seam: the rows come from menuRows(), which the dispatch in
+  // fork-local seam: the entries come from menuRows(), which the dispatch in
   // loop() walks too. Shelf titles are raw rather than tr(): routing them
   // through i18n would mean editing lib/I18n/translations/*.yaml per app.
   MenuRow menuRowList[MAX_MENU_ROWS];
   const int rowCount = menuRows(menuRowList);
-  std::vector<const char*> menuItems;
-  std::vector<UIIcon> menuIcons;
-  menuItems.reserve(rowCount + 1);
-  menuIcons.reserve(rowCount + 1);
+  const char* labels[MAX_MENU_ROWS + 1] = {};
+  UIIcon icons[MAX_MENU_ROWS + 1] = {};
+  int selectors[MAX_MENU_ROWS + 1] = {};
+  int entries = 0;
+  const bool continueRow = metrics.homeContinueReadingInMenu && !recentBooks.empty();
+  if (continueRow) {
+    labels[entries] = tr(STR_CONTINUE_READING);
+    icons[entries] = Book;
+    selectors[entries++] = 0;
+  }
   for (int i = 0; i < rowCount; ++i) {
     switch (menuRowList[i].kind) {
       case MenuRow::Kind::Library:
-        menuItems.push_back(tr(STR_LIBRARY));
-        menuIcons.push_back(Library);
-        break;
-      case MenuRow::Kind::FileTransfer:
-        menuItems.push_back(tr(STR_FILE_TRANSFER));
-        menuIcons.push_back(Transfer);
+        labels[entries] = tr(STR_LIBRARY);
+        icons[entries] = Library;
         break;
       case MenuRow::Kind::HomeItem:
-        menuItems.push_back(shelf::homeItems()[menuRowList[i].index].title);
-        menuIcons.push_back(shelf::homeItemIcon(menuRowList[i].index));
+        labels[entries] = shelf::homeItems()[menuRowList[i].index].title;
+        icons[entries] = shelf::homeItemIcon(menuRowList[i].index);
         break;
       case MenuRow::Kind::Folder:
-        menuItems.push_back(shelf::folders()[menuRowList[i].index].title);
-        menuIcons.push_back(shelf::folders()[menuRowList[i].index].icon);
+        labels[entries] = shelf::folders()[menuRowList[i].index].title;
+        icons[entries] = shelf::folders()[menuRowList[i].index].icon;
         break;
       case MenuRow::Kind::Settings:
-        menuItems.push_back(tr(STR_SETTINGS_TITLE));
-        menuIcons.push_back(Settings);
+        labels[entries] = tr(STR_SETTINGS_TITLE);
+        icons[entries] = Settings;
+        break;
+      case MenuRow::Kind::Wifi:
+        labels[entries] = tr(STR_HOME_WIFI);
+        icons[entries] = Wifi;
         break;
     }
+    selectors[entries++] = static_cast<int>(recentBooks.size()) + i;
   }
 
-  if (metrics.homeContinueReadingInMenu && !recentBooks.empty()) {
-    // Insert Continue Reading at the top if enabled in theme
-    menuItems.insert(menuItems.begin(), tr(STR_CONTINUE_READING));
-    menuIcons.insert(menuIcons.begin(), Book);
-  }
-
-  // --- fork-local seam ---------------------------------------------------
-  // RoundedRaff adds a Continue Reading row of its own once a book has been
-  // opened. drawButtonMenu lays rows at a fixed pitch and ignores the rect
-  // height, so a row that does not fit is drawn off-screen and simply is not
-  // there -- and the home menu does not scroll, so it cannot be reached at all.
-  //
-  // Only the row GAPS give. The cover tile keeps its full height: its art is
-  // the point of it, and the gaps are generous enough to lose a few pixels
-  // each and read the same.
-  // getMenuRowHeight() rather than metrics.menuRowHeight: RoundedRaff marks its
-  // metric as non-authoritative and derives the drawn height from the renderer.
-  const int menuRowHeight = GUI.getMenuRowHeight(renderer);
-  const int rows = static_cast<int>(menuItems.size());
+  // The cover tile sits right under the header and the menu takes everything
+  // below it, so no band of the screen is left empty.
   const int coverTileHeight = metrics.homeCoverTileHeight;
-  const int spaceForMenu = pageHeight - metrics.homeTopPadding - metrics.homeMenuTopOffset - metrics.buttonHintsHeight -
-                           coverTileHeight - metrics.verticalSpacing;
-  int menuSpacing = metrics.menuSpacing;
-  if (rows > 0 && rows * (menuRowHeight + menuSpacing) > spaceForMenu) {
-    // Row height is fixed by the theme, so only the gaps can give. Floored at
-    // 1px: rows flush against each other read as one block, not a list.
-    menuSpacing = std::max(1, spaceForMenu / rows - menuRowHeight);
-  }
-  // Drawn spacing and hit-test spacing must be the same number, or taps drift
-  // further off with every row down the list.
-  menuSpacingRendered = menuSpacing;
-  const int gapBelowTile = metrics.verticalSpacing;
-  const int tileBlock = coverTileHeight > 0 ? coverTileHeight + gapBelowTile : 0;
-
-  // Recorded so storeCoverBuffer (called from the theme) knows which
-  // sub-region of the framebuffer to snapshot, rather than all 48 KB.
   coverRectX = 0;
   coverRectY = metrics.homeTopPadding;
   coverRectW = pageWidth;
   coverRectH = coverTileHeight;
-  // The menu top the touch grid in loop() must use; drawButtonMenu below draws
-  // at exactly this y.
-  menuTopRendered = metrics.homeTopPadding + tileBlock + metrics.homeMenuTopOffset;
-
   if (coverTileHeight > 0) {
     GUI.drawRecentBookCover(renderer, Rect{0, metrics.homeTopPadding, pageWidth, coverTileHeight}, recentBooks,
                             selectorIndex, coverRendered, coverBufferStored, bufferRestored,
                             std::bind(&HomeActivity::storeCoverBuffer, this));
   }
 
-  GUI.drawButtonMenu(
-      renderer,
-      Rect{0, menuTopRendered, pageWidth,
-           pageHeight -
-               (metrics.homeTopPadding + coverTileHeight + metrics.homeMenuTopOffset + metrics.buttonHintsHeight)},
-      static_cast<int>(menuItems.size()),
-      metrics.homeContinueReadingInMenu ? selectorIndex : selectorIndex - recentBooks.size(),
-      [&menuItems](int index) { return std::string(menuItems[index]); },
-      [&menuIcons](int index) { return menuIcons[index]; }, menuSpacing);
+  const int fullWidth = continueRow ? 2 : 1;
+  const int menuTop = metrics.homeTopPadding + coverTileHeight + metrics.homeMenuTopOffset / 2;
+  layoutMenu(menuTop, pageHeight - metrics.buttonHintsHeight - metrics.verticalSpacing, entries, fullWidth);
+  for (int e = 0; e < cellCount; ++e) {
+    cells[e].selector = selectors[e];
+    const char* label = labels[e];
+    const UIIcon icon = icons[e];
+    GUI.drawButtonMenu(
+        renderer, Rect{cells[e].x, cells[e].y, cells[e].w, cells[e].h}, 1, selectorIndex == selectors[e] ? 0 : -1,
+        [label](int) { return std::string(label); }, [icon](int) { return icon; }, 0);
+  }
+  // A rule under the full-width entries, halfway down the gap to the grid.
+  if (cellCount > fullWidth) {
+    const int above = cells[fullWidth - 1].y + cells[fullWidth - 1].h;
+    const int lineY = (above + cells[fullWidth].y) / 2;
+    renderer.drawLine(metrics.contentSidePadding, lineY, pageWidth - metrics.contentSidePadding, lineY, true);
+  }
 
-  const auto labels = mappedInput.mapLabels(recentBooks.empty() ? "" : tr(STR_RESUME), tr(STR_SELECT), tr(STR_DIR_UP),
-                                            tr(STR_DIR_DOWN));
-  GUI.drawButtonHints(renderer, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
+  const auto hints = mappedInput.mapLabels(recentBooks.empty() ? "" : tr(STR_RESUME), tr(STR_SELECT), tr(STR_DIR_UP),
+                                           tr(STR_DIR_DOWN));
+  GUI.drawButtonHints(renderer, hints.btn1, hints.btn2, hints.btn3, hints.btn4);
 
   renderer.displayBuffer(cleanInitialRefresh && !firstRenderDone ? HalDisplay::HALF_REFRESH : HalDisplay::FAST_REFRESH);
 
@@ -466,3 +474,14 @@ void HomeActivity::onSettingsOpen() { activityManager.goToSettings(); }
 void HomeActivity::onFileTransferOpen() { activityManager.goToFileTransfer(); }
 
 void HomeActivity::onOpdsBrowserOpen() { activityManager.goToBrowser(); }
+
+// fork-local seam: File Transfer's own first choice, joining a Wi-Fi network,
+// without the choice.
+void HomeActivity::onWifiOpen() {
+  auto activity = makeUniqueNoThrow<CrossPointWebServerActivity>(renderer, mappedInput, /*joinNetworkOnly=*/true);
+  if (!activity) {
+    LOG_ERR("HOME", "OOM: Wi-Fi activity");
+    return;
+  }
+  activityManager.replaceActivity(std::move(activity));
+}

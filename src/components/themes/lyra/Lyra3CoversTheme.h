@@ -9,11 +9,10 @@ class GfxRenderer;
 namespace Lyra3CoversMetrics {
 constexpr ThemeMetrics values = [] {
   ThemeMetrics v = LyraMetrics::values;
-  // fork-local: two covers, sized so the tile and Home's five rows fit the
-  // 800px screen with 4px between rows; the tile keeps room for a
-  // three-line title under each cover.
-  v.homeCoverHeight = 250;
-  v.homeCoverTileHeight = 332;
+  // fork-local: two covers with two title lines under each; Home lays its
+  // menu out in whatever height is left below the tile.
+  v.homeCoverHeight = 330;
+  v.homeCoverTileHeight = 392;
   v.homeRecentBooksCount = 2;
   return v;
 }();

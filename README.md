@@ -43,9 +43,11 @@ is off.
 
 ## What is on it
 
-Home shows the last two books, then **Library**, **File Transfer**, **Study**,
-**Apps & Games** and **Settings**. Study opens straight from Home; everything
-else of the fork's lives in the Apps & Games folder.
+Home shows the last two books, then **Library** across the width and, two to a
+row, **Study** and **Apps**, **Settings** and **Wi-Fi**. Wi-Fi joins a network
+and opens the file transfer page, the first choice of File Transfer. Study
+opens straight from Home; everything else of the fork's lives in the Apps
+folder.
 
 ### On Home
 
@@ -53,18 +55,20 @@ else of the fork's lives in the Apps & Games folder.
 | --------- | -------------------------------------------- |
 | **Study** | Anki decks with the FSRS scheduler, offline. |
 
-### Apps & Games
+### Apps
 
-|                  |                                                                         |
-| ---------------- | ----------------------------------------------------------------------- |
-| **Browse Files** | CrossPoint's file browser.                                              |
-| **Reading**      | Time read per day and per book, a streak, and the time left in the book. |
-| **Hacker News**  | The front page in a reading serif, articles kept on the card.           |
-| **xkcd**         | The archive, packed for the card and drawn one to one.                  |
-| **Get Books**    | Browse any OPDS catalog and download straight to the card, no computer. |
-| **Wallpapers**   | Pick an image on the card as the sleep screen, one tap to set it.       |
-| **Solitaire**    | Klondike, turned sideways because that is the shape of a tableau.       |
-| **Battleship**   | Lay out a fleet, then hunt someone else's.                              |
+|                   |                                                                          |
+| ----------------- | ------------------------------------------------------------------------ |
+| **Browse**        | CrossPoint's file browser.                                               |
+| **File Transfer** | CrossPoint's file transfer: Wi-Fi, a hotspot, Calibre or USB.            |
+| **Reading**       | Time read per day and per book, a streak, and the time left in the book. |
+| **Hacker News**   | The front page in a reading serif, articles kept on the card.            |
+| **xkcd**          | The archive, packed for the card and drawn one to one.                   |
+| **Get Books**     | Browse any OPDS catalog and download straight to the card, no computer.  |
+| **Wallpapers**    | Pick an image on the card as the sleep screen, one tap to set it.        |
+| **Solitaire**     | Klondike, turned sideways because that is the shape of a tableau.        |
+| **Battleship**    | Lay out a fleet, then hunt someone else's.                               |
+| **Player**        | The name and face this device shows another one across the table.        |
 
 And the reader is still CrossPoint's reader: the EPUB engine, sync and the file
 browser are theirs and stay theirs.

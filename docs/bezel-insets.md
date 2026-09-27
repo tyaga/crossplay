@@ -256,18 +256,17 @@ or it is asserting about a device that does not exist.
 
 ## Measuring another unit
 
-The ruler is not on the shelf any more. It was a two-file app that existed to
-fill in the table above, and a permanent row on Apps & Games is a poor home for an
-instrument used twice. It is not lost, though, and restoring it is a checkout
-plus the one row it needs:
+The ruler is a two-file app that exists to fill in the table above, and it is
+kept off the shelf: a permanent row in Apps is a poor home for an instrument
+used twice. Bringing it back is a checkout plus the one row it needs:
 
 ```bash
 git log --all --diff-filter=D -1 --format=%H -- src/apps_local/bezel   # the commit that removed it
 git checkout <that commit>^ -- src/apps_local/bezel
 ```
 
-Then re-add its include and its `kAppsAndGames` row in `src/apps_local/Shelf.cpp`, and
-build. On the device: Apps & Games > BEZEL, look straight on, and for each edge the
+Then add its include and its `kApps` row in `src/apps_local/Shelf.cpp`, and
+build. On the device: Apps > BEZEL, look straight on, and for each edge the
 smallest number whose tick you can still see is that edge's hidden pixel count.
 The screen also prints what the firmware is currently configured with
 (`SET T.. R.. B.. L..`), so a measurement and the value it should replace are

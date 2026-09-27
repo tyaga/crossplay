@@ -14,7 +14,7 @@
 #include "../../components/UITheme.h"
 #include "../../network/HttpDownloader.h"
 #include "../Shelf.h"
-#include "../ShelfScreen.h"
+#include "../ui/Paging.h"
 #include "../ui/Toybox.h"
 #include "../ui/ToyboxFonts.h"
 #include "../ui/ToyboxIcons.h"
@@ -738,11 +738,11 @@ void HackerNewsActivity::pageList(const int delta) {
   // clamped back -- a key that did nothing on the shelf, or jumped.
   const int count = static_cast<int>(listItems_.size());
   if (count <= 0 || visibleRows_ <= 0) return;
-  const int pages = shelfui::pageCountFor(count, visibleRows_);
+  const int pages = paging::pageCountFor(count, visibleRows_);
   // A list that fits on one page has nowhere to step to. Moving it anyway would
   // be a page turn that changed nothing, which reads as a dead input.
   if (pages <= 1) return;
-  topIndex_ = shelfui::pageStep(shelfui::pageFor(topIndex_, visibleRows_), pages, delta) * visibleRows_;
+  topIndex_ = paging::pageStep(paging::pageFor(topIndex_, visibleRows_), pages, delta) * visibleRows_;
   requestUpdate();
 }
 
@@ -877,7 +877,7 @@ void HackerNewsActivity::render(RenderLock&&) {
         // for DRAWING, which is its own behaviour and every list in the fork
         // shares it. The difference is that the page we are on is now ours to
         // remember rather than something read back out of the paint.
-        const int pages = shelfui::pageCountFor(static_cast<int>(listItems_.size()), visibleRows_);
+        const int pages = paging::pageCountFor(static_cast<int>(listItems_.size()), visibleRows_);
         const int maxTop = pages > 0 ? (pages - 1) * visibleRows_ : 0;
         if (topIndex_ > maxTop) topIndex_ = maxTop;
         if (topIndex_ < 0) topIndex_ = 0;

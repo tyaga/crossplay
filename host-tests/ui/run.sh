@@ -30,7 +30,6 @@ mkdir -p "$BUILD_DIR"
   -I"$SDK/include" -I"$ICONS/include" \
   "$SDK/src/FreeInkUI.cpp" \
   ../../src/apps_local/battleship/BattleshipScreens.cpp \
-  ../../src/apps_local/ShelfScreen.cpp \
   ../../src/apps_local/hackernews/HackerNewsScreens.cpp \
   ../../src/apps_local/link/LinkScreens.cpp \
   ../../src/apps_local/player/PlayerAvatar.cpp \

@@ -6,6 +6,8 @@
 # Picked for silhouette: a folder, a gear, a hull and a suit share no shape.
 
 browse      = folder
+filetransfer = send
+player      = circle-user-round
 settings    = settings
 battleship  = ship
 solitaire   = spade       # the card suit reads instantly at any size
