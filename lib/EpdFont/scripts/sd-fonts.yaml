@@ -169,6 +169,52 @@ families:
       italic:     {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/vollkorn/Vollkorn-Italic%5Bwght%5D.ttf", variable: {wght: 400}}
       bolditalic: {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/vollkorn/Vollkorn-Italic%5Bwght%5D.ttf", variable: {wght: 700}}
 
+  - name: PTSerif
+    description: "Public type serif for Russian and Latin text (Latin, Cyrillic)"
+    scripts: [latin, cyrillic]
+    intervals: latin-ext,cyrillic,ipa-chars
+    sizes: [12, 14, 16, 18]
+    styles:
+      regular:    {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptserif/PT_Serif-Web-Regular.ttf"}
+      bold:       {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptserif/PT_Serif-Web-Bold.ttf"}
+      italic:     {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptserif/PT_Serif-Web-Italic.ttf"}
+      bolditalic: {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptserif/PT_Serif-Web-BoldItalic.ttf"}
+
+  - name: Spectral
+    description: "Screen-first serif with generous x-height (Latin, Cyrillic)"
+    scripts: [latin, cyrillic]
+    intervals: latin-ext,cyrillic,ipa-chars
+    sizes: [12, 14, 16, 18]
+    styles:
+      regular:    {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/spectral/Spectral-Regular.ttf"}
+      bold:       {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/spectral/Spectral-Bold.ttf"}
+      italic:     {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/spectral/Spectral-Italic.ttf"}
+      bolditalic: {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/spectral/Spectral-BoldItalic.ttf"}
+
+  # wdth 75 is the Condensed instance of Noto Serif's width axis; the family is
+  # published as one variable font, so the narrow cut only exists once pinned.
+  - name: NotoSerifCond
+    description: "Condensed Noto Serif, more words per line (Latin, Cyrillic)"
+    scripts: [latin, cyrillic]
+    intervals: latin-ext,cyrillic,ipa-chars
+    sizes: [12, 14, 16, 18]
+    styles:
+      regular:    {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif%5Bwdth,wght%5D.ttf", variable: {wdth: 75, wght: 400}}
+      bold:       {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif%5Bwdth,wght%5D.ttf", variable: {wdth: 75, wght: 700}}
+      italic:     {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif-Italic%5Bwdth,wght%5D.ttf", variable: {wdth: 75, wght: 400}}
+      bolditalic: {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif-Italic%5Bwdth,wght%5D.ttf", variable: {wdth: 75, wght: 700}}
+
+  - name: CharisSIL
+    description: "SIL literacy serif with wide diacritic coverage (Latin, Cyrillic)"
+    scripts: [latin, cyrillic]
+    intervals: latin-ext,cyrillic,ipa-chars
+    sizes: [12, 14, 16, 18]
+    styles:
+      regular:    {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/charissil/CharisSIL-Regular.ttf"}
+      bold:       {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/charissil/CharisSIL-Bold.ttf"}
+      italic:     {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/charissil/CharisSIL-Italic.ttf"}
+      bolditalic: {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/charissil/CharisSIL-BoldItalic.ttf"}
+
   # ── Sans-serif ─────────────────────────────────────────────────────────
 
   - name: NotoSansExtended
@@ -225,6 +271,49 @@ families:
       bold:       {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreya/Alegreya%5Bwght%5D.ttf", variable: {wght: 700}}
       italic:     {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreya/Alegreya-Italic%5Bwght%5D.ttf", variable: {wght: 400}}
       bolditalic: {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreya/Alegreya-Italic%5Bwght%5D.ttf", variable: {wght: 700}}
+
+  - name: PTSans
+    description: "Public type sans for Russian and Latin text (Latin, Cyrillic)"
+    scripts: [latin, cyrillic]
+    intervals: latin-ext,cyrillic,ipa-chars
+    sizes: [12, 14, 16, 18]
+    styles:
+      regular:    {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptsans/PT_Sans-Web-Regular.ttf"}
+      bold:       {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptsans/PT_Sans-Web-Bold.ttf"}
+      italic:     {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptsans/PT_Sans-Web-Italic.ttf"}
+      bolditalic: {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptsans/PT_Sans-Web-BoldItalic.ttf"}
+
+  # Upright and bold only: PT Sans Narrow is published without italics.
+  - name: PTSansNarrow
+    description: "Narrow public type sans, more words per line (Latin, Cyrillic)"
+    scripts: [latin, cyrillic]
+    intervals: latin-ext,cyrillic,ipa-chars
+    sizes: [12, 14, 16, 18]
+    styles:
+      regular:    {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptsansnarrow/PT_Sans-Narrow-Web-Regular.ttf"}
+      bold:       {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/ptsansnarrow/PT_Sans-Narrow-Web-Bold.ttf"}
+
+  - name: FiraSansExtraCond
+    description: "Extra condensed Fira Sans (Latin, Cyrillic)"
+    scripts: [latin, cyrillic]
+    intervals: latin-ext,cyrillic,ipa-chars
+    sizes: [12, 14, 16, 18]
+    styles:
+      regular:    {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/firasansextracondensed/FiraSansExtraCondensed-Regular.ttf"}
+      bold:       {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/firasansextracondensed/FiraSansExtraCondensed-Bold.ttf"}
+      italic:     {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/firasansextracondensed/FiraSansExtraCondensed-Italic.ttf"}
+      bolditalic: {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/firasansextracondensed/FiraSansExtraCondensed-BoldItalic.ttf"}
+
+  - name: Andika
+    description: "SIL literacy sans with wide diacritic coverage (Latin, Cyrillic)"
+    scripts: [latin, cyrillic]
+    intervals: latin-ext,cyrillic,ipa-chars
+    sizes: [12, 14, 16, 18]
+    styles:
+      regular:    {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/andika/Andika-Regular.ttf"}
+      bold:       {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/andika/Andika-Bold.ttf"}
+      italic:     {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/andika/Andika-Italic.ttf"}
+      bolditalic: {url: "https://raw.githubusercontent.com/google/fonts/main/ofl/andika/Andika-BoldItalic.ttf"}
 
   # ── Monospace ──────────────────────────────────────────────────────────
 
