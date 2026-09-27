@@ -31,6 +31,7 @@ int HomeActivity::menuRows(MenuRow* rows) const {
   rows[n++] = {MenuRow::Kind::FileTransfer, 0};
   for (int i = 0; i < shelf::homeItemCount() && n < MAX_MENU_ROWS; ++i) rows[n++] = {MenuRow::Kind::HomeItem, i};
   for (int i = 0; i < shelf::folderCount() && n < MAX_MENU_ROWS; ++i) rows[n++] = {MenuRow::Kind::Folder, i};
+  if (n < MAX_MENU_ROWS) rows[n++] = {MenuRow::Kind::Settings, 0};
   return n;
 }
 
@@ -142,8 +143,10 @@ void HomeActivity::onEnter() {
     case HomeMenuItem::FILE_TRANSFER:
       selectorIndex = menuRowOf(MenuRow::Kind::FileTransfer, 0);
       break;
-    case HomeMenuItem::FILE_BROWSER:
     case HomeMenuItem::SETTINGS_MENU:
+      selectorIndex = menuRowOf(MenuRow::Kind::Settings, 0);
+      break;
+    case HomeMenuItem::FILE_BROWSER:
     case HomeMenuItem::OPDS_BROWSER:
       selectorIndex = menuRowOf(MenuRow::Kind::Folder, 0);
       break;
@@ -235,6 +238,9 @@ void HomeActivity::loop() {
         break;
       case MenuRow::Kind::Folder:
         shelf::openFolder(rows[menuIndex].index, renderer, mappedInput);
+        break;
+      case MenuRow::Kind::Settings:
+        onSettingsOpen();
         break;
     }
   };
@@ -366,6 +372,10 @@ void HomeActivity::render(RenderLock&&) {
       case MenuRow::Kind::Folder:
         menuItems.push_back(shelf::folders()[menuRowList[i].index].title);
         menuIcons.push_back(shelf::folders()[menuRowList[i].index].icon);
+        break;
+      case MenuRow::Kind::Settings:
+        menuItems.push_back(tr(STR_SETTINGS_TITLE));
+        menuIcons.push_back(Settings);
         break;
     }
   }

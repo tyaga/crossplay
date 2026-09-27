@@ -82,7 +82,7 @@ class HomeActivity final : public Activity {
   // The rows below the covers. Browse Files and Settings live in the shelf's
   // Apps & Games folder, so Home draws its own list instead of upstream's.
   struct MenuRow {
-    enum class Kind : uint8_t { Library, FileTransfer, HomeItem, Folder } kind;
+    enum class Kind : uint8_t { Library, FileTransfer, HomeItem, Folder, Settings } kind;
     int index;  // into shelf::homeItems() or shelf::folders(); unused otherwise
   };
   static constexpr int MAX_MENU_ROWS = 8;

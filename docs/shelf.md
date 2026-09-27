@@ -12,17 +12,18 @@ Home
   Library / File Transfer                                   (upstream's)
   ---------------
   Study                                                     (Home item)
-  Apps & Games >  browse files, settings, hacker news, xkcd,
+  Apps & Games >  browse files, reading, hacker news, xkcd,
                   get books, wallpapers, solitaire, battleship
                   [ (face) SPIKY GRIM BEARD  > ]   the footer bar, opens PLAYER
+  Settings                                                  (upstream's)
 ```
 
 Home items open straight from Home; everything else sits in the one folder,
 appended after upstream's rows. **At most two taps to anything.**
 
-Upstream's Browse Files and Settings are items in the folder too. They leave
-through `goHome()`, not `shelf::leave()`, so `goHome()` asks
-`shelf::leaveToFolder()` first and lands them back in the folder. The Home
+Upstream's Browse Files is an item in the folder too. It leaves through
+`goHome()`, not `shelf::leave()`, so `goHome()` asks `shelf::leaveToFolder()`
+first and lands it back in the folder. Settings stays on Home, last. The Home
 gesture calls `shelf::forgetOpenFolder()` before `goHome()`, because that
 gesture means Home from anywhere.
 
@@ -561,13 +562,13 @@ system is what you build when you have not decided what the device is for.
 ## The Home seam
 
 `src/activities/home/HomeActivity.cpp` draws its own row list rather than
-upstream's: `menuRows()` returns Library, File Transfer, the Home items and the
-folders, in that order, and the render loop, the dispatch and the selection
+upstream's: `menuRows()` returns Library, File Transfer, the Home items, the
+folders and Settings, in that order, and the render loop, the dispatch and the selection
 restore all walk that one list. Recent-book covers sit before it, which is why
 `menuRowOf()` adds `recentBooks.size()` to a row's position.
 
 `onEnter()` restores the selection in this order: the departing upstream screen
-that `goHome()` names (Library, File Transfer; Browse Files, Settings and Get
+that `goHome()` names (Library, File Transfer, Settings; Browse Files and Get
 Books select Apps & Games), then `shelf::lastFolderOnHome()`, then
 `shelf::lastHomeItemOnHome()`. `goHome()` matches the departing activity's
 _name_ against `HomeMenuItem`, which cannot know shelf rows exist; without the

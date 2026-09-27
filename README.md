@@ -43,9 +43,9 @@ is off.
 
 ## What is on it
 
-Home shows the last two books, then **Library**, **File Transfer**, **Study**
-and **Apps & Games**. Study opens straight from Home; everything else lives in
-the Apps & Games folder.
+Home shows the last two books, then **Library**, **File Transfer**, **Study**,
+**Apps & Games** and **Settings**. Study opens straight from Home; everything
+else of the fork's lives in the Apps & Games folder.
 
 ### On Home
 
@@ -58,7 +58,6 @@ the Apps & Games folder.
 |                  |                                                                         |
 | ---------------- | ----------------------------------------------------------------------- |
 | **Browse Files** | CrossPoint's file browser.                                              |
-| **Settings**     | CrossPoint's settings.                                                  |
 | **Reading**      | Time read per day and per book, a streak, and the time left in the book. |
 | **Hacker News**  | The front page in a reading serif, articles kept on the card.           |
 | **xkcd**         | The archive, packed for the card and drawn one to one.                  |

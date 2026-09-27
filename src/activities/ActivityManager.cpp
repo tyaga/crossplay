@@ -426,7 +426,7 @@ void ActivityManager::goToFullScreenMessage(std::string message, EpdFontFamily::
 
 void ActivityManager::goHome(HomeMenuItem initialMenuItem, bool cleanInitialRefresh) {
   // fork-local seam: upstream's screens opened from a shelf folder (Browse
-  // Files, Settings, Get Books) leave by goHome(); send them back to the folder.
+  // Files, Get Books) leave by goHome(); send them back to the folder.
   if (initialMenuItem == HomeMenuItem::NONE && currentActivity &&
       shelf::leaveToFolder(currentActivity->name.c_str(), renderer, mappedInput)) {
     return;

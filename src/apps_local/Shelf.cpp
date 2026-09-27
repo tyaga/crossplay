@@ -15,7 +15,6 @@
 #include "ShelfState.h"
 #include "activities/browser/OpdsBookBrowserActivity.h"
 #include "activities/home/FileBrowserActivity.h"
-#include "activities/settings/SettingsActivity.h"
 #include "battleship/BattleshipActivity.h"
 #include "hackernews/HackerNewsActivity.h"
 #include "player/PlayerActivity.h"
@@ -28,20 +27,15 @@
 
 namespace {
 
-// Upstream's two screens, as shelf items. They leave through goHome(), which
-// hands them back to the folder; see shelf::leaveToFolder().
+// Upstream's file browser, as a shelf item. It leaves through goHome(), which
+// hands it back to the folder; see shelf::leaveToFolder().
 std::unique_ptr<Activity> createFileBrowser(GfxRenderer& renderer, MappedInputManager& mappedInput) {
   return makeUniqueNoThrow<FileBrowserActivity>(renderer, mappedInput, "/");
-}
-
-std::unique_ptr<Activity> createSettings(GfxRenderer& renderer, MappedInputManager& mappedInput) {
-  return makeUniqueNoThrow<SettingsActivity>(renderer, mappedInput);
 }
 
 // Icons come from tools_local/toybox/icons.txt via Lucide.
 constexpr shelf::Item kAppsAndGames[] = {
     {"BROWSE FILES", &icon_browse_32, &createFileBrowser},
-    {"SETTINGS", &icon_settings_32, &createSettings},
     {"READING", &icon_readingstats_32, &StatsActivity::create},
     {"HACKER NEWS", &icon_hackernews_32, &HackerNewsActivity::create},
     {"XKCD", &icon_xkcd_32, &XkcdActivity::create},

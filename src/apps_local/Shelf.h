@@ -4,13 +4,14 @@
 // out of it.
 //
 // Home gets the Home items, launched directly, and one folder row, APPS &
-// GAMES, holding everything else -- upstream's file browser and settings
-// included. That is the whole hierarchy.
+// GAMES, holding everything else -- upstream's file browser included. That is
+// the whole hierarchy.
 //
 //   Home
 //     Library / File Transfer                          (upstream's)
 //     Study                                            (Home item)
-//     Apps & Games >  browse files, settings, hacker news, ..., battleship
+//     Apps & Games >  browse files, reading, hacker news, ..., battleship
+//     Settings                                         (upstream's)
 //
 // ---------------------------------------------------------------------------
 // Three rules, and the reason each exists.

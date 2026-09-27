@@ -121,13 +121,13 @@ Upon turning the device on for the first time, you will be placed on the **[Home
 
 ### 3.1 Home Screen
 
-The Home screen is the main entry point to the firmware. It shows the covers of the most recently read books (one, or two with the **Lyra Extended** theme); tap one to open it in **[Reading Mode](#4-reading-mode)**. Below them are the **[Library](#34-library-screen)**, **[File Transfer](#35-file-transfer-screen)**, and the two rows CrossPlay adds: **Study** and **Apps & Games**. **[Browse Files](#33-browse-files-screen)** and **[Settings](#36-settings)** are the first two rows of Apps & Games.
+The Home screen is the main entry point to the firmware. It shows the covers of the most recently read books (one, or two with the **Lyra Extended** theme); tap one to open it in **[Reading Mode](#4-reading-mode)**. Below them are the **[Library](#34-library-screen)**, **[File Transfer](#35-file-transfer-screen)**, the two rows CrossPlay adds, **Study** and **Apps & Games**, and **[Settings](#36-settings)**. **[Browse Files](#33-browse-files-screen)** is the first row of Apps & Games.
 
 ### 3.1.1 Study and Apps & Games (CrossPlay)
 
 **Study** opens the flashcard app straight from Home; Back returns you here.
 
-**Apps & Games** opens the shelf: Browse Files, Settings, Hacker News, xkcd,
+**Apps & Games** opens the shelf: Browse Files, Reading, Hacker News, xkcd,
 Get Books, Wallpapers, Solitaire and Battleship. A folder that does not fit
 pages vertically: swipe up for the next page, down for the previous, and the
 header says which page you are on. A row opens that app; Back (the
