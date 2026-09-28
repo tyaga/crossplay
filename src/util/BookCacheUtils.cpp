@@ -3,6 +3,7 @@
 #include <Epub.h>
 #include <Fb2Book.h>
 #include <FsHelpers.h>
+#include <LibraryBuilder.h>
 #include <Logging.h>
 #include <Txt.h>
 #include <Xtc.h>
@@ -22,6 +23,9 @@ bool isBookCacheDirectoryName(const char* name) {
 }
 
 void clearBookCache(const std::string& path) {
+  // fork-local seam: every add, delete, rename and move of a file on the card
+  // comes through here, so this is where the Library learns it is out of date.
+  library::markLibraryIndexStale();
   if (FsHelpers::hasEpubExtension(path)) {
     Epub(path, "/.crosspoint").clearCache();
   } else if (fb2::isFb2Path(path)) {

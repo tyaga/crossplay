@@ -70,4 +70,12 @@ bool buildLibraryIndex(const char* rootPath, BuildStats& stats, bool readMetadat
 // Live index path, shared by the builder and activity.
 const char* libraryIndexPath();
 
+// fork-local seam: a book was added, removed, renamed or moved on the card,
+// so the index no longer matches it. Kept as a marker file because the change
+// usually happens on another screen (File Transfer, WebDAV, a download) or
+// before a reboot; the Library rebuilds on its next open and a successful
+// build clears the mark.
+void markLibraryIndexStale();
+bool libraryIndexMarkedStale();
+
 }  // namespace library

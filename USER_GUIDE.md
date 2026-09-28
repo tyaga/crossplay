@@ -173,7 +173,7 @@ On a button-only device:
 
 On a touch device, tap tabs, folders, books, and the Search icon directly. Swipe to scroll. Long-press a recently opened book in the Recent view to remove it from the list, or any other book outside the Author view to delete it. Long-press a book in the Author view to collapse to the group list, then tap a group to expand it.
 
-The index is created automatically the first time the Library is opened. To pick up later file changes or updated metadata, use **Settings → System → Rebuild library index**. The **Use book metadata** setting controls whether the index reads titles and authors stored inside books.
+The index is created automatically the first time the Library is opened, and brought up to date the next time you open the Library after books are added, deleted, renamed or moved on the device: through File Transfer (the web page or WebDAV), **Get Books**, **Browse**, the Library itself, or while the reader was a USB drive. For a card changed in a computer's card reader, or for updated metadata, use **Settings → System → Rebuild library index**. The **Use book metadata** setting controls whether the index reads titles and authors stored inside books.
 
 ### 3.5 File Transfer Screen
 

@@ -391,6 +391,10 @@ if (parsedSize != fileSize) {
 
 ## CLX1 — library index (`.crosspoint/library.idx`)
 
+`.crosspoint/library.stale`, empty, means a book was added, removed, renamed or
+moved since the index was built; the Library rebuilds on its next open and a
+successful build removes it.
+
 Written by `lib/LibraryIndex/LibraryBuilder.cpp`, read by `LibraryIndexFile`. One
 file describing every book on the card, so the shelf can sort and search
 thousands of titles without opening any of them.

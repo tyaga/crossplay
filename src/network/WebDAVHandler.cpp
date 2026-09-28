@@ -2,6 +2,7 @@
 
 #include <FsHelpers.h>
 #include <HalStorage.h>
+#include <LibraryBuilder.h>
 #include <Logging.h>
 
 #include "util/BookCacheUtils.h"
@@ -491,6 +492,7 @@ void WebDAVHandler::handleMove(WebServer& s) {
   bool overwrite = getOverwrite(s);
 
   LOG_DBG("DAV", "MOVE %s -> %s (overwrite=%d)", srcPath.c_str(), dstPath.c_str(), overwrite);
+  library::markLibraryIndexStale();  // fork-local seam
 
   if (srcPath == "/" || srcPath.isEmpty()) {
     s.send(403, "text/plain", "Cannot move root");

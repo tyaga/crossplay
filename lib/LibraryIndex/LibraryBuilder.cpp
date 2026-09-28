@@ -21,6 +21,7 @@ namespace library {
 namespace {
 
 constexpr char INDEX_PATH[] = "/.crosspoint/library.idx";
+constexpr char STALE_PATH[] = "/.crosspoint/library.stale";
 constexpr char NEW_PATH[] = "/.crosspoint/library.new";
 constexpr char BACKUP_PATH[] = "/.crosspoint/library.bak";
 constexpr char STAGE_PATH[] = "/.crosspoint/library.stage";
@@ -1048,6 +1049,14 @@ bool emitIndex(const char* folderStagePath, WalkState& st, const uint16_t* order
 
 const char* libraryIndexPath() { return INDEX_PATH; }
 
+void markLibraryIndexStale() {
+  if (Storage.exists(STALE_PATH)) return;
+  HalFile marker;
+  if (!Storage.openFileForWrite("LIBIDX", STALE_PATH, marker)) LOG_ERR("LIBIDX", "cannot mark the index stale");
+}
+
+bool libraryIndexMarkedStale() { return Storage.exists(STALE_PATH); }
+
 bool buildLibraryIndex(const char* rootPath, BuildStats& stats, const bool readMetadata) {
   const uint32_t startMs = millis();
   uint32_t serviceUnits = 0;
@@ -1352,6 +1361,7 @@ bool buildLibraryIndex(const char* rootPath, BuildStats& stats, const bool readM
 
   stats.walkMs = millis() - startMs;
   stats.indexReplaced = ok;
+  if (ok) Storage.remove(STALE_PATH);
   LOG_INF("LIBIDX",
           "%s: %u books, %u folders, %u parsed, %u metadata reused, replaced %u, %u dup dropped, %u unreadable, %ums",
           ok ? "built" : "FAILED", static_cast<unsigned>(stats.books), static_cast<unsigned>(stats.folders),
