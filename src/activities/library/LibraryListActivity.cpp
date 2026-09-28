@@ -324,6 +324,7 @@ void LibraryListActivity::promptDeleteBook(const int entry) {
         // order.
         applyFilter();
         resolvePinned();
+        genreFoldersLoaded = false;
         buildGenreListing();
         auto& nav = activeNav();
         const int count = listCount();
@@ -466,6 +467,36 @@ uint16_t LibraryListActivity::ordinalFor(const int entry) {
   return index.ordinalForRow(sortOrder, static_cast<uint16_t>(rowFor(entry)));
 }
 
+bool LibraryListActivity::loadGenreFolders() {
+  if (genreFoldersLoaded) return true;
+  const uint16_t total = index.bookCount();
+  if (!index.readFolderPaths(folderPaths)) {
+    LOG_ERR("LIB", "cannot read the folder table");
+    return false;
+  }
+  for (std::string& folder : folderPaths) {
+    if (folder.empty() || folder.back() != '/') folder += '/';
+  }
+  folderDirectBooks = makeUniqueNoThrow<uint16_t[]>(std::max<size_t>(folderPaths.size(), 1));
+  bookFolder = makeUniqueNoThrow<uint16_t[]>(std::max<size_t>(total, 1));
+  if (!folderDirectBooks || !bookFolder) {
+    LOG_ERR("LIB", "OOM: genre folder map for %u books", static_cast<unsigned>(total));
+    return false;
+  }
+  if (!index.readFolderIds(bookFolder.get())) {
+    LOG_ERR("LIB", "cannot read book folders");
+    return false;
+  }
+  std::fill_n(folderDirectBooks.get(), folderPaths.size(), 0);
+  for (uint16_t book = 0; book < total; book++) {
+    if (bookFolder[book] < folderPaths.size()) folderDirectBooks[bookFolder[book]]++;
+  }
+  genreFoldersLoaded = true;
+  LOG_DBG("LIB", "genre map: %u folders, %u books", static_cast<unsigned>(folderPaths.size()),
+          static_cast<unsigned>(total));
+  return true;
+}
+
 void LibraryListActivity::buildGenreListing() {
   genreDirs.clear();
   genreBookCount = 0;
@@ -477,24 +508,29 @@ void LibraryListActivity::buildGenreListing() {
     genreBookCapacity = genreBooks ? static_cast<uint16_t>(total) : 0;
     if (!genreBooks) LOG_ERR("LIB", "cannot allocate %u-byte genre list", static_cast<unsigned>(total * 2));
   }
-  std::string path;
-  path.reserve(160);
-  for (int row = 0; row < total && genreBooks; row++) {
-    const uint16_t ordinal = index.ordinalForRow(library::SortOrder::TitleAsc, static_cast<uint16_t>(row));
-    library::ClixRecord record{};
-    if (ordinal == 0xFFFF || !index.readRecord(ordinal, record) || !index.readPath(record, path)) continue;
-    if (path.compare(0, genrePath.size(), genrePath) != 0) continue;
-    const size_t slash = path.find('/', genrePath.size());
-    if (slash == std::string::npos) {
-      genreBooks[genreBookCount++] = ordinal;
+  if (!genreBooks || !loadGenreFolders()) return;
+
+  int here = -1;
+  for (size_t f = 0; f < folderPaths.size(); f++) {
+    const std::string& folder = folderPaths[f];
+    if (folder == genrePath) {
+      here = static_cast<int>(f);
       continue;
     }
-    const std::string name = path.substr(genrePath.size(), slash - genrePath.size());
+    if (folderDirectBooks[f] == 0 || folder.compare(0, genrePath.size(), genrePath) != 0) continue;
+    const size_t slash = folder.find('/', genrePath.size());
+    const std::string name = folder.substr(genrePath.size(), slash - genrePath.size());
     auto dir = std::find_if(genreDirs.begin(), genreDirs.end(), [&name](const GenreDir& d) { return d.name == name; });
     if (dir == genreDirs.end()) {
-      genreDirs.push_back({name, 1});
+      genreDirs.push_back({name, folderDirectBooks[f]});
     } else {
-      dir->books++;
+      dir->books = static_cast<uint16_t>(dir->books + folderDirectBooks[f]);
+    }
+  }
+  // Records are stored in title order, so this walk lists the books by title.
+  if (here >= 0) {
+    for (int book = 0; book < total; book++) {
+      if (bookFolder[book] == here) genreBooks[genreBookCount++] = static_cast<uint16_t>(book);
     }
   }
   std::sort(genreDirs.begin(), genreDirs.end(), [](const GenreDir& a, const GenreDir& b) { return a.name < b.name; });

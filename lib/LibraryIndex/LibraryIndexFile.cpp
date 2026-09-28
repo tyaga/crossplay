@@ -5,6 +5,7 @@
 #include <Memory.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
 
 #include "LibraryText.h"
@@ -257,6 +258,48 @@ bool LibraryIndexFile::readPath(const ClixRecord& record, std::string& out) {
     if (offset >= folderEnd) return false;
   }
   return false;
+}
+
+bool LibraryIndexFile::readFolderPaths(std::vector<std::string>& out) {
+  out.clear();
+  if (!opened) return false;
+  if (head.folderLen == 0) return head.folderCount == 0;
+  auto blob = makeUniqueNoThrow<uint8_t[]>(head.folderLen);
+  if (!blob) {
+    LOG_ERR("LIBIDX", "OOM: %u-byte folder table", static_cast<unsigned>(head.folderLen));
+    return false;
+  }
+  if (!readAt(head.folderStart, blob.get(), head.folderLen)) return false;
+  out.reserve(head.folderCount);
+  uint32_t at = 0;
+  for (uint16_t i = 0; i < head.folderCount; i++) {
+    if (at >= head.folderLen) return false;
+    const uint8_t pathLen = blob[at];
+    if (pathLen == 0 || pathLen > head.folderLen - at - 1u) return false;
+    out.emplace_back(reinterpret_cast<const char*>(blob.get() + at + 1), pathLen);
+    at += 1u + pathLen;
+  }
+  return true;
+}
+
+bool LibraryIndexFile::readFolderIds(uint16_t* out) {
+  if (!opened) return false;
+  constexpr uint16_t CHUNK_RECORDS = 32;  // 4096 bytes, the aligned-tile size
+  auto chunk = makeUniqueNoThrow<uint8_t[]>(CHUNK_RECORDS * sizeof(ClixRecord));
+  if (!chunk) {
+    LOG_ERR("LIBIDX", "OOM: %u-byte record chunk", static_cast<unsigned>(CHUNK_RECORDS * sizeof(ClixRecord)));
+    return false;
+  }
+  for (uint16_t base = 0; base < head.bookCount; base += CHUNK_RECORDS) {
+    const uint16_t batch = std::min<uint16_t>(CHUNK_RECORDS, head.bookCount - base);
+    if (!readAt(recordOffset(head, base), chunk.get(), batch * sizeof(ClixRecord))) return false;
+    for (uint16_t r = 0; r < batch; r++) {
+      uint16_t folderId;
+      memcpy(&folderId, chunk.get() + r * sizeof(ClixRecord) + offsetof(ClixRecord, folderId), sizeof(folderId));
+      out[base + r] = folderId;
+    }
+  }
+  return true;
 }
 
 }  // namespace library

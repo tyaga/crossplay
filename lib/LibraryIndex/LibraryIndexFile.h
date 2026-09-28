@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "LibraryFormat.h"
 
@@ -91,6 +92,14 @@ class LibraryIndexFile {
 
   // Absolute path of the book, rebuilt from its folder record.
   bool readPath(const ClixRecord& record, std::string& out);
+
+  // fork-local seam: the whole folder table, `out[id]` the folder whose id is
+  // `id`, in one read. For a view that groups every book by folder: readPath()
+  // walks the table per book, which on a card is a seek per folder per book.
+  bool readFolderPaths(std::vector<std::string>& out);
+  // The folder id of every record, `out[ordinal]`, read in 4 KiB chunks.
+  // `out` holds bookCount() entries.
+  bool readFolderIds(uint16_t* out);
 
  private:
   bool openImpl(const char* path, bool acceptStaleFold);

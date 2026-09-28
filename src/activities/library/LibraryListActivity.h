@@ -109,8 +109,10 @@ class LibraryListActivity final : public UiTabListActivity {
   // books directly in it, in title order.
   bool genreMode() const;
   bool isGenreFolder(int entry) const;
-  // Re-read which folders and books sit under genrePath. Walks the index once.
+  // Which folders and books sit under genrePath, from the folder table held in
+  // memory; loadGenreFolders() reads it on first use.
   void buildGenreListing();
+  bool loadGenreFolders();
   void enterGenreFolder(int entry);
   void leaveGenreFolder();
   // Record ordinal of a book entry in the current view, 0xFFFF for none.
@@ -189,6 +191,13 @@ class LibraryListActivity final : public UiTabListActivity {
   std::unique_ptr<uint16_t[]> genreBooks;
   uint16_t genreBookCount = 0;
   uint16_t genreBookCapacity = 0;
+  // The index's folders, each as "<path>/", with how many books sit directly in
+  // each and which folder every book is in. Read in one pass so opening a
+  // folder costs no card access; dropped whenever the index is rebuilt.
+  std::vector<std::string> folderPaths;
+  std::unique_ptr<uint16_t[]> folderDirectBooks;
+  std::unique_ptr<uint16_t[]> bookFolder;
+  bool genreFoldersLoaded = false;
 
   bool lockNextConfirmRelease = false;
   bool lockNextBackRelease = false;
